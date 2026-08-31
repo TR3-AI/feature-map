@@ -8,7 +8,7 @@ if (!slug) { console.error("usage: node render.js <slug>"); process.exit(1); }
 
 const esc = (s) =>
   String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const rich = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+const rich = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<code>$1</code>");
 
 const md = fs.readFileSync(`maps/${slug}.md`, "utf8").replace(/\r\n/g, "\n");
 const lines = md.split("\n");
@@ -84,7 +84,77 @@ const html = tpl
   .replaceAll("{{UPDATED}}", esc(updated))
   .replace("{{FEATURES}}", features.join("\n"));
 
-fs.writeFileSync(`${slug}.html`, html);
+// blueprint page is written after the kit block so {{KIT_BANNER}} can be filled
+// ── tester kit page (pstack recipes → <slug>-kit.html) ──
+const kitDir = `verify-${slug}/features`;
+let kitBanner = "";
+if (fs.existsSync(kitDir)) {
+  const sec = (text, name) => {
+    const safe = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const m = text.match(new RegExp(`## ${safe}\\s*\\n([\\s\\S]*?)(?=\\n## |$)`));
+    return m ? m[1].trim() : "";
+  };
+  const li = (text) => [...text.matchAll(/^- (.+)$/gm)].map((x) => x[1].trim());
+  const files = fs.readdirSync(kitDir).filter((f) => f.endsWith(".md") && f !== "README.md").sort();
+  const recipes = files.map((f, i) => {
+    const text = fs.readFileSync(`${kitDir}/${f}`, "utf8").replace(/\r\n/g, "\n");
+    const name = (text.match(/^# (.+)$/m) || [])[1] || f;
+    const intro = text.split(/^## /m)[0].split("\n").slice(1).map((l) => l.trim()).filter(Boolean).join(" ");
+    const subs = li(sec(text, "Sub-features")).map((s) => {
+      const m = s.match(/^`([^`]+)`\s*(.*)$/);
+      return `<span class="sub"><b>${esc(m ? m[1] : "")}</b> ${rich(m ? m[2] : s)}</span>`;
+    }).join("\n        ");
+    const reach = li(sec(text, "How to get to it (user POV)")).map((s) => `<li>${rich(s)}</li>`).join("\n        ");
+    const drive = sec(text, "Driving it with the harness");
+    const afterPre = (drive.split(/^Preconditions:\s*$/m)[1] || drive);
+    const firstStep = afterPre.search(/^- \*\*/m);
+    const preText = firstStep >= 0 ? afterPre.slice(0, firstStep) : afterPre;
+    const stepText = firstStep >= 0 ? afterPre.slice(firstStep) : afterPre;
+    const pre = li(preText).map((s) => esc(s)).join(" · ");
+    const driveItems = li(stepText).map((s) => `<li>${rich(s)}</li>`).join("\n        ");
+    const gotchas = li(sec(text, "Gotchas")).map((s) => `<div class="gotcha">${rich(s)}</div>`).join("\n      ");
+    return `
+  <div class="recipe">
+    <div class="rhead"><span class="rnum">R${i + 1}</span><h3>${esc(name)}</h3></div>
+    <p class="rintro">${rich(intro)}</p>
+    <div class="rsec"><div class="rlbl">Sub-features</div>
+      <div class="subs">
+        ${subs}
+      </div>
+    </div>
+    <div class="rsec"><div class="rlbl">How to get to it (user POV)</div>
+      <ul class="rlist">
+        ${reach}
+      </ul>
+    </div>
+    <div class="rsec"><div class="rlbl">Driving it with the harness</div>
+      <div class="pre">${pre}</div>
+      <ul class="rlist">
+        ${driveItems}
+      </ul>
+    </div>
+    <div class="rsec"><div class="rlbl">Gotchas</div>
+      ${gotchas}
+    </div>
+  </div>`;
+  }).join("\n");
+  const kitTpl = fs.readFileSync("kit-template.html", "utf8");
+  const kitHtml = kitTpl
+    .replaceAll("{{TITLE}}", esc(title))
+    .replaceAll("{{BLUEPRINT_URL}}", `${slug}.html`)
+    .replaceAll("{{SOURCE_URL}}", srcUrl)
+    .replaceAll("{{SOURCE_LABEL}}", esc(`idea-slicer${issue ? " · issue #" + issue : ""}`))
+    .replaceAll("{{COUNT}}", esc(String(files.length)))
+    .replaceAll("{{UPDATED}}", esc(updated))
+    .replaceAll("{{KIT_URL}}", `https://github.com/TR3-AI/feature-map/tree/main/verify-${slug}`)
+    .replaceAll("{{SLUG}}", esc(slug))
+    .replace("{{RECIPES}}", recipes);
+  fs.writeFileSync(`${slug}-kit.html`, kitHtml);
+  kitBanner = `<div class="kitbanner">🧰 <b>Tester kit — the P-Stack side:</b> these ${files.length} features as driving recipes for the tester agent, recorded with ProofShot. <a href="${slug}-kit.html">Open the kit →</a></div>`;
+  console.log(`rendered ${slug}-kit.html (${files.length} recipes)`);
+}
+
+fs.writeFileSync(`${slug}.html`, html.replace("{{KIT_BANNER}}", kitBanner));
 
 const manifest = JSON.parse(fs.readFileSync("pages.json", "utf8"));
 const entry = {

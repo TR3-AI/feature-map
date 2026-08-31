@@ -44,6 +44,13 @@
     padding: 4px 12px; border-radius: 4px; background: var(--box);
   }
 
+  .kitbanner {
+    background: var(--teal-soft); border: 2px solid var(--teal); border-radius: 8px;
+    padding: 14px 18px; font-size: 14.5px; line-height: 1.55; margin-bottom: 26px;
+  }
+  .kitbanner b { color: var(--teal); }
+  .kitbanner a { color: var(--teal); font-weight: 800; }
+
   /* ── feature box ─────────────────────────────────── */
   .fbox {
     background: var(--box); border: 2px solid var(--blue); border-radius: 8px;
@@ -144,6 +151,8 @@
     <div class="sub">feature map · tracks <a href="{{SOURCE_URL}}">{{SOURCE_LABEL}}</a></div>
     <div class="stamp">{{COUNT}} · updated {{UPDATED}}</div>
   </header>
+
+  {{KIT_BANNER}}
 
   {{FEATURES}}
 
