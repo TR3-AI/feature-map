@@ -8,6 +8,7 @@ if (!slug) { console.error("usage: node render.js <slug>"); process.exit(1); }
 
 const esc = (s) =>
   String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const rich = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 
 const md = fs.readFileSync(`maps/${slug}.md`, "utf8").replace(/\r\n/g, "\n");
 const lines = md.split("\n");
@@ -19,40 +20,60 @@ const updated = (lines.find((l) => l.startsWith("Updated:")) || "").replace("Upd
 const count = (lines.find((l) => l.startsWith("Features:")) || "").replace("Features:", "").trim();
 
 const chunks = md.split(/^## /m).slice(1);
-const features = chunks.map((chunk) => {
+const block = (chunk, k) => {
+  const m = chunk.match(new RegExp(`^${k}:\\s*\\n([\\s\\S]*?)(?=^[A-Z][A-Za-z ]*:|\\Z)`, "m"));
+  return m ? m[1].trim() : "";
+};
+const inline = (chunk, k) => {
+  const m = chunk.match(new RegExp(`^${k}:\\s*(.+)$`, "m"));
+  return m ? m[1].trim() : "";
+};
+const numbered = (text) => [...text.matchAll(/^\d+\.\s+(.+)$/gm)].map((x) => x[1].trim());
+const bulleted = (text) => [...text.matchAll(/^-\s+(.+)$/gm)].map((x) => x[1].trim());
+
+const features = chunks.map((chunk, idx) => {
   const name = chunk.split("\n")[0].trim();
-  const field = (k) => {
-    const m = chunk.match(new RegExp(`^${k}:\\s*(.+)$`, "m"));
-    return m ? m[1].trim() : "";
-  };
-  const vMatch = chunk.match(/^Verification:\s*\n((?:\d+\..*\n?)+)/m);
-  const steps = vMatch ? [...vMatch[1].matchAll(/^\d+\.\s+(.+)$/gm)].map((x) => x[1].trim()) : [];
-  const life = field("Lifecycle").split(/\s+→\s+/).filter(Boolean);
+  const fSteps = numbered(block(chunk, "Feature"));
+  const beh = bulleted(block(chunk, "Behaviour"));
+  const life = numbered(block(chunk, "Lifecycle"));
+  const checks = numbered(block(chunk, "Verification"));
   const lifeHtml = life.map((seg, i) => {
-    const cls = i === 0 ? "pill trig" : i === life.length - 1 ? "pill end" : "pill";
-    return `${i ? '<span class="arr">→</span> ' : ""}<span class="${cls}">${esc(seg)}</span>`;
-  }).join("\n      ");
+    let cls = "fvstep", tag = `step ${i + 1}`;
+    if (/^TRIGGER:/i.test(seg)) { cls += " trig"; tag = "trigger"; seg = seg.replace(/^TRIGGER:\s*/i, ""); }
+    if (/^END:/i.test(seg)) { cls += " end"; tag = "end"; seg = seg.replace(/^END:\s*/i, ""); }
+    return `      <div class="${cls}"><span class="tag">${tag}</span> ${rich(seg)}</div>`;
+  }).join("\n");
   return `
-  <div class="feat">
-    <h3>🧩 <span>${esc(name)}</span> <span class="from">${esc(field("From"))}</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">${esc(field("Feature"))}</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">${esc(field("Behaviour"))}</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      ${lifeHtml}
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F${idx + 1}</span><h3>${esc(name)}</h3><span class="fdept">${esc(inline(chunk, "From"))}</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        ${fSteps.map((s) => `<li>${rich(s)}</li>`).join("\n        ")}
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      ${steps.map((s) => `<li>${esc(s)}</li>`).join("\n      ")}
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        ${beh.map((s) => `<li>${rich(s)}</li>`).join("\n        ")}
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+${lifeHtml}
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      ${checks.map((s) => `<li>${rich(s)}</li>`).join("\n      ")}
     </ol>
-    <div class="verdict ok"><span>Success</span> ${esc(field("Success"))}</div>
-    <div class="verdict bad"><span>Failure</span> ${esc(field("Failure"))}</div>
-  </div>`;
+    <div class="verdict ok"><span>Success</span> ${rich(inline(chunk, "Success"))}</div>
+    <div class="verdict bad"><span>Failure</span> ${rich(inline(chunk, "Failure"))}</div>
+  </section>`;
 });
 
-const tpl = fs.readFileSync("template.html", "utf8").replace(/\n<!-- Per-feature card markup[\s\S]*?-->\s*$/, "\n");
+const tpl = fs.readFileSync("template.html", "utf8");
 const srcUrl = `https://tr3-ai.github.io/idea-slicer/${slug}.html`;
 const html = tpl
   .replaceAll("{{TITLE}}", esc(title))
@@ -65,11 +86,10 @@ const html = tpl
 fs.writeFileSync(`${slug}.html`, html);
 
 const manifest = JSON.parse(fs.readFileSync("pages.json", "utf8"));
-const first = chunks[0] || "";
 const entry = {
   file: `${slug}.html`,
   title: `${title} — feature map`,
-  desc: `${count} features at their smallest useful size, each with user-side verification: success and failure parameters. Tracks idea-slicer${issue ? " issue #" + issue : ""}.`,
+  desc: `${count} features at their smallest useful size — feature, behaviour, lifecycle — each with user-side verification: success and failure parameters. Tracks idea-slicer${issue ? " issue #" + issue : ""}.`,
   date: updated,
   emoji: "🛠️",
   status: "open",

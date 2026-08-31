@@ -6,631 +6,1076 @@
 <title>Memecoin virality trader — feature map</title>
 <style>
   :root {
-    --ink: #2b2140;
-    --soft: #6b6580;
-    --faint: #b0a9c2;
-    --card: #ffffff;
-    --well: #f7f5fd;
-    --line: #e7e0f5;
-    --shadow: 0 10px 30px rgba(70, 50, 120, .12);
-    --purple: #6b4fd0;
-    --lav: #efe9ff;
-    --b-now: #2ea88a;
-    --b-blocked: #e04f66;
+    --ink: #17202b;
+    --soft: #51606f;
+    --faint: #8fa0b3;
+    --paper: #eef2f6;
+    --box: #ffffff;
+    --blue: #2456a6;
+    --blue-soft: #dbe7f8;
+    --teal: #0f766e;
+    --teal-soft: #e0f2ef;
+    --red: #c2374a;
+    --line: #c8d4e0;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    margin: 0; padding: 24px 16px 64px;
-    font-family: ui-rounded, "Segoe UI", Nunito, system-ui, sans-serif;
+    margin: 0; padding: 24px 14px 64px;
+    font-family: "Segoe UI", system-ui, sans-serif;
     color: var(--ink);
-    background: linear-gradient(160deg, #fff4e6 0%, #ffe9f3 45%, #e9f0ff 100%);
+    background:
+      linear-gradient(var(--paper), var(--paper)),
+      repeating-linear-gradient(0deg, transparent 0 23px, rgba(36,86,166,.06) 23px 24px),
+      repeating-linear-gradient(90deg, transparent 0 23px, rgba(36,86,166,.06) 23px 24px);
     -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 760px; margin: 0 auto; }
-  header { text-align: center; margin-bottom: 26px; }
-  h1 { font-size: 30px; font-weight: 800; letter-spacing: -.5px; line-height: 1.15; }
-  .sub { color: var(--soft); margin-top: 6px; font-size: 15px; }
-  .sub a { color: var(--purple); font-weight: 700; text-decoration: none; }
-  .stamp { color: var(--faint); font-size: 12.5px; margin-top: 6px; }
-  .reco { display: inline-block; background: var(--lav); border-radius: 999px; padding: 4px 14px; font-size: 13px; font-weight: 700; color: var(--purple); margin-top: 8px; }
+  .wrap { max-width: 720px; margin: 0 auto; }
 
-  h2 {
-    font-size: 13px; text-transform: uppercase; letter-spacing: 2px;
-    color: var(--soft); margin: 32px 0 12px; text-align: center;
+  header.page { text-align: center; margin-bottom: 30px; }
+  header.page h1 {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 26px; font-weight: 800; letter-spacing: -.5px;
+  }
+  header.page .sub { color: var(--soft); margin-top: 6px; font-size: 14.5px; }
+  header.page .sub a { color: var(--blue); font-weight: 700; }
+  header.page .stamp {
+    display: inline-block; margin-top: 10px; font-family: ui-monospace, Menlo, monospace;
+    font-size: 11.5px; color: var(--faint); border: 1px solid var(--line);
+    padding: 4px 12px; border-radius: 4px; background: var(--box);
   }
 
-  .feat {
-    background: var(--card); border-radius: 22px; padding: 20px 20px;
-    box-shadow: var(--shadow); border-top: 4px solid var(--purple); margin: 14px 0;
+  /* ── feature box ─────────────────────────────────── */
+  .fbox {
+    background: var(--box); border: 2px solid var(--blue); border-radius: 8px;
+    overflow: hidden; box-shadow: 0 6px 18px rgba(23, 32, 43, .08);
   }
-  .feat h3 { font-size: 18px; font-weight: 800; margin-bottom: 2px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-  .feat h3 .from { font-size: 12px; font-weight: 700; color: var(--faint); text-transform: uppercase; letter-spacing: 1px; }
-  .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--faint); margin: 14px 0 6px; }
-  .kv { font-size: 14.5px; line-height: 1.55; margin: 4px 0; }
-  .kv b { color: var(--purple); }
-
-  .life { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .life .pill {
-    background: var(--well); border: 2px solid var(--line);
-    border-radius: 999px; padding: 6px 13px; font-size: 13px; font-weight: 700;
+  .fhead {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    background: var(--blue); color: #fff; padding: 12px 16px;
   }
-  .life .pill.trig { border-color: #c9b8f2; background: var(--lav); color: var(--purple); }
-  .life .pill.end { border-color: rgba(224, 79, 102, .35); color: var(--b-blocked); }
-  .life .arr { color: var(--faint); font-weight: 800; }
+  .fhead .fnum {
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px; font-weight: 700;
+    background: rgba(255,255,255,.18); border-radius: 4px; padding: 2px 8px;
+  }
+  .fhead h3 { font-size: 18px; font-weight: 800; }
+  .fhead .fdept {
+    margin-left: auto; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; opacity: .85;
+  }
+  .fsec { padding: 14px 16px 6px; }
+  .fsec + .fsec { border-top: 1px dashed var(--line); }
+  .flbl {
+    font-family: ui-monospace, Menlo, monospace; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px; color: var(--blue); margin-bottom: 8px;
+  }
+  ol.fsteps, ul.fbeh { margin: 0 0 10px 22px; font-size: 14.5px; line-height: 1.55; }
+  ol.fsteps li, ul.fbeh li { margin: 5px 0; }
+  ol.fsteps li::marker { color: var(--blue); font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
+  ul.fbeh li::marker { color: var(--blue); }
+  .fsteps b, .fbeh b { color: var(--blue); }
 
-  ol.steps { margin-left: 20px; font-size: 14.5px; }
-  ol.steps li { margin: 4px 0; }
-  ol.steps li::marker { color: var(--purple); font-weight: 800; }
+  /* lifecycle: vertical flow */
+  .fvflow { margin: 2px 0 12px; }
+  .fvstep {
+    position: relative; margin: 0 0 4px 14px; padding: 8px 12px 8px 14px;
+    background: var(--blue-soft); border-left: 3px solid var(--blue);
+    border-radius: 0 6px 6px 0; font-size: 14px; line-height: 1.45;
+  }
+  .fvstep::before {
+    content: ""; position: absolute; left: -9px; top: 100%; height: 8px;
+    border-left: 2px solid var(--blue);
+  }
+  .fvstep:last-child::before { display: none; }
+  .fvstep.trig { background: #e8ecff; border-left-color: #4a3fb0; }
+  .fvstep.trig b { color: #4a3fb0; }
+  .fvstep.end { background: #fdeef0; border-left-color: var(--red); }
+  .fvstep.end b { color: var(--red); }
+  .fvstep .tag {
+    font-family: ui-monospace, Menlo, monospace; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px; color: var(--soft); margin-right: 6px;
+  }
 
+  /* ── connector ───────────────────────────────────── */
+  .vlink { position: relative; height: 44px; margin: 0 auto; width: 0; border-left: 2px solid var(--teal); }
+  .vlink::after {
+    content: "▼"; position: absolute; left: -7px; bottom: -4px;
+    color: var(--teal); font-size: 12px;
+  }
+  .vlink .vlab {
+    position: absolute; left: 10px; top: 12px; white-space: nowrap;
+    font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px; color: var(--teal);
+    background: var(--paper); padding: 2px 8px; border: 1px solid var(--teal); border-radius: 4px;
+  }
+
+  /* ── verification box ────────────────────────────── */
+  .vbox {
+    background: var(--teal-soft); border: 2px solid var(--teal); border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 34px; box-shadow: 0 6px 18px rgba(23, 32, 43, .06);
+  }
+  .vbox .flbl { color: var(--teal); }
+  .vbox ol.fsteps li::marker { color: var(--teal); }
   .verdict {
-    border-radius: 14px; padding: 12px 16px; margin: 8px 0; font-size: 14.5px; line-height: 1.5;
+    border-radius: 6px; padding: 10px 14px; margin: 8px 0 2px; font-size: 14px; line-height: 1.5;
+    background: var(--box);
   }
-  .verdict span { font-weight: 800; display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 3px; }
-  .verdict.ok { background: rgba(46, 168, 138, .07); border: 2px solid rgba(46, 168, 138, .35); }
-  .verdict.ok span { color: var(--b-now); }
-  .verdict.bad { background: rgba(224, 79, 102, .06); border: 2px dashed rgba(224, 79, 102, .35); }
-  .verdict.bad span { color: var(--b-blocked); }
+  .verdict span {
+    display: block; font-family: ui-monospace, Menlo, monospace; font-size: 10.5px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 3px;
+  }
+  .verdict.ok { border-left: 4px solid var(--teal); }
+  .verdict.ok span { color: var(--teal); }
+  .verdict.bad { border-left: 4px solid var(--red); }
+  .verdict.bad span { color: var(--red); }
 
-  footer { text-align: center; color: var(--soft); font-size: 13px; margin-top: 40px; }
-  footer a { color: var(--purple); font-weight: 700; text-decoration: none; }
+  footer { text-align: center; color: var(--soft); font-size: 13px; margin-top: 44px; }
+  footer a { color: var(--blue); font-weight: 700; text-decoration: none; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <header>
+  <header class="page">
     <h1>Memecoin virality trader</h1>
-    <div class="sub">feature map for <a href="https://tr3-ai.github.io/idea-slicer/memecoin-virality-trader.html">idea-slicer · issue #4</a></div>
-    <div class="reco">25 features</div>
-    <div class="stamp">feature-map · updated 2026-08-31 · verified from the user's side</div>
+    <div class="sub">feature map · tracks <a href="https://tr3-ai.github.io/idea-slicer/memecoin-virality-trader.html">idea-slicer · issue #4</a></div>
+    <div class="stamp">25 features · updated 2026-08-31</div>
   </header>
 
   
-  <div class="feat">
-    <h3>🧩 <span>Source list config</span> <span class="from">Callout intake</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">The list of tracked traders/devs — only callouts from these sources count. Build: a config Bobby supplies, stored by secret-free name, loaded by the watcher at startup.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Can be edited between runs; an empty or missing list means the watcher picks up nothing (safe failure — no candidates, no trades).</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Bobby supplies the list</span>
-      <span class="arr">→</span> <span class="pill">stored</span>
-      <span class="arr">→</span> <span class="pill">loaded on every run</span>
-      <span class="arr">→</span> <span class="pill end">replaced when Bobby updates it.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F1</span><h3>Source list config</h3><span class="fdept">Callout intake</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A config file Bobby supplies listing the tracked traders/devs — the only sources whose callouts count.</li>
+        <li>The watcher loads this list at startup and keeps it in memory for every stream check.</li>
+        <li>Sources are referenced by plain names or handles — never keys, never secrets.</li>
+        <li>The Front-end UI shows the active list so Bobby can see exactly who is being watched.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>Bobby opens the config view and sees his list of sources.</li>
-      <li>A callout from a listed source produces a candidate; a callout from an unlisted source does not.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>The list can be edited between runs; a restart picks up the new version.</li>
+        <li>An empty or missing list is a <b>safe failure</b>: the watcher picks up nothing, no candidates flow, no trades can happen.</li>
+        <li>A source that stops existing (deleted account) stays in the list but simply produces no callouts.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> Bobby supplies or edits the list.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The list is stored in the config location the watcher reads.</div>
+      <div class="fvstep"><span class="tag">step 3</span> On every run the watcher loads it and filters all incoming callouts against it.</div>
+      <div class="fvstep end"><span class="tag">end</span> The list is replaced the next time Bobby updates it; it never expires on its own.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>Bobby opens the config view on his phone and sees his list of sources.</li>
+      <li>A test callout from a <b>listed</b> source produces a candidate.</li>
+      <li>A test callout from an <b>unlisted</b> source produces nothing.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The list is visible and only listed sources produce candidates.</div>
-    <div class="verdict bad"><span>Failure</span> The list can't be shown, or an unlisted source slips a candidate through.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> The visible list matches what Bobby supplied, and only listed sources ever produce candidates.</div>
+    <div class="verdict bad"><span>Failure</span> The list can't be displayed, or an unlisted source slips a candidate through — the filter is not really applied.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Callout listener + normalizer</span> <span class="from">Callout intake</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Watches pump.fun / FOMO streams and turns each callout into a normalized candidate: coin address, attached tweet, timestamp, source.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Runs continuously; a malformed callout (missing address) is rejected at intake, never passed downstream.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Callout arrives on a tracked stream</span>
-      <span class="arr">→</span> <span class="pill">normalized</span>
-      <span class="arr">→</span> <span class="pill">emitted to the Virality scorer</span>
-      <span class="arr">→</span> <span class="pill end">done for this callout.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F2</span><h3>Callout listener + normalizer</h3><span class="fdept">Callout intake</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A stream connection to pump.fun / FOMO watching for callouts from tracked sources.</li>
+        <li>A parser that extracts the four required fields from each callout: <b>coin address, attached tweet, timestamp, source</b>.</li>
+        <li>A validator that rejects malformed callouts (missing address, no timestamp) at intake.</li>
+        <li>An emitter that hands each valid, normalized candidate to the Virality scorer.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>Runs continuously; a dropped stream reconnects and resumes without duplicating candidates.</li>
+        <li>Malformed callouts are rejected with the reason logged — never passed downstream half-filled.</li>
+        <li>Each callout produces exactly one candidate (deduplicated by address + timestamp).</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A callout arrives on a tracked stream.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The four fields are extracted and validated.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The normalized candidate is emitted to the Virality scorer.</div>
+      <div class="fvstep end"><span class="tag">end</span> The listener is done with this callout and waits for the next one; rejected callouts end in the reject log.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
       <li>Post a test callout from a tracked source on the test stream.</li>
-      <li>The candidate appears in the intake view with all four fields filled.</li>
+      <li>Open the intake view: the candidate appears with all four fields filled.</li>
+      <li>Post a malformed test callout (no address): it appears in the reject log with the reason.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The test callout shows up as a complete candidate within seconds.</div>
-    <div class="verdict bad"><span>Failure</span> The callout is posted but no candidate appears, or fields are blank.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> The good callout shows as a complete candidate within seconds; the bad one is visibly rejected with a reason.</div>
+    <div class="verdict bad"><span>Failure</span> The callout is posted but no candidate appears, a field is blank, or the malformed callout flows downstream.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>30-day baseline builder</span> <span class="from">Virality scorer</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Captures every tweet from the callout's account over 30 days and averages likes + retweets into a baseline.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Recomputed per candidate; an account with too little history is flagged, not averaged into a fake number.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Candidate arrives</span>
-      <span class="arr">→</span> <span class="pill">30-day pull via X API</span>
-      <span class="arr">→</span> <span class="pill">baseline number attached</span>
-      <span class="arr">→</span> <span class="pill end">passed to the multiplier gate.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F3</span><h3>30-day baseline builder</h3><span class="fdept">Virality scorer</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>An X API pull of every tweet from the callout's account over the last 30 days.</li>
+        <li>Averaging of likes + retweets across those tweets into a single <b>baseline number</b>.</li>
+        <li>A history check: accounts with too little history are flagged, not averaged into a fake number.</li>
+        <li>The baseline is attached to the candidate for the multiplier gate.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>Feed a test account with known tweet metrics.</li>
-      <li>The baseline shown matches the hand-computed average.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>Recomputed fresh per candidate — no caching between candidates.</li>
+        <li>API rate limits pause the pull; the candidate waits, it is never scored with a partial baseline.</li>
+        <li>The baseline, tweet count, and any flag are all visible for inspection.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A normalized candidate arrives from Callout intake.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The 30-day tweet history is pulled via the X API.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The baseline is computed (or the low-history flag is set).</div>
+      <div class="fvstep end"><span class="tag">end</span> The candidate carries its baseline into the age-band multiplier gate.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>Feed a test account with known tweet metrics through the scorer view.</li>
+      <li>The baseline shown matches the hand-computed average for that account.</li>
+      <li>Feed an account with almost no history: it shows the flag, not a number.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The displayed baseline equals the real 30-day average for the test account.</div>
-    <div class="verdict bad"><span>Failure</span> No baseline appears, or the number doesn't match the hand check.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> The displayed baseline equals the real 30-day average, and thin accounts are visibly flagged.</div>
+    <div class="verdict bad"><span>Failure</span> No baseline appears, the number disagrees with the hand check, or a thin account gets a confident fake number.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Age-band multiplier gate</span> <span class="from">Virality scorer</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Gate 1 — the coin's tweet must beat the baseline by the age-band multiplier: under 1h ≥3x, 1–6h ≥10x, 24h+ ≥50x; anything else (including 6–24h) is rejected.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Thresholds are configurable; every reject logs its reason (failed band, or outside all bands).</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Candidate + baseline</span>
-      <span class="arr">→</span> <span class="pill">band check</span>
-      <span class="arr">→</span> <span class="pill end">pass (to Narrative analysis) or reject (logged, end).</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F4</span><h3>Age-band multiplier gate</h3><span class="fdept">Virality scorer</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>Gate 1 logic comparing the coin's tweet metrics against the baseline by <b>age band</b>: under 1h needs ≥3x, 1–6h needs ≥10x, 24h+ needs ≥50x.</li>
+        <li>Anything outside the bands — including 6–24h — is rejected outright.</li>
+        <li>Configurable threshold values (owner dependency, supplied with the X API access).</li>
+        <li>A reject log recording which band applied and why the verdict fired.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>Send test candidates at known multipliers: 4x at 30min (pass), 4x at 3h (reject), 60x at 2 days (pass), anything at 12h (reject).</li>
-      <li>Each verdict and reason is visible in the gate log.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>The gate is pure: same candidate + same baseline always produces the same verdict.</li>
+        <li>Every reject carries its reason (failed band multiplier, or outside all bands).</li>
+        <li>Boundary values follow the rule exactly (exactly 3x under 1h passes).</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A candidate arrives with its baseline attached.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The coin's age is read from its timestamp; the matching band is selected.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The tweet multiplier is compared against the band threshold.</div>
+      <div class="fvstep end"><span class="tag">end</span> Pass — the candidate goes to Narrative analysis; reject — logged with reason, candidate done.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>Send four test candidates with known values: 4x at 30min (pass), 4x at 3h (reject), 60x at 2 days (pass), any multiplier at 12h (reject).</li>
+      <li>The gate log shows each verdict with band and reason.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> All four test candidates get the correct verdict with the reason shown.</div>
-    <div class="verdict bad"><span>Failure</span> A candidate passes or rejects against the band rule, or no reason is logged.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> All four verdicts are correct, each with its band and reason visible.</div>
+    <div class="verdict bad"><span>Failure</span> Any candidate passes or rejects against the band rule, or a verdict appears with no reason attached.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Grok analysis</span> <span class="from">Narrative analysis</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Gate 2 input — Grok 4.6 with the pre-generated prompt extracts narrative, thesis, sentiment, veracity score, and virality (attention) score via X search.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Both scores come back as separate components — veracity (is the narrative real) and virality (is it getting attention); an API failure blocks the candidate, never auto-passes it.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Qualified candidate</span>
-      <span class="arr">→</span> <span class="pill">Grok call</span>
-      <span class="arr">→</span> <span class="pill">five extracted fields + two scores attached</span>
-      <span class="arr">→</span> <span class="pill end">combined-score gate.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F5</span><h3>Grok analysis</h3><span class="fdept">Narrative analysis</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A call to Grok 4.6 (xAI API, Bobby's account) with the pre-generated prompt for every qualified candidate.</li>
+        <li>Extraction of five fields: <b>narrative, thesis, sentiment, veracity score, virality (attention) score</b> via X search.</li>
+        <li>Veracity and virality are kept as <b>separate score components</b> — never merged, never renamed into each other.</li>
+        <li>The extracted fields and both scores are attached to the candidate for the combined-score gate.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>An API failure or timeout <b>blocks</b> the candidate — it never auto-passes.</li>
+        <li>The prompt version is pinned; a prompt change is a deliberate edit, not drift.</li>
+        <li>Every response is stored raw alongside the parsed fields for audit.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A qualified candidate arrives from the Virality scorer (or a no-tweet candidate direct from Callout intake).</div>
+      <div class="fvstep"><span class="tag">step 2</span> The pinned prompt + candidate data go to Grok 4.6.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The five fields and two separate scores are extracted and attached.</div>
+      <div class="fvstep end"><span class="tag">end</span> The scored candidate moves to the combined-score gate; API failures end as blocked with the error logged.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
       <li>Feed a known test coin through the Grok call.</li>
-      <li>The analysis view shows all fields with veracity and virality as two separate numbers.</li>
+      <li>The analysis view shows all five fields filled, with veracity and virality as <b>two separate numbers</b>.</li>
+      <li>Kill the API on a test run: the candidate shows as blocked, not passed.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The five fields and both separate scores are visible for the test coin.</div>
-    <div class="verdict bad"><span>Failure</span> The call errors silently, a field is empty, or the two scores arrive merged into one.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> All fields and both separate scores are visible; failures block visibly.</div>
+    <div class="verdict bad"><span>Failure</span> A field is empty, the two scores arrive merged, or an API failure lets the candidate through.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Combined-score gate</span> <span class="from">Narrative analysis</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Gate 2 — with a tweet the combined score must be ≥6; with no tweet it must be &gt;8.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Dual threshold, fixed; rejects log the score and which threshold applied.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Scored candidate</span>
-      <span class="arr">→</span> <span class="pill">threshold check</span>
-      <span class="arr">→</span> <span class="pill end">pass (to Bundler checker) or reject (logged, end).</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F6</span><h3>Combined-score gate</h3><span class="fdept">Narrative analysis</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>Gate 2 logic combining the Grok output into one score.</li>
+        <li>The <b>dual threshold</b>: with a tweet the combined score must be ≥6; with no tweet it must be &gt;8.</li>
+        <li>A reject log recording the score and which threshold applied.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>Feed test scores: 6.5 with tweet (pass), 5 with tweet (reject), 8.5 without tweet (pass), 7 without tweet (reject).</li>
-      <li>Each verdict + score + applied threshold is visible.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>The combining formula is pinned — same inputs always give the same combined score.</li>
+        <li>The tweet/no-tweet branch is chosen by the candidate's attached tweet field, nothing else.</li>
+        <li>Rejects show score, threshold, and branch.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A scored candidate arrives from the Grok analysis.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The branch is selected (tweet present or not).</div>
+      <div class="fvstep"><span class="tag">step 3</span> The combined score is computed and compared against that branch's threshold.</div>
+      <div class="fvstep end"><span class="tag">end</span> Pass — to the Bundler checker; reject — logged with score and threshold, candidate done.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>Feed four test scores: 6.5 with tweet (pass), 5 with tweet (reject), 8.5 without tweet (pass), 7 without tweet (reject).</li>
+      <li>The gate log shows each verdict with score, branch, and threshold.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> All four test scores get the correct verdict, threshold shown.</div>
-    <div class="verdict bad"><span>Failure</span> Any verdict contradicts the dual rule.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> All four verdicts match the dual rule with the applied threshold visible.</div>
+    <div class="verdict bad"><span>Failure</span> Any verdict contradicts the rule, or the wrong branch was used for a candidate.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Bundler share pull</span> <span class="from">Bundler checker</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Pulls the wallets that bought in the creation block and their supply %, excluding program-owned accounts (the bonding curve).</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Uses one pinned provider and counting method; if the provider is down, the candidate waits — it is never waved through.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Scored candidate</span>
-      <span class="arr">→</span> <span class="pill">provider pull</span>
-      <span class="arr">→</span> <span class="pill">bundler % attached</span>
-      <span class="arr">→</span> <span class="pill end">trend classification.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F7</span><h3>Bundler share pull</h3><span class="fdept">Bundler checker</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A query to the pinned chain-analytics provider for the wallets that bought in the creation block.</li>
+        <li>Calculation of their combined supply % <b>excluding program-owned accounts</b> (the bonding curve).</li>
+        <li>The counting method is pinned in one place — tools disagree on this number, so the method is part of the contract.</li>
+        <li>The bundler % is attached to the candidate.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>Run against a test token with a known bundler setup.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>If the provider is down or rate-limited, the candidate <b>waits</b> — it is never waved through without a number.</li>
+        <li>The provider response is stored raw for audit against the computed %.</li>
+        <li>A token whose creation block can't be read is flagged, not zeroed.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A scored candidate arrives from Narrative analysis.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The provider pull runs against the pinned method.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The bundler % is computed and attached (or the candidate waits/flags on failure).</div>
+      <div class="fvstep end"><span class="tag">end</span> The candidate carries its bundler % into trend classification.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>Run a test token with a known bundler setup through the checker view.</li>
       <li>The bundler % shown matches the provider's own dashboard for that token.</li>
+      <li>Block the provider on a test run: the candidate waits visibly, never advances.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The displayed % matches the provider's number for the same token.</div>
-    <div class="verdict bad"><span>Failure</span> No number appears, or it disagrees with the provider's dashboard.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> The displayed % matches the provider's number, and failures wait instead of passing.</div>
+    <div class="verdict bad"><span>Failure</span> No number appears, the number disagrees with the provider, or a provider failure lets the candidate through.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Bundler trend classification</span> <span class="from">Bundler checker</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Classifies the bundler share trend: decreasing, stagnating, or increasing (0% ideal).</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Reads the share over time; a single snapshot classifies as unknown, not as safe.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Bundler % history</span>
-      <span class="arr">→</span> <span class="pill">trend label attached</span>
-      <span class="arr">→</span> <span class="pill end">bundler gate.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F8</span><h3>Bundler trend classification</h3><span class="fdept">Bundler checker</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A read of the bundler share <b>over time</b> (not one snapshot) for the candidate token.</li>
+        <li>Classification into one of three labels: <b>decreasing, stagnating, or increasing</b> (0% ideal).</li>
+        <li>The trend label is attached to the candidate for the bundler gate.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>A single snapshot classifies as <b>unknown</b>, never as safe.</li>
+        <li>The window and thresholds for &quot;stagnating&quot; are pinned in the contract.</li>
+        <li>The label plus the underlying readings are both visible for inspection.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A candidate arrives with its bundler % attached.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The share history is read over the pinned window.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The trend label is computed and attached.</div>
+      <div class="fvstep end"><span class="tag">end</span> The candidate carries its label into the bundler gate.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
       <li>Feed a test token whose bundler share is visibly decreasing and one whose share is rising.</li>
       <li>The labels shown match the visible trend in the data.</li>
+      <li>Feed a token with only one reading: it shows &quot;unknown&quot;, not a safe label.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> Both test tokens carry the correct trend label.</div>
-    <div class="verdict bad"><span>Failure</span> A rising share is labelled decreasing, or no label appears.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> Both trending tokens get the correct label, and single-snapshot tokens show unknown.</div>
+    <div class="verdict bad"><span>Failure</span> A rising share is labelled decreasing, or a single snapshot passes as a real trend.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Bundler gate</span> <span class="from">Bundler checker</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Gate 3 — reject anything over 10–15% bundlers (below 10% preferred), especially if the share is increasing.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Strict; every reject logs the %, the trend, and the rule that fired.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Labelled candidate</span>
-      <span class="arr">→</span> <span class="pill">gate</span>
-      <span class="arr">→</span> <span class="pill end">pass (to Signal &amp; trigger) or reject (logged, end).</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F9</span><h3>Bundler gate</h3><span class="fdept">Bundler checker</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>Gate 3 logic: reject anything over <b>10–15% bundlers</b> (below 10% preferred).</li>
+        <li>The trend modifier: an <b>increasing</b> share is rejected harder — low is good, rising is bad.</li>
+        <li>A reject log recording the %, the trend, and the exact rule that fired.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>Feed test candidates: 5% decreasing (pass), 20% decreasing (reject), 12% increasing (reject).</li>
-      <li>Each verdict with %, trend, and fired rule is visible.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>The gate is strict: no overrides, no &quot;close enough&quot;.</li>
+        <li>Every verdict shows the numbers behind it (%, trend, rule).</li>
+        <li>The preferred band (&lt;10%) vs tolerated band (10–15%) distinction is visible in the log.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A candidate arrives with bundler % and trend label.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The % and trend are checked against the rule.</div>
+      <div class="fvstep end"><span class="tag">end</span> Pass — to Signal &amp; trigger; reject — logged with %, trend, and fired rule, candidate done.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>Feed three test candidates: 5% decreasing (pass), 20% decreasing (reject), 12% increasing (reject).</li>
+      <li>The gate log shows each verdict with %, trend, and fired rule.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> All three get the correct verdict with full reason shown.</div>
-    <div class="verdict bad"><span>Failure</span> An over-limit or increasing candidate passes.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> All three verdicts are correct with full reasons visible.</div>
+    <div class="verdict bad"><span>Failure</span> An over-limit or increasing candidate passes — the direction of the rule is broken.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Divergence watcher</span> <span class="from">Signal &amp; trigger</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Gate 4 — watches the chart for an OBV or RSI divergence against the call-out price (both oscillators = stronger, either works).</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Starts at the call-out price and time; patterns (triangle/pennant) are parked — divergence only.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Clean candidate</span>
-      <span class="arr">→</span> <span class="pill">watch starts</span>
-      <span class="arr">→</span> <span class="pill end">divergence spotted (alert emitted) or staleness guard fires (watch ends) — two end states.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F10</span><h3>Divergence watcher</h3><span class="fdept">Signal &amp; trigger</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A chart feed (pinned provider) supplying OHLC + OBV + RSI from the call-out moment.</li>
+        <li>Divergence detection: price makes new lows while OBV or RSI does not — <b>either oscillator works, both together is stronger</b>.</li>
+        <li>Patterns (descending triangle/pennant) are <b>parked</b> — divergence only, per the signal change.</li>
+        <li>On detection, the watcher hands off to the divergence alert.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>Point the watcher at a replayed chart with a known OBV divergence.</li>
-      <li>The divergence is flagged with the oscillator named; a replay with no divergence is not flagged.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>The watch always starts anchored to the call-out price and time.</li>
+        <li>Detection strength (one oscillator vs both) is recorded with the signal.</li>
+        <li>A replayed chart always produces the same detection — the logic is deterministic.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A clean candidate arrives from the Bundler checker — the watch starts.</div>
+      <div class="fvstep"><span class="tag">step 2</span> Candles stream in; OBV and RSI are tracked against price pivots.</div>
+      <div class="fvstep"><span class="tag">step 3</span> A divergence is spotted → hand-off to the alert emitter.</div>
+      <div class="fvstep end"><span class="tag">end</span> Divergence spotted (alert path), or a staleness guard fires (watch ends, no alert).</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>Point the watcher at a replayed chart containing a known OBV divergence.</li>
+      <li>The divergence is flagged with the oscillator named and the strength recorded.</li>
+      <li>Replay a chart with no divergence: nothing is flagged.</li>
     </ol>
     <div class="verdict ok"><span>Success</span> The known divergence is caught and named; the clean replay stays quiet.</div>
-    <div class="verdict bad"><span>Failure</span> The known divergence is missed, or a flat chart produces an alert.</div>
-  </div>
+    <div class="verdict bad"><span>Failure</span> The known divergence is missed, or a flat chart produces a signal.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Staleness guards</span> <span class="from">Signal &amp; trigger</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Stops tracking a call-out if price runs +30% from it or 15 one-minute candles pass (combinable).</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Either guard ends the watch; the stop reason is logged (distance or time).</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Watch running</span>
-      <span class="arr">→</span> <span class="pill">guard fires</span>
-      <span class="arr">→</span> <span class="pill">watch ended + reason logged</span>
-      <span class="arr">→</span> <span class="pill end">candidate done.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F11</span><h3>Staleness guards</h3><span class="fdept">Signal &amp; trigger</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A <b>distance guard</b>: stop tracking if price runs +30% from the call-out.</li>
+        <li>A <b>time guard</b>: stop tracking if more than 15 one-minute candles pass.</li>
+        <li>The two guards are combinable — either one firing ends the watch.</li>
+        <li>The stop reason (distance or time) is logged with the watch.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>Replay a chart that runs +31% with no divergence: the watch must stop with &quot;distance&quot;.</li>
-      <li>Replay 16 flat candles: the watch must stop with &quot;time&quot;.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>Guards tick on every incoming candle; there is no path where a watch lives forever.</li>
+        <li>The stop is final for that candidate — it does not resume later.</li>
+        <li>Guard parameters (+30%, 15 candles) are pinned, not drifting config.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> The divergence watch starts — both guards arm.</div>
+      <div class="fvstep"><span class="tag">step 2</span> Each candle updates distance-from-call-out and candle count.</div>
+      <div class="fvstep"><span class="tag">step 3</span> A guard fires → the watch ends with the reason logged.</div>
+      <div class="fvstep end"><span class="tag">end</span> Watch stopped (guard fired) — the candidate is done; or the watch ends earlier via a divergence (alert path).</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>Replay a chart that runs +31% with no divergence: the watch stops with reason &quot;distance&quot;.</li>
+      <li>Replay 16 flat candles: the watch stops with reason &quot;time&quot;.</li>
+      <li>Confirm a stopped watch does not resume when price falls back.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> Both replays end the watch with the correct reason shown.</div>
-    <div class="verdict bad"><span>Failure</span> The watch keeps running past a guard, or stops with the wrong reason.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> Both replays end the watch with the correct reason, and stopped watches stay stopped.</div>
+    <div class="verdict bad"><span>Failure</span> A watch runs past a guard, stops with the wrong reason, or quietly resumes.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Divergence alert</span> <span class="from">Signal &amp; trigger</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Emits the alert payload to the Front-end UI: coin, scores, which oscillator diverged, freshness, and the Kelly pre-filled size.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Fires once per candidate; the size attached is computed by the Position manager — the alert never asks Bobby to pick a number.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Divergence spotted</span>
-      <span class="arr">→</span> <span class="pill">payload assembled (with pre-filled size)</span>
-      <span class="arr">→</span> <span class="pill">delivered to the UI</span>
-      <span class="arr">→</span> <span class="pill end">alert waits for Bobby.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F12</span><h3>Divergence alert</h3><span class="fdept">Signal &amp; trigger</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>Assembly of the alert payload: coin, gate scores, which oscillator diverged, freshness (age of the divergence).</li>
+        <li>The <b>pre-filled size</b> from the Position manager's fractional Kelly calculation, attached to the payload.</li>
+        <li>Delivery to the Front-end UI — once per candidate, never duplicated.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>The alert never asks Bobby to pick a number — the size arrives pre-filled.</li>
+        <li>Freshness decays as candles pass; the payload carries the age so the UI can show it.</li>
+        <li>One candidate = one alert; re-detections on the same candidate do not re-fire.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> The divergence watcher spots a divergence.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The payload is assembled; the Position manager's pre-computed size is attached.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The alert is delivered to the Front-end UI.</div>
+      <div class="fvstep end"><span class="tag">end</span> The alert waits in the UI for Bobby — resolved by his click or his ignore.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
       <li>Trigger a test divergence end-to-end.</li>
-      <li>The alert arrives in the UI with every field filled, including the size.</li>
+      <li>The alert arrives in the UI with every field filled, including the pre-filled size.</li>
+      <li>Trigger the same divergence again: no second alert appears.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The UI shows the complete alert — coin, oscillator, freshness, pre-filled size.</div>
-    <div class="verdict bad"><span>Failure</span> The alert is missing, has empty fields, or arrives without a size.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> One complete alert arrives — coin, oscillator, freshness, size — and never duplicates.</div>
+    <div class="verdict bad"><span>Failure</span> The alert is missing, has empty fields, arrives without a size, or fires twice.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Alert display</span> <span class="from">Front-end UI</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Shows the divergence alert clearly enough to decide in seconds: coin, which oscillator diverged, how fresh it is, and the pre-filled size.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Newest alert on top; readable on a phone (the primary screen).</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Alert arrives</span>
-      <span class="arr">→</span> <span class="pill">displayed</span>
-      <span class="arr">→</span> <span class="pill">resolved (Bobby clicks buy or ignores it)</span>
-      <span class="arr">→</span> <span class="pill end">archived.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F13</span><h3>Alert display</h3><span class="fdept">Front-end UI</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>An alert card in the UI showing: coin, which oscillator diverged, freshness, gate scores, and the <b>pre-filled size</b>.</li>
+        <li>Layout designed for the phone (the primary screen): glanceable in seconds, no zooming, no sideways scroll.</li>
+        <li>Newest alert on top; resolved alerts archive out of the way.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>On Bobby's phone: open the UI with a test alert waiting.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>The card is read-only — the only actions are BUY or ignore, nothing editable.</li>
+        <li>A stale alert shows its age honestly; it does not look fresher than it is.</li>
+        <li>Multiple alerts stack in arrival order.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> An alert payload arrives from Signal &amp; trigger.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The card renders with all fields.</div>
+      <div class="fvstep"><span class="tag">step 3</span> Bobby decides: BUY (moves to the buy path) or ignore (logs &quot;no trade&quot;).</div>
+      <div class="fvstep end"><span class="tag">end</span> The card resolves and archives, whatever Bobby chose.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>On Bobby's phone, open the UI with a test alert waiting.</li>
       <li>Every field is readable without zooming or sideways scrolling.</li>
+      <li>Resolve it: the card archives and leaves the active list.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The full alert is glanceable on the phone in seconds.</div>
-    <div class="verdict bad"><span>Failure</span> Fields are cut off, unreadable, or the alert never renders.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> The full alert is glanceable on the phone and archives cleanly after a decision.</div>
+    <div class="verdict bad"><span>Failure</span> Fields are cut off or unreadable, or a resolved alert stays in the active list.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>BUY button</span> <span class="from">Front-end UI</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">One obvious BUY button — one click sends the buy click to the Position manager and executes exactly the pre-filled size. No typing, no sizing at the button.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Disabled until an alert is present; one click only (no double-fire); ignoring the alert is a valid choice that logs &quot;no trade&quot;.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Alert displayed</span>
-      <span class="arr">→</span> <span class="pill">Bobby clicks (or ignores)</span>
-      <span class="arr">→</span> <span class="pill">click sent to Position manager</span>
-      <span class="arr">→</span> <span class="pill end">button resolves.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F14</span><h3>BUY button</h3><span class="fdept">Front-end UI</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>One obvious BUY button on the alert card — the only way money ever moves.</li>
+        <li>One click sends the buy click to the Position manager, executing <b>exactly the pre-filled size</b> — no typing, no sizing at the button.</li>
+        <li>Guard states: disabled with no alert present; single-fire (no double-click double-buy).</li>
+        <li>Ignoring the alert is a first-class choice and logs &quot;no trade&quot;.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>On the phone: the button is visibly clickable with an alert present, greyed out without one.</li>
-      <li>Click it: the Position manager receives exactly one buy click with the pre-filled size.</li>
-      <li>Ignore the next alert: it logs &quot;no trade&quot;.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>The button shows the size it will execute — what you see is what you buy.</li>
+        <li>A second tap while the first is in flight does nothing (idempotent).</li>
+        <li>Without an alert, the button is visibly disabled.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> Bobby taps BUY (or chooses to ignore).</div>
+      <div class="fvstep"><span class="tag">step 2</span> The buy click travels to the Position manager with the pre-filled size.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The Position manager takes over — the button's job is done.</div>
+      <div class="fvstep end"><span class="tag">end</span> Click registered (automation path) or alert ignored (no-trade log).</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>On the phone: the button is visibly tappable with an alert, greyed out without one.</li>
+      <li>Tap it once: the Position manager receives exactly one buy click with the shown size.</li>
+      <li>Ignore the next alert: &quot;no trade&quot; appears in the log.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> One click = one buy click with the shown size; ignoring logs cleanly.</div>
-    <div class="verdict bad"><span>Failure</span> The button can't be tapped, fires twice, or sends a different size than shown.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> One tap = one buy click with the shown size; ignoring logs cleanly; no double-fires.</div>
+    <div class="verdict bad"><span>Failure</span> The button can't be tapped, fires twice, sends a different size than shown, or the click never arrives.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Positions + moon bag view</span> <span class="from">Front-end UI</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Shows open positions and the moon bag status from the position feed — the moon bag's manual home (view + manual sell).</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Read model updates from Position manager events; the moon bag is never auto-sold here.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Position opens</span>
-      <span class="arr">→</span> <span class="pill">appears in the view</span>
-      <span class="arr">→</span> <span class="pill">updates on every fill</span>
-      <span class="arr">→</span> <span class="pill end">leaves the view when flat (moon bag stays until Bobby sells it manually).</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F15</span><h3>Positions + moon bag view</h3><span class="fdept">Front-end UI</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A positions view reading the Position manager's feed: open positions with their stop and ladder state.</li>
+        <li>A separate <b>moon bag section</b> — the bag's manual home: view it, sell it manually, nothing automatic.</li>
+        <li>Live updates from position events (fills, ladder steps) without a refresh.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>With a test position open: it appears in the view with its stop and ladder state.</li>
-      <li>After the 2x withdrawal: the moon bag shows as a separate, manual-only holding.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>Read-only except the moon bag's manual sell — no other edits possible here.</li>
+        <li>The moon bag is never auto-sold by anything shown in this view.</li>
+        <li>Flat positions leave the view; the moon bag stays until Bobby sells it himself.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A position opens (first entry fill).</div>
+      <div class="fvstep"><span class="tag">step 2</span> The view shows the position and updates on every fill and ladder event.</div>
+      <div class="fvstep"><span class="tag">step 3</span> At 2x, the moon bag appears as a separate, manual-only holding.</div>
+      <div class="fvstep end"><span class="tag">end</span> The position leaves the view when flat; the moon bag ends only on Bobby's manual sell.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>With a test position open on devnet: it appears in the view with stop and ladder state.</li>
+      <li>Run it to 2x: the moon bag shows separately, marked manual-only.</li>
+      <li>Close the rest: the position clears, the moon bag remains.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The phone shows the live position and later the separate moon bag.</div>
-    <div class="verdict bad"><span>Failure</span> The position doesn't appear, or the moon bag vanishes after 2x.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> The phone shows the live position, then the separate moon bag that outlives the automation.</div>
+    <div class="verdict bad"><span>Failure</span> The position doesn't appear, the moon bag vanishes after 2x, or something auto-sells the bag.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Venue router</span> <span class="from">Trade executor</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Routes each order to the chain that lists the coin — Solana or the Robinhood Chain (EVM L2).</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Routing is per order, by listing; an unroutable coin blocks the order, never guesses a venue.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Sized order arrives</span>
-      <span class="arr">→</span> <span class="pill">venue chosen by listing</span>
-      <span class="arr">→</span> <span class="pill end">order handed to that chain's adapter.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F16</span><h3>Venue router</h3><span class="fdept">Trade executor</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A routing decision per order: which chain lists this coin — <b>Solana or the Robinhood Chain</b> (EVM L2).</li>
+        <li>Hand-off of the order to the matching chain adapter with the correct wallet keys.</li>
+        <li>The venue is recorded on every fill report.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>Routing is by listing, never by guess: an unroutable coin <b>blocks</b> the order with a reason.</li>
+        <li>Each venue uses its own wallet keys (secret names, never raw).</li>
+        <li>The routing decision is visible per order, before and after execution.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A sized order arrives from the Position manager.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The listing check picks the venue (or blocks with a reason).</div>
+      <div class="fvstep"><span class="tag">step 3</span> The order goes to that chain's adapter.</div>
+      <div class="fvstep end"><span class="tag">end</span> The fill report carries the venue; a blocked order ends with the reason logged.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
       <li>Send a test order for a Solana-only coin and one for a Robinhood Chain coin.</li>
       <li>Each fill report shows the correct venue.</li>
+      <li>Send an unroutable test coin: the order blocks with the reason shown.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> Each order lands on the right chain, venue named in the fill.</div>
-    <div class="verdict bad"><span>Failure</span> An order goes to the wrong chain, or the venue isn't recorded.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> Each order lands on the right chain, venue named; unroutable coins block visibly.</div>
+    <div class="verdict bad"><span>Failure</span> An order goes to the wrong chain, the venue isn't recorded, or an unroutable coin gets forced through.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Entry execution</span> <span class="from">Trade executor</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Executes the entry when the sized order arrives from the Position manager — only after Bobby's click; the alert alone never spends money.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Uses the wallet keys (secret names, never raw); a failed transaction reports the failure and does not retry silently.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Sized order</span>
-      <span class="arr">→</span> <span class="pill">transaction built + signed</span>
-      <span class="arr">→</span> <span class="pill">submitted</span>
-      <span class="arr">→</span> <span class="pill end">fill or failure reported.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F17</span><h3>Entry execution</h3><span class="fdept">Trade executor</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>Transaction construction for the entry when the sized order arrives — <b>only after Bobby's click</b>; the alert alone never spends money.</li>
+        <li>Signing with the venue wallet keys (referenced by secret name, never stored raw).</li>
+        <li>Submission to the chain and capture of the fill (price, size, venue).</li>
+        <li>Failure handling: a failed transaction is reported, never silently retried.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>Exactly one entry per buy click — replayed clicks don't re-enter.</li>
+        <li>The fill is verified on-chain before being reported.</li>
+        <li>Every failure surfaces with the chain's error, not a generic &quot;something went wrong&quot;.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> The sized order arrives from the Position manager (post-click).</div>
+      <div class="fvstep"><span class="tag">step 2</span> The transaction is built, signed, and submitted on the routed venue.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The fill (or failure) is captured.</div>
+      <div class="fvstep end"><span class="tag">end</span> Fill reported to Position manager + journal; failure reported with the chain error.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
       <li>On devnet: Bobby clicks buy on a test alert.</li>
       <li>The fill appears in the fill feed with size, price, and venue.</li>
+      <li>Click again on the same alert: no second entry appears.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> One click produces one visible fill matching the pre-filled size.</div>
-    <div class="verdict bad"><span>Failure</span> The click produces no fill, or a fill appears without any click.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> One click produces one on-chain fill matching the pre-filled size; re-clicks do nothing.</div>
+    <div class="verdict bad"><span>Failure</span> The click produces no fill, a fill appears without any click, or one click enters twice.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Immediate stop-loss</span> <span class="from">Trade executor</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Sets the 30% stop-loss at the moment of entry — the automation starts here.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Lives on the exchange as a real order; cancelled automatically when the 2x rule fires; adjustable while active.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Entry fill</span>
-      <span class="arr">→</span> <span class="pill">stop placed on the exchange</span>
-      <span class="arr">→</span> <span class="pill end">ends when hit (position sold), cancelled at 2x, or failed (alerted).</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F18</span><h3>Immediate stop-loss</h3><span class="fdept">Trade executor</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>Placement of the <b>30% stop-loss</b> order on the exchange at the exact moment of entry — the automation starts here.</li>
+        <li>The stop lives on the exchange as a real, inspectable order — not just a note in the bot.</li>
+        <li>While active it can be cancelled or adjusted (front end or back end).</li>
+        <li>It cancels itself automatically when the 2x rule fires.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>After a devnet entry: the stop-loss shows on the exchange's open-orders list at entry price −30%.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>If the stop placement fails, the position is treated as unprotected and the failure is surfaced immediately.</li>
+        <li>The stop's price is always entry −30%; adjustments are deliberate actions, logged.</li>
+        <li>Market vs limit behaviour is pinned in the executor contract (a limit stop needs a trigger price).</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> The entry fill confirms (bot path) — or a manual placement via the UI/API (manual path). Two trigger points.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The stop order is placed on the exchange at entry −30%.</div>
+      <div class="fvstep"><span class="tag">step 3</span> It sits live: cancellable, adjustable, inspectable.</div>
+      <div class="fvstep end"><span class="tag">end</span> Hit (position sold), cancelled at 2x, or placement failed (alerted) — three end states.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>After a devnet entry: open the exchange's open-orders list — the stop shows at entry −30%.</li>
       <li>Cancel it manually: it disappears from the exchange.</li>
-      <li>At 2x: it cancels itself without Bobby touching anything.</li>
+      <li>Run a position to 2x: the stop cancels itself without Bobby touching anything.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The stop is visible on the exchange, cancellable, and self-cancels at 2x.</div>
-    <div class="verdict bad"><span>Failure</span> The entry fills but no stop exists on the exchange — no proof beyond the fill.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> The stop is visible on the exchange, cancellable by hand, and self-cancels at 2x.</div>
+    <div class="verdict bad"><span>Failure</span> The entry fills but no stop exists on the exchange — no proof of protection beyond the bot's word.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Sell-into-volume filter</span> <span class="from">Trade executor</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Executes exits only into buy pressure — green candles and real volume, never into red.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Waits for a qualifying candle; a clip that can't fill into volume is retried, never dumped into a falling tape.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Exit order (clip or stop)</span>
-      <span class="arr">→</span> <span class="pill">volume check</span>
-      <span class="arr">→</span> <span class="pill">fill on a qualifying candle</span>
-      <span class="arr">→</span> <span class="pill end">fill reported.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F19</span><h3>Sell-into-volume filter</h3><span class="fdept">Trade executor</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A pre-trade check on every exit order: is there <b>buy pressure</b> — green candles with real volume?</li>
+        <li>Execution only into qualifying candles; never into a red tape.</li>
+        <li>Retry logic: a clip that can't fill into volume waits and retries — it is never dumped.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>The qualification rule (green candle + volume threshold) is pinned in the contract.</li>
+        <li>Waiting is visible: a pending exit shows why it hasn't filled.</li>
+        <li>The filter applies to every exit type — clips and stops alike.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> An exit order arrives (clip from the ladder, or stop trigger).</div>
+      <div class="fvstep"><span class="tag">step 2</span> The volume check runs against the current tape.</div>
+      <div class="fvstep"><span class="tag">step 3</span> Qualifying candle → fill; red tape → wait and retry.</div>
+      <div class="fvstep end"><span class="tag">end</span> Fill reported with the candle it filled on; abandoned only if the position state changes first.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
       <li>Replay a green-volume window: the exit fills.</li>
       <li>Replay a red window: the exit waits — no fill prints.</li>
+      <li>The pending exit shows its waiting state while red.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The exit fills in the green window and visibly holds in the red one.</div>
-    <div class="verdict bad"><span>Failure</span> A sell prints on a red candle.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> The exit fills in the green window and visibly holds through the red one.</div>
+    <div class="verdict bad"><span>Failure</span> A sell prints on a red candle, or a waiting exit vanishes instead of pending.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Fill reporting</span> <span class="from">Trade executor</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Reports every fill (entry, stop, clip) to the Position manager and the Trade journal.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">One fill = one event, schema frozen; a missed fill corrupts the ladder — so reporting is retried until acknowledged.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Fill happens</span>
-      <span class="arr">→</span> <span class="pill">event emitted</span>
-      <span class="arr">→</span> <span class="pill">acknowledged by Position manager + journal</span>
-      <span class="arr">→</span> <span class="pill end">done.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F20</span><h3>Fill reporting</h3><span class="fdept">Trade executor</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>One event per fill — entry, stop, clip — on the frozen fill-event schema.</li>
+        <li>Delivery to both consumers: the Position manager (ladder state) and the Trade journal (record).</li>
+        <li>Acknowledged delivery: reporting retries until both consumers confirm.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>Execute a devnet entry + one clip.</li>
-      <li>Both fills appear in the journal feed with matching sizes and prices.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>One fill = exactly one event; no duplicates, no gaps.</li>
+        <li>A missed fill corrupts the ladder — so unacknowledged events keep retrying and raise visibly.</li>
+        <li>The event carries everything downstream needs: size, price, venue, time, order type.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A fill executes on-chain.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The fill event is built on the frozen schema.</div>
+      <div class="fvstep"><span class="tag">step 3</span> It is delivered to Position manager and Trade journal; both acknowledge.</div>
+      <div class="fvstep end"><span class="tag">end</span> Event acknowledged and stored; unacknowledged events escalate.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>Execute a devnet entry plus one clip.</li>
+      <li>The journal feed shows both fills with matching sizes and prices.</li>
+      <li>The Position manager's ladder state advances on both.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The journal shows both fills exactly as executed.</div>
-    <div class="verdict bad"><span>Failure</span> A fill executed on-chain is missing from the journal.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> Every on-chain fill appears once in both places, exactly as executed.</div>
+    <div class="verdict bad"><span>Failure</span> A fill executed on-chain is missing from the journal or the ladder — a silent gap.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Fractional Kelly sizer</span> <span class="from">Position manager</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Pre-computes the entry size with fractional Kelly (safer slice of the Kelly-optimal size) when the alert fires, using Bobby's inputs: bankroll, win-rate + payoff estimates, chosen fraction.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">The Grok score is never an input; missing Kelly inputs means no size is shown — the alert says so instead of guessing.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Alert fires</span>
-      <span class="arr">→</span> <span class="pill">size computed</span>
-      <span class="arr">→</span> <span class="pill">attached to the alert</span>
-      <span class="arr">→</span> <span class="pill end">executed as-is on Bobby's click.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F21</span><h3>Fractional Kelly sizer</h3><span class="fdept">Position manager</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>The sizing calculation: <b>fractional Kelly</b> — a safer slice of the Kelly-optimal size — run when the alert fires.</li>
+        <li>Bobby's inputs (owner dependency): bankroll, win-rate + payoff estimates, chosen fraction (half? quarter?).</li>
+        <li>The size is attached to the alert so the UI shows it pre-filled.</li>
+        <li>The Grok score is <b>never an input</b> — Grok decides whether, Kelly decides how much.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>With pinned test inputs (bankroll, win-rate, payoff, fraction), fire a test alert.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>Missing Kelly inputs → no size is shown; the alert says so instead of guessing.</li>
+        <li>Same inputs + same odds always produce the same size (deterministic).</li>
+        <li>The calculation and its inputs are inspectable per alert.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A divergence alert fires.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The fractional Kelly size is computed from the pinned inputs.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The size is attached to the alert payload.</div>
+      <div class="fvstep end"><span class="tag">end</span> The size executes as-is on Bobby's click; or the alert dies unclicked and the size with it.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>Pin test inputs (bankroll, win-rate, payoff, fraction) and fire a test alert.</li>
       <li>The pre-filled size matches the hand-computed fractional Kelly number.</li>
+      <li>Remove the inputs: the alert shows &quot;no size — inputs missing&quot;, not a guess.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The alert's size equals the hand check for the same inputs.</div>
-    <div class="verdict bad"><span>Failure</span> No size appears, or the size disagrees with the hand check.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> The alert's size equals the hand check, and missing inputs produce an honest empty state.</div>
+    <div class="verdict bad"><span>Failure</span> The size disagrees with the hand check, or the system invents a size when inputs are missing.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>2x capital recovery</span> <span class="from">Position manager</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">When price reaches 2x, withdraws the initial capital and cancels the stop-loss.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Fires once per position; after it, the position runs on house money (moon bag + clips).</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Position running</span>
-      <span class="arr">→</span> <span class="pill">price hits 2x</span>
-      <span class="arr">→</span> <span class="pill">initial capital sold + stop cancelled</span>
-      <span class="arr">→</span> <span class="pill end">ladder continues.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F22</span><h3>2x capital recovery</h3><span class="fdept">Position manager</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A price watch on the open position for the <b>2x mark</b> from entry.</li>
+        <li>At 2x: a sell order withdrawing exactly the initial capital, routed through the sell-into-volume filter.</li>
+        <li>Simultaneous cancellation of the stop-loss order on the exchange.</li>
+        <li>After firing, the position runs on house money — the ladder continues with moon bag + clips.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>Fires exactly once per position.</li>
+        <li>The withdrawal amount equals the initial capital, not &quot;about&quot; the initial.</li>
+        <li>If the withdrawal can't fill into volume, it keeps trying — the stop stays live until the initial is out.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> Price reaches 2x from entry.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The initial-capital sell executes into volume.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The stop-loss is cancelled on the exchange.</div>
+      <div class="fvstep end"><span class="tag">end</span> Initial secured — the position continues on house money; the 2x rule never fires again on this position.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
       <li>Run a devnet position to 2x.</li>
-      <li>The withdrawal fill appears, equal to the initial capital; the stop vanishes from the exchange.</li>
+      <li>The withdrawal fill appears, equal to the initial capital.</li>
+      <li>The exchange's open-orders list no longer shows the stop.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> At 2x the initial is visibly out and the stop is gone.</div>
-    <div class="verdict bad"><span>Failure</span> Price crosses 2x and the initial is still in, or the stop is still live.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> At 2x the initial is visibly out and the stop is gone from the exchange.</div>
+    <div class="verdict bad"><span>Failure</span> Price crosses 2x and the initial is still in, or the stop is still live on the exchange.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Moon bag rule</span> <span class="from">Position manager</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">After 2x, 20% of the remaining position becomes the moon bag — manual-only, never auto-sold.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">The bag is flagged in position state; the clip ladder never touches it.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">2x fires</span>
-      <span class="arr">→</span> <span class="pill">20% flagged as moon bag</span>
-      <span class="arr">→</span> <span class="pill">lives in the UI until Bobby sells it himself</span>
-      <span class="arr">→</span> <span class="pill end">ends only on his manual sell.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F23</span><h3>Moon bag rule</h3><span class="fdept">Position manager</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>After 2x, <b>20% of the remaining position</b> is flagged as the moon bag in the position state.</li>
+        <li>The flag is exclusion: the clip ladder and every automatic exit skip the bag.</li>
+        <li>The bag's home is the Front-end UI — view it, sell it manually; no automation touches it.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>After the devnet 2x: the moon bag shows in the UI as manual-only.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>The bag is untouchable by every automatic path — clips, stops, everything.</li>
+        <li>The bag's size is fixed at flag time; ladder math never recalculates it.</li>
+        <li>The only end for the bag is Bobby's manual sell.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> The 2x rule fires.</div>
+      <div class="fvstep"><span class="tag">step 2</span> 20% of the remainder is flagged as the moon bag.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The bag lives in the UI as a manual-only holding through every later exit.</div>
+      <div class="fvstep end"><span class="tag">end</span> Bobby sells it himself — the only way it ever ends.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>After the devnet 2x: the moon bag shows in the UI, marked manual-only.</li>
       <li>Run the ladder to completion: the bag is still there, untouched.</li>
+      <li>Sell it manually from the UI: it closes, logged as a manual sell.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The bag survives every automatic exit and only moves on Bobby's click.</div>
-    <div class="verdict bad"><span>Failure</span> An automatic exit sells into the moon bag.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> The bag survives every automatic exit and moves only on Bobby's manual action.</div>
+    <div class="verdict bad"><span>Failure</span> An automatic exit sells into the bag, or the bag can't be sold manually.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Divergence clip ladder</span> <span class="from">Position manager</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">On each bearish divergence after entry, sells a 15–20% clip of the remaining position (moon bag excluded), executed via the sell-into-volume filter.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">One clip per divergence; clips stop when only the moon bag remains.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Bearish divergence</span>
-      <span class="arr">→</span> <span class="pill">clip order</span>
-      <span class="arr">→</span> <span class="pill">filled into volume</span>
-      <span class="arr">→</span> <span class="pill">position state updated</span>
-      <span class="arr">→</span> <span class="pill end">next divergence or flat.</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F24</span><h3>Divergence clip ladder</h3><span class="fdept">Position manager</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>A bearish-divergence listener (from Signal &amp; trigger) active while the position runs.</li>
+        <li>On each bearish divergence: a <b>15–20% clip</b> sell of the remaining position, moon bag excluded.</li>
+        <li>Clips route through the sell-into-volume filter — never into red candles.</li>
+        <li>The ladder stops when only the moon bag remains.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>One clip per divergence — a repeated signal on the same divergence doesn't double-clip.</li>
+        <li>Clip size is of the remaining position at that moment, excluding the bag.</li>
+        <li>Every clip updates the position state for the next rung.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A bearish divergence arrives while the position is open.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The clip order is sized (15–20% of remaining, bag excluded).</div>
+      <div class="fvstep"><span class="tag">step 3</span> The clip fills into volume; the position state updates.</div>
+      <div class="fvstep end"><span class="tag">end</span> Only the moon bag remains (ladder done) or the position closes another way first.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
       <li>Replay two bearish divergences on a devnet position.</li>
-      <li>Two clip fills appear, each 15–20%, each into a green candle.</li>
+      <li>Two clip fills appear, each 15–20% of the then-remaining position, each into a green candle.</li>
+      <li>The moon bag is untouched after both.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> Both clips fill at the right size into volume; the moon bag is untouched.</div>
-    <div class="verdict bad"><span>Failure</span> A divergence passes with no clip, a clip prints on a red candle, or a clip eats the moon bag.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> Both clips fill at the right size into volume; the bag is intact.</div>
+    <div class="verdict bad"><span>Failure</span> A divergence passes with no clip, a clip prints on red, or a clip eats the moon bag.</div>
+  </section>
 
-  <div class="feat">
-    <h3>🧩 <span>Trade journal</span> <span class="from">Trade journal</span></h3>
-    <div class="lbl">The feature</div>
-    <p class="kv">Logs every event end to end — each gate verdict, the alert, Bobby's click, every fill, every ladder step — as one queryable record per trade.</p>
-    <div class="lbl">Behaviour</div>
-    <p class="kv">Append-only; every department writes through one event schema.</p>
-    <div class="lbl">Lifecycle</div>
-    <div class="life">
-      <span class="pill trig">Callout arrives</span>
-      <span class="arr">→</span> <span class="pill">record opens</span>
-      <span class="arr">→</span> <span class="pill">every event appended</span>
-      <span class="arr">→</span> <span class="pill end">record closes when the position is flat (moon bag noted).</span>
+  <section class="fbox">
+    <div class="fhead"><span class="fnum">F25</span><h3>Trade journal</h3><span class="fdept">Trade journal</span></div>
+    <div class="fsec"><div class="flbl">The feature</div>
+      <ol class="fsteps">
+        <li>One append-only record per trade, opened when the callout arrives.</li>
+        <li>Every department writes through the shared event schema: gate verdicts, the alert, Bobby's click, every fill, every ladder step.</li>
+        <li>A queryable view: the whole trade replays in order from the journal alone.</li>
+      </ol>
     </div>
-    <div class="lbl">Verification — from the user's side</div>
-    <ol class="steps">
-      <li>Run one full devnet trade.</li>
-      <li>Open the journal: the whole story is there in order — gates, alert, click, fills, ladder — with no gaps.</li>
+    <div class="fsec"><div class="flbl">Behaviour</div>
+      <ul class="fbeh">
+        <li>Append-only: events are never edited or deleted, only added.</li>
+        <li>One schema for all departments — no department invents its own event shape.</li>
+        <li>The record closes when the position is flat, noting any surviving moon bag.</li>
+      </ul>
+    </div>
+    <div class="fsec"><div class="flbl">Lifecycle</div>
+      <div class="fvflow">
+      <div class="fvstep trig"><span class="tag">trigger</span> A callout arrives — the record opens.</div>
+      <div class="fvstep"><span class="tag">step 2</span> Every event across all nine departments appends in order.</div>
+      <div class="fvstep"><span class="tag">step 3</span> The position goes flat (or the candidate dies at a gate).</div>
+      <div class="fvstep end"><span class="tag">end</span> The record closes, complete, with the moon bag noted if one survives.</div>
+      </div>
+    </div>
+  </section>
+  <div class="vlink"><span class="vlab">verified by</span></div>
+  <section class="vbox">
+    <div class="flbl">Verification — from the user's side</div>
+    <ol class="fsteps">
+      <li>Run one full devnet trade end to end.</li>
+      <li>Open the journal: every step is there in order — gates, alert, click, fills, ladder — with no gaps.</li>
+      <li>Cross-check two events against the exchange and the UI: they match.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The complete trade replays from the journal alone.</div>
-    <div class="verdict bad"><span>Failure</span> Any event that happened is missing from the record.</div>
-  </div>
+    <div class="verdict ok"><span>Success</span> The complete trade replays from the journal alone, matching reality.</div>
+    <div class="verdict bad"><span>Failure</span> Any event that happened is missing from the record, or the journal disagrees with the exchange.</div>
+  </section>
 
   <footer>Source of truth: <a href="https://tr3-ai.github.io/idea-slicer/memecoin-virality-trader.html">the idea-slicer map</a> · <a href="index.html">all feature maps</a></footer>
 
@@ -638,4 +1083,3 @@
 <script src="nav.js" defer></script>
 </body>
 </html>
-

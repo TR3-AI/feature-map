@@ -2,7 +2,7 @@
   {
     "file": "memecoin-virality-trader.html",
     "title": "Memecoin virality trader — feature map",
-    "desc": "25 features at their smallest useful size, each with user-side verification: success and failure parameters. Tracks idea-slicer issue #4.",
+    "desc": "25 features at their smallest useful size — feature, behaviour, lifecycle — each with user-side verification: success and failure parameters. Tracks idea-slicer issue #4.",
     "date": "2026-08-31",
     "emoji": "🛠️",
     "status": "open"
