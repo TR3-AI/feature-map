@@ -12,7 +12,7 @@ This repo runs **feature-map**: stage 2 of idea-slicer. `maps/<slug>.md` files a
 
 ## The connection (the whole point)
 
-Every feature map tracks an idea-slicer map (`maps/<slug>.md` in `TR3-AI/idea-slicer`, live page `https://tr3-ai.github.io/idea-slicer/<slug>.html`). When a thought is sliced into an idea over there, the feature map here is updated **in the same turn** — new or changed features only; keep stable features untouched. The rendered page always links back to its idea-slicer page.
+A feature map born from an idea-slicer map tracks it (`maps/<slug>.md` in `TR3-AI/idea-slicer`, live page `https://tr3-ai.github.io/idea-slicer/<slug>.html`). When a thought is sliced into an idea over there, the feature map here is updated **in the same turn** — new or changed features only; keep stable features untouched. The rendered page then links back to its idea-slicer page. A feature map born from injected documents (PRD, plan, SDD) names those documents as its source instead — there is no idea-slicer page to link back to.
 
 **Every idea also gets its tester kit here, before anything is built:** `verify-<slug>/` (a SKILL.md + `features/` driving map, pstack format), generated from the feature map the moment the map exists. Harness sections a real repo can't ground yet are marked `PRE-BUILD` — the kit is a draft until its first executed proof run. When an app repo exists, the kit is copied into it, grounded against real code, and proven end to end once before it counts. The blueprint page is what Bobby reads; the kit is what the tester agent runs, recorded with ProofShot.
 
@@ -30,7 +30,7 @@ Every feature map tracks an idea-slicer map (`maps/<slug>.md` in `TR3-AI/idea-sl
 
 ## The standard flow (every idea, every time)
 
-Idea-slicer link in → all three artifacts generated **together, in the same turn, before any code exists**:
+Input in — an idea-slicer link **or** injected source documents (a PRD, a plan, an SDD, or both a PRD and an SDD) → all three artifacts generated **together, in the same turn, before any code exists**:
 
 1. `maps/<slug>.md` — the feature inventory (three aspects per feature).
 2. `verify-<slug>/` — the tester kit (pstack-format SKILL.md + `features/` driving recipes).
