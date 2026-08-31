@@ -65,6 +65,7 @@ ${lifeHtml}
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
       ${checks.map((s) => `<li>${rich(s)}</li>`).join("\n      ")}
     </ol>

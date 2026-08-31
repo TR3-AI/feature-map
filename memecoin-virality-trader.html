@@ -114,6 +114,10 @@
     padding: 14px 16px; margin-bottom: 34px; box-shadow: 0 6px 18px rgba(23, 32, 43, .06);
   }
   .vbox .flbl { color: var(--teal); }
+  .vbox .vactor {
+    font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; font-weight: 700;
+    letter-spacing: .5px; color: var(--teal); opacity: .8; margin: -2px 0 8px;
+  }
   .vbox ol.fsteps li::marker { color: var(--teal); }
   .verdict {
     border-radius: 6px; padding: 10px 14px; margin: 8px 0 2px; font-size: 14px; line-height: 1.5;
@@ -171,12 +175,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Bobby opens the config view on his phone and sees his list of sources.</li>
-      <li>A test callout from a <b>listed</b> source produces a candidate.</li>
-      <li>A test callout from an <b>unlisted</b> source produces nothing.</li>
+      <li>The tester agent opens the config view (ProofShot recording): Bobby's source list is visible.</li>
+      <li>It posts a test callout from a <b>listed</b> source: a candidate appears in the intake view.</li>
+      <li>It posts a test callout from an <b>unlisted</b> source: nothing appears.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The visible list matches what Bobby supplied, and only listed sources ever produce candidates.</div>
+    <div class="verdict ok"><span>Success</span> The visible list matches what Bobby supplied, and only listed sources ever produce candidates — all visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> The list can't be displayed, or an unlisted source slips a candidate through — the filter is not really applied.</div>
   </section>
 
@@ -209,10 +214,11 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Post a test callout from a tracked source on the test stream.</li>
-      <li>Open the intake view: the candidate appears with all four fields filled.</li>
-      <li>Post a malformed test callout (no address): it appears in the reject log with the reason.</li>
+      <li>The tester agent posts a test callout from a tracked source on the test stream (ProofShot recording).</li>
+      <li>In the intake view: the candidate appears with all four fields filled.</li>
+      <li>It posts a malformed test callout (no address): the reject log shows it with the reason.</li>
     </ol>
     <div class="verdict ok"><span>Success</span> The good callout shows as a complete candidate within seconds; the bad one is visibly rejected with a reason.</div>
     <div class="verdict bad"><span>Failure</span> The callout is posted but no candidate appears, a field is blank, or the malformed callout flows downstream.</div>
@@ -247,10 +253,11 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Feed a test account with known tweet metrics through the scorer view.</li>
-      <li>The baseline shown matches the hand-computed average for that account.</li>
-      <li>Feed an account with almost no history: it shows the flag, not a number.</li>
+      <li>The tester agent feeds a test account with known tweet metrics (ProofShot recording).</li>
+      <li>The baseline on screen matches the average it computed by hand beforehand.</li>
+      <li>It feeds an account with almost no history: the flag shows, not a number.</li>
     </ol>
     <div class="verdict ok"><span>Success</span> The displayed baseline equals the real 30-day average, and thin accounts are visibly flagged.</div>
     <div class="verdict bad"><span>Failure</span> No baseline appears, the number disagrees with the hand check, or a thin account gets a confident fake number.</div>
@@ -285,11 +292,12 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Send four test candidates with known values: 4x at 30min (pass), 4x at 3h (reject), 60x at 2 days (pass), any multiplier at 12h (reject).</li>
-      <li>The gate log shows each verdict with band and reason.</li>
+      <li>The tester agent sends four known candidates — 4x at 30min, 4x at 3h, 60x at 2 days, any multiplier at 12h (ProofShot recording).</li>
+      <li>The gate log shows pass, reject, pass, reject — each verdict with its band and reason.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> All four verdicts are correct, each with its band and reason visible.</div>
+    <div class="verdict ok"><span>Success</span> All four verdicts are correct, each with its band and reason visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> Any candidate passes or rejects against the band rule, or a verdict appears with no reason attached.</div>
   </section>
 
@@ -322,10 +330,11 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Feed a known test coin through the Grok call.</li>
+      <li>The tester agent feeds a known test coin through the Grok call (ProofShot recording).</li>
       <li>The analysis view shows all five fields filled, with veracity and virality as <b>two separate numbers</b>.</li>
-      <li>Kill the API on a test run: the candidate shows as blocked, not passed.</li>
+      <li>It kills the API on a test run: the candidate shows as blocked, not passed.</li>
     </ol>
     <div class="verdict ok"><span>Success</span> All fields and both separate scores are visible; failures block visibly.</div>
     <div class="verdict bad"><span>Failure</span> A field is empty, the two scores arrive merged, or an API failure lets the candidate through.</div>
@@ -359,11 +368,12 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Feed four test scores: 6.5 with tweet (pass), 5 with tweet (reject), 8.5 without tweet (pass), 7 without tweet (reject).</li>
-      <li>The gate log shows each verdict with score, branch, and threshold.</li>
+      <li>The tester agent feeds four known scores — 6.5 with tweet, 5 with tweet, 8.5 without tweet, 7 without tweet (ProofShot recording).</li>
+      <li>The gate log shows pass, reject, pass, reject — each with score, branch, and threshold.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> All four verdicts match the dual rule with the applied threshold visible.</div>
+    <div class="verdict ok"><span>Success</span> All four verdicts match the dual rule with the applied threshold visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> Any verdict contradicts the rule, or the wrong branch was used for a candidate.</div>
   </section>
 
@@ -396,10 +406,11 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Run a test token with a known bundler setup through the checker view.</li>
-      <li>The bundler % shown matches the provider's own dashboard for that token.</li>
-      <li>Block the provider on a test run: the candidate waits visibly, never advances.</li>
+      <li>The tester agent runs a test token with a known bundler setup (ProofShot recording).</li>
+      <li>The bundler % on screen matches the provider's own dashboard for that token — both shown side by side in the recording.</li>
+      <li>It blocks the provider on a test run: the candidate visibly waits, never advances.</li>
     </ol>
     <div class="verdict ok"><span>Success</span> The displayed % matches the provider's number, and failures wait instead of passing.</div>
     <div class="verdict bad"><span>Failure</span> No number appears, the number disagrees with the provider, or a provider failure lets the candidate through.</div>
@@ -433,10 +444,11 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Feed a test token whose bundler share is visibly decreasing and one whose share is rising.</li>
-      <li>The labels shown match the visible trend in the data.</li>
-      <li>Feed a token with only one reading: it shows &quot;unknown&quot;, not a safe label.</li>
+      <li>The tester agent feeds a token with a visibly decreasing share and one with a rising share (ProofShot recording).</li>
+      <li>The labels on screen match the trend visible in the data.</li>
+      <li>It feeds a token with only one reading: the label shows &quot;unknown&quot;, not a safe one.</li>
     </ol>
     <div class="verdict ok"><span>Success</span> Both trending tokens get the correct label, and single-snapshot tokens show unknown.</div>
     <div class="verdict bad"><span>Failure</span> A rising share is labelled decreasing, or a single snapshot passes as a real trend.</div>
@@ -469,11 +481,12 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Feed three test candidates: 5% decreasing (pass), 20% decreasing (reject), 12% increasing (reject).</li>
-      <li>The gate log shows each verdict with %, trend, and fired rule.</li>
+      <li>The tester agent feeds three known candidates — 5% decreasing, 20% decreasing, 12% increasing (ProofShot recording).</li>
+      <li>The gate log shows pass, reject, reject — each with %, trend, and fired rule.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> All three verdicts are correct with full reasons visible.</div>
+    <div class="verdict ok"><span>Success</span> All three verdicts are correct with full reasons visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> An over-limit or increasing candidate passes — the direction of the rule is broken.</div>
   </section>
 
@@ -506,12 +519,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Point the watcher at a replayed chart containing a known OBV divergence.</li>
-      <li>The divergence is flagged with the oscillator named and the strength recorded.</li>
-      <li>Replay a chart with no divergence: nothing is flagged.</li>
+      <li>The tester agent points the watcher at a replayed chart with a known OBV divergence (ProofShot recording).</li>
+      <li>The flag appears with the oscillator named and the strength recorded.</li>
+      <li>It replays a chart with no divergence: nothing is flagged.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The known divergence is caught and named; the clean replay stays quiet.</div>
+    <div class="verdict ok"><span>Success</span> The known divergence is caught and named; the clean replay stays quiet — both visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> The known divergence is missed, or a flat chart produces a signal.</div>
   </section>
 
@@ -544,12 +558,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Replay a chart that runs +31% with no divergence: the watch stops with reason &quot;distance&quot;.</li>
-      <li>Replay 16 flat candles: the watch stops with reason &quot;time&quot;.</li>
-      <li>Confirm a stopped watch does not resume when price falls back.</li>
+      <li>The tester agent replays a chart running +31% with no divergence (ProofShot recording): the watch stops with reason &quot;distance&quot;.</li>
+      <li>It replays 16 flat candles: the watch stops with reason &quot;time&quot;.</li>
+      <li>It drops the price back after the stop: the watch does not resume.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> Both replays end the watch with the correct reason, and stopped watches stay stopped.</div>
+    <div class="verdict ok"><span>Success</span> Both replays end the watch with the correct reason, and stopped watches stay stopped — all in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A watch runs past a guard, stops with the wrong reason, or quietly resumes.</div>
   </section>
 
@@ -581,10 +596,11 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Trigger a test divergence end-to-end.</li>
+      <li>The tester agent triggers a test divergence end-to-end (ProofShot recording).</li>
       <li>The alert arrives in the UI with every field filled, including the pre-filled size.</li>
-      <li>Trigger the same divergence again: no second alert appears.</li>
+      <li>It triggers the same divergence again: no second alert appears.</li>
     </ol>
     <div class="verdict ok"><span>Success</span> One complete alert arrives — coin, oscillator, freshness, size — and never duplicates.</div>
     <div class="verdict bad"><span>Failure</span> The alert is missing, has empty fields, arrives without a size, or fires twice.</div>
@@ -618,12 +634,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>On Bobby's phone, open the UI with a test alert waiting.</li>
+      <li>The tester agent opens the UI on a phone-width screen with a test alert waiting (ProofShot recording).</li>
       <li>Every field is readable without zooming or sideways scrolling.</li>
-      <li>Resolve it: the card archives and leaves the active list.</li>
+      <li>It resolves the alert: the card archives and leaves the active list.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The full alert is glanceable on the phone and archives cleanly after a decision.</div>
+    <div class="verdict ok"><span>Success</span> The full alert is glanceable on the phone and archives cleanly after a decision — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> Fields are cut off or unreadable, or a resolved alert stays in the active list.</div>
   </section>
 
@@ -656,12 +673,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>On the phone: the button is visibly tappable with an alert, greyed out without one.</li>
-      <li>Tap it once: the Position manager receives exactly one buy click with the shown size.</li>
-      <li>Ignore the next alert: &quot;no trade&quot; appears in the log.</li>
+      <li>The tester agent checks the button on a phone-width screen (ProofShot recording): tappable with an alert present, greyed out without one.</li>
+      <li>It taps once: the Position manager receives exactly one buy click with the shown size.</li>
+      <li>It ignores the next alert: &quot;no trade&quot; appears in the log.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> One tap = one buy click with the shown size; ignoring logs cleanly; no double-fires.</div>
+    <div class="verdict ok"><span>Success</span> One tap = one buy click with the shown size; ignoring logs cleanly; no double-fires — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> The button can't be tapped, fires twice, sends a different size than shown, or the click never arrives.</div>
   </section>
 
@@ -693,12 +711,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>With a test position open on devnet: it appears in the view with stop and ladder state.</li>
-      <li>Run it to 2x: the moon bag shows separately, marked manual-only.</li>
-      <li>Close the rest: the position clears, the moon bag remains.</li>
+      <li>The tester agent opens the positions view with a test position running on devnet (ProofShot recording): stop and ladder state are visible.</li>
+      <li>It runs the position to 2x: the moon bag appears separately, marked manual-only.</li>
+      <li>It closes the rest: the position clears, the moon bag remains.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The phone shows the live position, then the separate moon bag that outlives the automation.</div>
+    <div class="verdict ok"><span>Success</span> The recording shows the live position, then the separate moon bag that outlives the automation.</div>
     <div class="verdict bad"><span>Failure</span> The position doesn't appear, the moon bag vanishes after 2x, or something auto-sells the bag.</div>
   </section>
 
@@ -730,12 +749,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Send a test order for a Solana-only coin and one for a Robinhood Chain coin.</li>
+      <li>The tester agent sends a test order for a Solana-only coin and one for a Robinhood Chain coin (ProofShot recording).</li>
       <li>Each fill report shows the correct venue.</li>
-      <li>Send an unroutable test coin: the order blocks with the reason shown.</li>
+      <li>It sends an unroutable test coin: the order blocks with the reason shown.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> Each order lands on the right chain, venue named; unroutable coins block visibly.</div>
+    <div class="verdict ok"><span>Success</span> Each order lands on the right chain with the venue named; unroutable coins block visibly.</div>
     <div class="verdict bad"><span>Failure</span> An order goes to the wrong chain, the venue isn't recorded, or an unroutable coin gets forced through.</div>
   </section>
 
@@ -768,12 +788,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>On devnet: Bobby clicks buy on a test alert.</li>
+      <li>The tester agent clicks buy on a devnet test alert (ProofShot recording).</li>
       <li>The fill appears in the fill feed with size, price, and venue.</li>
-      <li>Click again on the same alert: no second entry appears.</li>
+      <li>It clicks again on the same alert: no second entry appears.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> One click produces one on-chain fill matching the pre-filled size; re-clicks do nothing.</div>
+    <div class="verdict ok"><span>Success</span> One click produces one on-chain fill matching the pre-filled size; re-clicks do nothing — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> The click produces no fill, a fill appears without any click, or one click enters twice.</div>
   </section>
 
@@ -806,12 +827,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>After a devnet entry: open the exchange's open-orders list — the stop shows at entry −30%.</li>
-      <li>Cancel it manually: it disappears from the exchange.</li>
-      <li>Run a position to 2x: the stop cancels itself without Bobby touching anything.</li>
+      <li>The tester agent enters on devnet, then opens the exchange's open-orders list (ProofShot recording): the stop shows at entry −30%.</li>
+      <li>It cancels the stop manually: it disappears from the exchange.</li>
+      <li>It runs a position to 2x: the stop cancels itself — the recording shows it vanish with no manual action.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The stop is visible on the exchange, cancellable by hand, and self-cancels at 2x.</div>
+    <div class="verdict ok"><span>Success</span> The stop is visible on the exchange, cancellable by hand, and self-cancels at 2x — every step recorded.</div>
     <div class="verdict bad"><span>Failure</span> The entry fills but no stop exists on the exchange — no proof of protection beyond the bot's word.</div>
   </section>
 
@@ -843,12 +865,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Replay a green-volume window: the exit fills.</li>
-      <li>Replay a red window: the exit waits — no fill prints.</li>
-      <li>The pending exit shows its waiting state while red.</li>
+      <li>The tester agent replays a green-volume window (ProofShot recording): the exit fills.</li>
+      <li>It replays a red window: the exit waits — no fill prints.</li>
+      <li>The pending exit shows its waiting state while the tape stays red.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The exit fills in the green window and visibly holds through the red one.</div>
+    <div class="verdict ok"><span>Success</span> The exit fills in the green window and visibly holds through the red one — both in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A sell prints on a red candle, or a waiting exit vanishes instead of pending.</div>
   </section>
 
@@ -880,12 +903,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Execute a devnet entry plus one clip.</li>
+      <li>The tester agent executes a devnet entry plus one clip (ProofShot recording).</li>
       <li>The journal feed shows both fills with matching sizes and prices.</li>
       <li>The Position manager's ladder state advances on both.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> Every on-chain fill appears once in both places, exactly as executed.</div>
+    <div class="verdict ok"><span>Success</span> Every on-chain fill appears once in both places, exactly as executed — verifiable in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A fill executed on-chain is missing from the journal or the ladder — a silent gap.</div>
   </section>
 
@@ -918,10 +942,11 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Pin test inputs (bankroll, win-rate, payoff, fraction) and fire a test alert.</li>
-      <li>The pre-filled size matches the hand-computed fractional Kelly number.</li>
-      <li>Remove the inputs: the alert shows &quot;no size — inputs missing&quot;, not a guess.</li>
+      <li>The tester agent pins test inputs (bankroll, win-rate, payoff, fraction) and fires a test alert (ProofShot recording).</li>
+      <li>The pre-filled size matches the fractional Kelly number it computed by hand beforehand.</li>
+      <li>It removes the inputs: the alert shows &quot;no size — inputs missing&quot;, not a guess.</li>
     </ol>
     <div class="verdict ok"><span>Success</span> The alert's size equals the hand check, and missing inputs produce an honest empty state.</div>
     <div class="verdict bad"><span>Failure</span> The size disagrees with the hand check, or the system invents a size when inputs are missing.</div>
@@ -956,12 +981,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Run a devnet position to 2x.</li>
+      <li>The tester agent runs a devnet position to 2x (ProofShot recording).</li>
       <li>The withdrawal fill appears, equal to the initial capital.</li>
       <li>The exchange's open-orders list no longer shows the stop.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> At 2x the initial is visibly out and the stop is gone from the exchange.</div>
+    <div class="verdict ok"><span>Success</span> At 2x the initial is visibly out and the stop is gone from the exchange — both in the recording.</div>
     <div class="verdict bad"><span>Failure</span> Price crosses 2x and the initial is still in, or the stop is still live on the exchange.</div>
   </section>
 
@@ -993,12 +1019,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>After the devnet 2x: the moon bag shows in the UI, marked manual-only.</li>
-      <li>Run the ladder to completion: the bag is still there, untouched.</li>
-      <li>Sell it manually from the UI: it closes, logged as a manual sell.</li>
+      <li>The tester agent runs a devnet position past 2x (ProofShot recording): the moon bag shows in the UI, marked manual-only.</li>
+      <li>It runs the ladder to completion: the bag is still there, untouched.</li>
+      <li>It sells the bag manually from the UI: it closes, logged as a manual sell.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> The bag survives every automatic exit and moves only on Bobby's manual action.</div>
+    <div class="verdict ok"><span>Success</span> The bag survives every automatic exit and moves only on a manual action — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> An automatic exit sells into the bag, or the bag can't be sold manually.</div>
   </section>
 
@@ -1031,12 +1058,13 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Replay two bearish divergences on a devnet position.</li>
+      <li>The tester agent replays two bearish divergences on a devnet position (ProofShot recording).</li>
       <li>Two clip fills appear, each 15–20% of the then-remaining position, each into a green candle.</li>
       <li>The moon bag is untouched after both.</li>
     </ol>
-    <div class="verdict ok"><span>Success</span> Both clips fill at the right size into volume; the bag is intact.</div>
+    <div class="verdict ok"><span>Success</span> Both clips fill at the right size into volume; the bag is intact — all in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A divergence passes with no clip, a clip prints on red, or a clip eats the moon bag.</div>
   </section>
 
@@ -1068,10 +1096,11 @@
   <div class="vlink"><span class="vlab">verified by</span></div>
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
+    <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <ol class="fsteps">
-      <li>Run one full devnet trade end to end.</li>
-      <li>Open the journal: every step is there in order — gates, alert, click, fills, ladder — with no gaps.</li>
-      <li>Cross-check two events against the exchange and the UI: they match.</li>
+      <li>The tester agent runs one full devnet trade end to end (ProofShot recording).</li>
+      <li>The journal shows every step in order — gates, alert, click, fills, ladder — with no gaps.</li>
+      <li>It cross-checks two events against the exchange and the UI: they match.</li>
     </ol>
     <div class="verdict ok"><span>Success</span> The complete trade replays from the journal alone, matching reality.</div>
     <div class="verdict bad"><span>Failure</span> Any event that happened is missing from the record, or the journal disagrees with the exchange.</div>

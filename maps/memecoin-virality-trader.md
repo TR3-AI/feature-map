@@ -20,10 +20,10 @@ Lifecycle:
 3. On every run the watcher loads it and filters all incoming callouts against it.
 4. END: The list is replaced the next time Bobby updates it; it never expires on its own.
 Verification:
-1. Bobby opens the config view on his phone and sees his list of sources.
-2. A test callout from a **listed** source produces a candidate.
-3. A test callout from an **unlisted** source produces nothing.
-Success: The visible list matches what Bobby supplied, and only listed sources ever produce candidates.
+1. The tester agent opens the config view (ProofShot recording): Bobby's source list is visible.
+2. It posts a test callout from a **listed** source: a candidate appears in the intake view.
+3. It posts a test callout from an **unlisted** source: nothing appears.
+Success: The visible list matches what Bobby supplied, and only listed sources ever produce candidates — all visible in the recording.
 Failure: The list can't be displayed, or an unlisted source slips a candidate through — the filter is not really applied.
 
 ## Callout listener + normalizer
@@ -43,9 +43,9 @@ Lifecycle:
 3. The normalized candidate is emitted to the Virality scorer.
 4. END: The listener is done with this callout and waits for the next one; rejected callouts end in the reject log.
 Verification:
-1. Post a test callout from a tracked source on the test stream.
-2. Open the intake view: the candidate appears with all four fields filled.
-3. Post a malformed test callout (no address): it appears in the reject log with the reason.
+1. The tester agent posts a test callout from a tracked source on the test stream (ProofShot recording).
+2. In the intake view: the candidate appears with all four fields filled.
+3. It posts a malformed test callout (no address): the reject log shows it with the reason.
 Success: The good callout shows as a complete candidate within seconds; the bad one is visibly rejected with a reason.
 Failure: The callout is posted but no candidate appears, a field is blank, or the malformed callout flows downstream.
 
@@ -66,9 +66,9 @@ Lifecycle:
 3. The baseline is computed (or the low-history flag is set).
 4. END: The candidate carries its baseline into the age-band multiplier gate.
 Verification:
-1. Feed a test account with known tweet metrics through the scorer view.
-2. The baseline shown matches the hand-computed average for that account.
-3. Feed an account with almost no history: it shows the flag, not a number.
+1. The tester agent feeds a test account with known tweet metrics (ProofShot recording).
+2. The baseline on screen matches the average it computed by hand beforehand.
+3. It feeds an account with almost no history: the flag shows, not a number.
 Success: The displayed baseline equals the real 30-day average, and thin accounts are visibly flagged.
 Failure: No baseline appears, the number disagrees with the hand check, or a thin account gets a confident fake number.
 
@@ -89,9 +89,9 @@ Lifecycle:
 3. The tweet multiplier is compared against the band threshold.
 4. END: Pass — the candidate goes to Narrative analysis; reject — logged with reason, candidate done.
 Verification:
-1. Send four test candidates with known values: 4x at 30min (pass), 4x at 3h (reject), 60x at 2 days (pass), any multiplier at 12h (reject).
-2. The gate log shows each verdict with band and reason.
-Success: All four verdicts are correct, each with its band and reason visible.
+1. The tester agent sends four known candidates — 4x at 30min, 4x at 3h, 60x at 2 days, any multiplier at 12h (ProofShot recording).
+2. The gate log shows pass, reject, pass, reject — each verdict with its band and reason.
+Success: All four verdicts are correct, each with its band and reason visible in the recording.
 Failure: Any candidate passes or rejects against the band rule, or a verdict appears with no reason attached.
 
 ## Grok analysis
@@ -111,9 +111,9 @@ Lifecycle:
 3. The five fields and two separate scores are extracted and attached.
 4. END: The scored candidate moves to the combined-score gate; API failures end as blocked with the error logged.
 Verification:
-1. Feed a known test coin through the Grok call.
+1. The tester agent feeds a known test coin through the Grok call (ProofShot recording).
 2. The analysis view shows all five fields filled, with veracity and virality as **two separate numbers**.
-3. Kill the API on a test run: the candidate shows as blocked, not passed.
+3. It kills the API on a test run: the candidate shows as blocked, not passed.
 Success: All fields and both separate scores are visible; failures block visibly.
 Failure: A field is empty, the two scores arrive merged, or an API failure lets the candidate through.
 
@@ -133,9 +133,9 @@ Lifecycle:
 3. The combined score is computed and compared against that branch's threshold.
 4. END: Pass — to the Bundler checker; reject — logged with score and threshold, candidate done.
 Verification:
-1. Feed four test scores: 6.5 with tweet (pass), 5 with tweet (reject), 8.5 without tweet (pass), 7 without tweet (reject).
-2. The gate log shows each verdict with score, branch, and threshold.
-Success: All four verdicts match the dual rule with the applied threshold visible.
+1. The tester agent feeds four known scores — 6.5 with tweet, 5 with tweet, 8.5 without tweet, 7 without tweet (ProofShot recording).
+2. The gate log shows pass, reject, pass, reject — each with score, branch, and threshold.
+Success: All four verdicts match the dual rule with the applied threshold visible in the recording.
 Failure: Any verdict contradicts the rule, or the wrong branch was used for a candidate.
 
 ## Bundler share pull
@@ -155,9 +155,9 @@ Lifecycle:
 3. The bundler % is computed and attached (or the candidate waits/flags on failure).
 4. END: The candidate carries its bundler % into trend classification.
 Verification:
-1. Run a test token with a known bundler setup through the checker view.
-2. The bundler % shown matches the provider's own dashboard for that token.
-3. Block the provider on a test run: the candidate waits visibly, never advances.
+1. The tester agent runs a test token with a known bundler setup (ProofShot recording).
+2. The bundler % on screen matches the provider's own dashboard for that token — both shown side by side in the recording.
+3. It blocks the provider on a test run: the candidate visibly waits, never advances.
 Success: The displayed % matches the provider's number, and failures wait instead of passing.
 Failure: No number appears, the number disagrees with the provider, or a provider failure lets the candidate through.
 
@@ -177,9 +177,9 @@ Lifecycle:
 3. The trend label is computed and attached.
 4. END: The candidate carries its label into the bundler gate.
 Verification:
-1. Feed a test token whose bundler share is visibly decreasing and one whose share is rising.
-2. The labels shown match the visible trend in the data.
-3. Feed a token with only one reading: it shows "unknown", not a safe label.
+1. The tester agent feeds a token with a visibly decreasing share and one with a rising share (ProofShot recording).
+2. The labels on screen match the trend visible in the data.
+3. It feeds a token with only one reading: the label shows "unknown", not a safe one.
 Success: Both trending tokens get the correct label, and single-snapshot tokens show unknown.
 Failure: A rising share is labelled decreasing, or a single snapshot passes as a real trend.
 
@@ -198,9 +198,9 @@ Lifecycle:
 2. The % and trend are checked against the rule.
 3. END: Pass — to Signal & trigger; reject — logged with %, trend, and fired rule, candidate done.
 Verification:
-1. Feed three test candidates: 5% decreasing (pass), 20% decreasing (reject), 12% increasing (reject).
-2. The gate log shows each verdict with %, trend, and fired rule.
-Success: All three verdicts are correct with full reasons visible.
+1. The tester agent feeds three known candidates — 5% decreasing, 20% decreasing, 12% increasing (ProofShot recording).
+2. The gate log shows pass, reject, reject — each with %, trend, and fired rule.
+Success: All three verdicts are correct with full reasons visible in the recording.
 Failure: An over-limit or increasing candidate passes — the direction of the rule is broken.
 
 ## Divergence watcher
@@ -220,10 +220,10 @@ Lifecycle:
 3. A divergence is spotted → hand-off to the alert emitter.
 4. END: Divergence spotted (alert path), or a staleness guard fires (watch ends, no alert).
 Verification:
-1. Point the watcher at a replayed chart containing a known OBV divergence.
-2. The divergence is flagged with the oscillator named and the strength recorded.
-3. Replay a chart with no divergence: nothing is flagged.
-Success: The known divergence is caught and named; the clean replay stays quiet.
+1. The tester agent points the watcher at a replayed chart with a known OBV divergence (ProofShot recording).
+2. The flag appears with the oscillator named and the strength recorded.
+3. It replays a chart with no divergence: nothing is flagged.
+Success: The known divergence is caught and named; the clean replay stays quiet — both visible in the recording.
 Failure: The known divergence is missed, or a flat chart produces a signal.
 
 ## Staleness guards
@@ -243,10 +243,10 @@ Lifecycle:
 3. A guard fires → the watch ends with the reason logged.
 4. END: Watch stopped (guard fired) — the candidate is done; or the watch ends earlier via a divergence (alert path).
 Verification:
-1. Replay a chart that runs +31% with no divergence: the watch stops with reason "distance".
-2. Replay 16 flat candles: the watch stops with reason "time".
-3. Confirm a stopped watch does not resume when price falls back.
-Success: Both replays end the watch with the correct reason, and stopped watches stay stopped.
+1. The tester agent replays a chart running +31% with no divergence (ProofShot recording): the watch stops with reason "distance".
+2. It replays 16 flat candles: the watch stops with reason "time".
+3. It drops the price back after the stop: the watch does not resume.
+Success: Both replays end the watch with the correct reason, and stopped watches stay stopped — all in the recording.
 Failure: A watch runs past a guard, stops with the wrong reason, or quietly resumes.
 
 ## Divergence alert
@@ -265,9 +265,9 @@ Lifecycle:
 3. The alert is delivered to the Front-end UI.
 4. END: The alert waits in the UI for Bobby — resolved by his click or his ignore.
 Verification:
-1. Trigger a test divergence end-to-end.
+1. The tester agent triggers a test divergence end-to-end (ProofShot recording).
 2. The alert arrives in the UI with every field filled, including the pre-filled size.
-3. Trigger the same divergence again: no second alert appears.
+3. It triggers the same divergence again: no second alert appears.
 Success: One complete alert arrives — coin, oscillator, freshness, size — and never duplicates.
 Failure: The alert is missing, has empty fields, arrives without a size, or fires twice.
 
@@ -287,10 +287,10 @@ Lifecycle:
 3. Bobby decides: BUY (moves to the buy path) or ignore (logs "no trade").
 4. END: The card resolves and archives, whatever Bobby chose.
 Verification:
-1. On Bobby's phone, open the UI with a test alert waiting.
+1. The tester agent opens the UI on a phone-width screen with a test alert waiting (ProofShot recording).
 2. Every field is readable without zooming or sideways scrolling.
-3. Resolve it: the card archives and leaves the active list.
-Success: The full alert is glanceable on the phone and archives cleanly after a decision.
+3. It resolves the alert: the card archives and leaves the active list.
+Success: The full alert is glanceable on the phone and archives cleanly after a decision — all recorded.
 Failure: Fields are cut off or unreadable, or a resolved alert stays in the active list.
 
 ## BUY button
@@ -310,10 +310,10 @@ Lifecycle:
 3. The Position manager takes over — the button's job is done.
 4. END: Click registered (automation path) or alert ignored (no-trade log).
 Verification:
-1. On the phone: the button is visibly tappable with an alert, greyed out without one.
-2. Tap it once: the Position manager receives exactly one buy click with the shown size.
-3. Ignore the next alert: "no trade" appears in the log.
-Success: One tap = one buy click with the shown size; ignoring logs cleanly; no double-fires.
+1. The tester agent checks the button on a phone-width screen (ProofShot recording): tappable with an alert present, greyed out without one.
+2. It taps once: the Position manager receives exactly one buy click with the shown size.
+3. It ignores the next alert: "no trade" appears in the log.
+Success: One tap = one buy click with the shown size; ignoring logs cleanly; no double-fires — all recorded.
 Failure: The button can't be tapped, fires twice, sends a different size than shown, or the click never arrives.
 
 ## Positions + moon bag view
@@ -332,10 +332,10 @@ Lifecycle:
 3. At 2x, the moon bag appears as a separate, manual-only holding.
 4. END: The position leaves the view when flat; the moon bag ends only on Bobby's manual sell.
 Verification:
-1. With a test position open on devnet: it appears in the view with stop and ladder state.
-2. Run it to 2x: the moon bag shows separately, marked manual-only.
-3. Close the rest: the position clears, the moon bag remains.
-Success: The phone shows the live position, then the separate moon bag that outlives the automation.
+1. The tester agent opens the positions view with a test position running on devnet (ProofShot recording): stop and ladder state are visible.
+2. It runs the position to 2x: the moon bag appears separately, marked manual-only.
+3. It closes the rest: the position clears, the moon bag remains.
+Success: The recording shows the live position, then the separate moon bag that outlives the automation.
 Failure: The position doesn't appear, the moon bag vanishes after 2x, or something auto-sells the bag.
 
 ## Venue router
@@ -354,10 +354,10 @@ Lifecycle:
 3. The order goes to that chain's adapter.
 4. END: The fill report carries the venue; a blocked order ends with the reason logged.
 Verification:
-1. Send a test order for a Solana-only coin and one for a Robinhood Chain coin.
+1. The tester agent sends a test order for a Solana-only coin and one for a Robinhood Chain coin (ProofShot recording).
 2. Each fill report shows the correct venue.
-3. Send an unroutable test coin: the order blocks with the reason shown.
-Success: Each order lands on the right chain, venue named; unroutable coins block visibly.
+3. It sends an unroutable test coin: the order blocks with the reason shown.
+Success: Each order lands on the right chain with the venue named; unroutable coins block visibly.
 Failure: An order goes to the wrong chain, the venue isn't recorded, or an unroutable coin gets forced through.
 
 ## Entry execution
@@ -377,10 +377,10 @@ Lifecycle:
 3. The fill (or failure) is captured.
 4. END: Fill reported to Position manager + journal; failure reported with the chain error.
 Verification:
-1. On devnet: Bobby clicks buy on a test alert.
+1. The tester agent clicks buy on a devnet test alert (ProofShot recording).
 2. The fill appears in the fill feed with size, price, and venue.
-3. Click again on the same alert: no second entry appears.
-Success: One click produces one on-chain fill matching the pre-filled size; re-clicks do nothing.
+3. It clicks again on the same alert: no second entry appears.
+Success: One click produces one on-chain fill matching the pre-filled size; re-clicks do nothing — all recorded.
 Failure: The click produces no fill, a fill appears without any click, or one click enters twice.
 
 ## Immediate stop-loss
@@ -400,10 +400,10 @@ Lifecycle:
 3. It sits live: cancellable, adjustable, inspectable.
 4. END: Hit (position sold), cancelled at 2x, or placement failed (alerted) — three end states.
 Verification:
-1. After a devnet entry: open the exchange's open-orders list — the stop shows at entry −30%.
-2. Cancel it manually: it disappears from the exchange.
-3. Run a position to 2x: the stop cancels itself without Bobby touching anything.
-Success: The stop is visible on the exchange, cancellable by hand, and self-cancels at 2x.
+1. The tester agent enters on devnet, then opens the exchange's open-orders list (ProofShot recording): the stop shows at entry −30%.
+2. It cancels the stop manually: it disappears from the exchange.
+3. It runs a position to 2x: the stop cancels itself — the recording shows it vanish with no manual action.
+Success: The stop is visible on the exchange, cancellable by hand, and self-cancels at 2x — every step recorded.
 Failure: The entry fills but no stop exists on the exchange — no proof of protection beyond the bot's word.
 
 ## Sell-into-volume filter
@@ -422,10 +422,10 @@ Lifecycle:
 3. Qualifying candle → fill; red tape → wait and retry.
 4. END: Fill reported with the candle it filled on; abandoned only if the position state changes first.
 Verification:
-1. Replay a green-volume window: the exit fills.
-2. Replay a red window: the exit waits — no fill prints.
-3. The pending exit shows its waiting state while red.
-Success: The exit fills in the green window and visibly holds through the red one.
+1. The tester agent replays a green-volume window (ProofShot recording): the exit fills.
+2. It replays a red window: the exit waits — no fill prints.
+3. The pending exit shows its waiting state while the tape stays red.
+Success: The exit fills in the green window and visibly holds through the red one — both in the recording.
 Failure: A sell prints on a red candle, or a waiting exit vanishes instead of pending.
 
 ## Fill reporting
@@ -444,10 +444,10 @@ Lifecycle:
 3. It is delivered to Position manager and Trade journal; both acknowledge.
 4. END: Event acknowledged and stored; unacknowledged events escalate.
 Verification:
-1. Execute a devnet entry plus one clip.
+1. The tester agent executes a devnet entry plus one clip (ProofShot recording).
 2. The journal feed shows both fills with matching sizes and prices.
 3. The Position manager's ladder state advances on both.
-Success: Every on-chain fill appears once in both places, exactly as executed.
+Success: Every on-chain fill appears once in both places, exactly as executed — verifiable in the recording.
 Failure: A fill executed on-chain is missing from the journal or the ladder — a silent gap.
 
 ## Fractional Kelly sizer
@@ -467,9 +467,9 @@ Lifecycle:
 3. The size is attached to the alert payload.
 4. END: The size executes as-is on Bobby's click; or the alert dies unclicked and the size with it.
 Verification:
-1. Pin test inputs (bankroll, win-rate, payoff, fraction) and fire a test alert.
-2. The pre-filled size matches the hand-computed fractional Kelly number.
-3. Remove the inputs: the alert shows "no size — inputs missing", not a guess.
+1. The tester agent pins test inputs (bankroll, win-rate, payoff, fraction) and fires a test alert (ProofShot recording).
+2. The pre-filled size matches the fractional Kelly number it computed by hand beforehand.
+3. It removes the inputs: the alert shows "no size — inputs missing", not a guess.
 Success: The alert's size equals the hand check, and missing inputs produce an honest empty state.
 Failure: The size disagrees with the hand check, or the system invents a size when inputs are missing.
 
@@ -490,10 +490,10 @@ Lifecycle:
 3. The stop-loss is cancelled on the exchange.
 4. END: Initial secured — the position continues on house money; the 2x rule never fires again on this position.
 Verification:
-1. Run a devnet position to 2x.
+1. The tester agent runs a devnet position to 2x (ProofShot recording).
 2. The withdrawal fill appears, equal to the initial capital.
 3. The exchange's open-orders list no longer shows the stop.
-Success: At 2x the initial is visibly out and the stop is gone from the exchange.
+Success: At 2x the initial is visibly out and the stop is gone from the exchange — both in the recording.
 Failure: Price crosses 2x and the initial is still in, or the stop is still live on the exchange.
 
 ## Moon bag rule
@@ -512,10 +512,10 @@ Lifecycle:
 3. The bag lives in the UI as a manual-only holding through every later exit.
 4. END: Bobby sells it himself — the only way it ever ends.
 Verification:
-1. After the devnet 2x: the moon bag shows in the UI, marked manual-only.
-2. Run the ladder to completion: the bag is still there, untouched.
-3. Sell it manually from the UI: it closes, logged as a manual sell.
-Success: The bag survives every automatic exit and moves only on Bobby's manual action.
+1. The tester agent runs a devnet position past 2x (ProofShot recording): the moon bag shows in the UI, marked manual-only.
+2. It runs the ladder to completion: the bag is still there, untouched.
+3. It sells the bag manually from the UI: it closes, logged as a manual sell.
+Success: The bag survives every automatic exit and moves only on a manual action — all recorded.
 Failure: An automatic exit sells into the bag, or the bag can't be sold manually.
 
 ## Divergence clip ladder
@@ -535,10 +535,10 @@ Lifecycle:
 3. The clip fills into volume; the position state updates.
 4. END: Only the moon bag remains (ladder done) or the position closes another way first.
 Verification:
-1. Replay two bearish divergences on a devnet position.
+1. The tester agent replays two bearish divergences on a devnet position (ProofShot recording).
 2. Two clip fills appear, each 15–20% of the then-remaining position, each into a green candle.
 3. The moon bag is untouched after both.
-Success: Both clips fill at the right size into volume; the bag is intact.
+Success: Both clips fill at the right size into volume; the bag is intact — all in the recording.
 Failure: A divergence passes with no clip, a clip prints on red, or a clip eats the moon bag.
 
 ## Trade journal
@@ -557,8 +557,8 @@ Lifecycle:
 3. The position goes flat (or the candidate dies at a gate).
 4. END: The record closes, complete, with the moon bag noted if one survives.
 Verification:
-1. Run one full devnet trade end to end.
-2. Open the journal: every step is there in order — gates, alert, click, fills, ladder — with no gaps.
-3. Cross-check two events against the exchange and the UI: they match.
+1. The tester agent runs one full devnet trade end to end (ProofShot recording).
+2. The journal shows every step in order — gates, alert, click, fills, ladder — with no gaps.
+3. It cross-checks two events against the exchange and the UI: they match.
 Success: The complete trade replays from the journal alone, matching reality.
 Failure: Any event that happened is missing from the record, or the journal disagrees with the exchange.
