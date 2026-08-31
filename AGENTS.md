@@ -1,10 +1,10 @@
 # AGENTS.md — binding rules for any agent working in this repo
 
-This repo runs **feature-map**: stage 2 of idea-slicer. `maps/<slug>.md` files are the source of truth; the HTML pages are rendered from them by an agent (no robot here). Site: https://tr3-ai.github.io/feature-map/. Everything below is mandatory.
+This repo runs **feature map**: stage 2 of Idea Slicer. `maps/<slug>.md` files are the source of truth; the HTML pages are rendered from them by an agent (no robot here). Site: https://tr3-ai.github.io/feature-map/. Everything below is mandatory.
 
 ## Layout
 
-- `maps/<slug>.md` — one feature map per idea, source of truth. Slug matches the idea-slicer slug.
+- `maps/<slug>.md` — one feature map per idea, source of truth. Slug matches the Idea Slicer slug.
 - `verify-<slug>/` — the tester kit: `SKILL.md` (launch/doctor/drive/evidence/cleanup) + `features/` driving recipes, pstack format.
 - `<slug>.html` — rendered from `maps/<slug>.md` + `verify-<slug>/` via `node render.js <slug>`. Regenerate the whole file on every update — never patch in place.
 - `pages.json` — manifest; new entries go at the TOP (newest first).
@@ -12,7 +12,7 @@ This repo runs **feature-map**: stage 2 of idea-slicer. `maps/<slug>.md` files a
 
 ## The connection (the whole point)
 
-A feature map born from an idea-slicer map tracks it (`maps/<slug>.md` in `TR3-AI/idea-slicer`, live page `https://tr3-ai.github.io/idea-slicer/<slug>.html`). When a thought is sliced into an idea over there, the feature map here is updated **in the same turn** — new or changed features only; keep stable features untouched. The rendered page then links back to its idea-slicer page. A feature map born from injected documents (PRD, plan, SDD) names those documents as its source instead — there is no idea-slicer page to link back to.
+A feature map born from an Idea Slicer map tracks it (`maps/<slug>.md` in `TR3-AI/idea-slicer`, live page `https://tr3-ai.github.io/idea-slicer/<slug>.html`). When a thought is sliced into an idea over there, the feature map here is updated **in the same turn** — new or changed features only; keep stable features untouched. The rendered page then links back to its Idea Slicer page. A feature map born from pasted source text (PRD, plan, SDD) names that source instead — there is no Idea Slicer page to link back to.
 
 **Every idea also gets its tester kit here, before anything is built:** `verify-<slug>/` (a SKILL.md + `features/` driving map, pstack format), generated from the feature map the moment the map exists. Harness sections a real repo can't ground yet are marked `PRE-BUILD` — the kit is a draft until its first executed proof run. When an app repo exists, the kit is copied into it, grounded against real code, and proven end to end once before it counts. The blueprint page is what Bobby reads; the kit is what the tester agent runs, recorded with ProofShot.
 
@@ -30,7 +30,7 @@ A feature map born from an idea-slicer map tracks it (`maps/<slug>.md` in `TR3-A
 
 ## The standard flow (every idea, every time)
 
-Input in — an idea-slicer link **or** injected source documents (a PRD, a plan, an SDD, or both a PRD and an SDD) → all three artifacts generated **together, in the same turn, before any code exists**:
+Input in — an Idea Slicer link **or** source text pasted straight into the chat (a PRD, a plan, an SDD, or both — command, space, pasted text) → all three artifacts generated **together, in the same turn, before any code exists**:
 
 1. `maps/<slug>.md` — the feature inventory (three aspects per feature).
 2. `verify-<slug>/` — the tester kit (pstack-format SKILL.md + `features/` driving recipes).
@@ -38,7 +38,7 @@ Input in — an idea-slicer link **or** injected source documents (a PRD, a plan
 
 ## The page — structure and identity (Bobby's rulings)
 
-- **Its own visual identity.** Not the idea-slicer look, ever: engineering-blueprint theme (grid paper, monospace labels, blue feature boxes, teal verification boxes). No purple, no pill cards.
+- **Its own visual identity.** Not the Idea Slicer look, ever: engineering-blueprint theme (grid paper, monospace labels, blue feature boxes, teal verification boxes). No purple, no pill cards.
 - **Detail is the product.** Every aspect is written out in full — numbered build steps, behaviour bullets, the lifecycle as a trigger→steps→end chain. One-line summaries fail the page.
 - **Two linked boxes per feature.** The feature box (header + feature steps + **sub-feature chips** + behaviour + lifecycle flow), a teal connector line with a "verified by" chip, then the verification box below. The connector makes the pairing obvious.
 - **The verification box carries the merged pstack recipe:** how to get to it (user POV) · preconditions · labeled driving steps (action → observable result) · gotchas (amber) · success/failure parameters. The plain checkpoint list was replaced by the labeled driving steps — strictly richer, same content.
@@ -46,4 +46,4 @@ Input in — an idea-slicer link **or** injected source documents (a PRD, a plan
 
 ## Publish rhythm
 
-Straight to `main` by Bobby's standing instruction (same as idea-slicer and ELI5links — overrides the protected-main rule for this repo). The site updates ~1 min after push. Verify with a curl grep on the live URL.
+Straight to `main` by Bobby's standing instruction (same as Idea Slicer and ELI5links — overrides the protected-main rule for this repo). The site updates ~1 min after push. Verify with a curl grep on the live URL.
