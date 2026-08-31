@@ -13,6 +13,8 @@ This repo runs **feature-map**: stage 2 of idea-slicer. `maps/<slug>.md` files a
 
 Every feature map tracks an idea-slicer map (`maps/<slug>.md` in `TR3-AI/idea-slicer`, live page `https://tr3-ai.github.io/idea-slicer/<slug>.html`). When a thought is sliced into an idea over there, the feature map here is updated **in the same turn** — new or changed features only; keep stable features untouched. The rendered page always links back to its idea-slicer page.
 
+When an idea gets an app repo, a repo-local `verify-<app>/` skill (SKILL.md + `features/` driving map) is generated into that repo from the feature map here — that generated skill is what the tester agent runs. The blueprint page stays the feature inventory Bobby reads; the `verify-<app>` skill is what gets executed, recorded with ProofShot.
+
 ## The rules
 
 1. **Smallest useful feature.** Break features down as small as possible without reducing them so much they stop being features. A portion is still a feature when it does one observable thing for a user or another feature. If splitting removes anything observable, stop.
