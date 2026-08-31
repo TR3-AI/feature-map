@@ -45,18 +45,19 @@
   }
 
   /* ── stats bar ───────────────────────────────────── */
-  .stats { display: flex; justify-content: center; gap: 10px; margin-bottom: 26px; flex-wrap: wrap; }
+  .stats { display: flex; justify-content: center; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; }
   .stat {
-    background: var(--box); border: 2px solid var(--blue); border-radius: 8px;
-        padding: 10px 14px; text-align: center; box-shadow: 0 6px 18px rgba(23, 32, 43, .08);
+    background: var(--box); border: 1.5px solid var(--blue); border-radius: 6px;
+    padding: 4px 12px; text-align: center; box-shadow: 0 4px 12px rgba(23, 32, 43, .06);
+    display: flex; align-items: baseline; gap: 6px;
   }
   .stat .snum {
-    display: block; font-family: ui-monospace, Menlo, monospace;
-    font-size: 26px; font-weight: 800; color: var(--blue); line-height: 1.1;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 15px; font-weight: 800; color: var(--blue);
   }
   .stat .slbl {
-    display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1.5px; color: var(--soft); margin-top: 2px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--soft);
   }
 
   /* sub-feature chips */
