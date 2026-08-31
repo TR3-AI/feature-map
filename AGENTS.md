@@ -5,9 +5,10 @@ This repo runs **feature-map**: stage 2 of idea-slicer. `maps/<slug>.md` files a
 ## Layout
 
 - `maps/<slug>.md` — one feature map per idea, source of truth. Slug matches the idea-slicer slug.
-- `<slug>.html` — rendered from `maps/<slug>.md` via `template.html`. Regenerate the whole file on every update — never patch in place.
+- `verify-<slug>/` — the tester kit: `SKILL.md` (launch/doctor/drive/evidence/cleanup) + `features/` driving recipes, pstack format.
+- `<slug>.html` — rendered from `maps/<slug>.md` + `verify-<slug>/` via `node render.js <slug>`. Regenerate the whole file on every update — never patch in place.
 - `pages.json` — manifest; new entries go at the TOP (newest first).
-- `index.html`, `nav.js`, `template.html` — shared shell.
+- `index.html`, `nav.js`, `template.html`, `render.js` — shared shell + renderer.
 
 ## The connection (the whole point)
 
@@ -26,6 +27,22 @@ Every feature map tracks an idea-slicer map (`maps/<slug>.md` in `TR3-AI/idea-sl
 7. **Mobile is the primary screen.** No visual change is done until verified at ~390px as well as desktop.
 8. **Contradictions stop the line.** If the source idea map conflicts (thresholds, directions), quote both sides and ask Bobby — never map over a conflict.
 9. **Terse chat, rich page.** Plain everyday English; technical terms glossed in a few plain words on first use.
+
+## The standard flow (every idea, every time)
+
+Idea-slicer link in → all three artifacts generated **together, in the same turn, before any code exists**:
+
+1. `maps/<slug>.md` — the feature inventory (three aspects per feature).
+2. `verify-<slug>/` — the tester kit (pstack-format SKILL.md + `features/` driving recipes).
+3. `<slug>.html` — the rendered page, via `node render.js <slug>` (never hand-edit it), merging both.
+
+## The page — structure and identity (Bobby's rulings)
+
+- **Its own visual identity.** Not the idea-slicer look, ever: engineering-blueprint theme (grid paper, monospace labels, blue feature boxes, teal verification boxes). No purple, no pill cards.
+- **Detail is the product.** Every aspect is written out in full — numbered build steps, behaviour bullets, the lifecycle as a trigger→steps→end chain. One-line summaries fail the page.
+- **Two linked boxes per feature.** The feature box (header + feature steps + **sub-feature chips** + behaviour + lifecycle flow), a teal connector line with a "verified by" chip, then the verification box below. The connector makes the pairing obvious.
+- **The verification box carries the merged pstack recipe:** how to get to it (user POV) · preconditions · labeled driving steps (action → observable result) · gotchas (amber) · success/failure parameters. The plain checkpoint list was replaced by the labeled driving steps — strictly richer, same content.
+- **One unified page.** No separate kit page — the pstack content is merged into the boxes. The raw kit stays on GitHub for the tester agent (footer link "raw tester kit").
 
 ## Publish rhythm
 

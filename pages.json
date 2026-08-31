@@ -1,5 +1,13 @@
 [
   {
+    "file": "rulebook.html",
+    "title": "Feature-map rulebook",
+    "desc": "The binding rules: smallest features, three aspects, tester-agent verification with ProofShot, two linked boxes per feature, merged P-Stack recipes.",
+    "date": "2026-08-31",
+    "emoji": "📖",
+    "status": "done"
+  },
+  {
     "file": "memecoin-virality-trader.html",
     "title": "Memecoin virality trader — feature map",
     "desc": "25 features at their smallest useful size — feature, behaviour, lifecycle, sub-features — each with user-side driving recipes and success/failure parameters. Tracks idea-slicer issue #4.",

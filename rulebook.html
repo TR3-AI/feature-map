@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feature-map rulebook</title>
+<style>
+  :root {
+    --ink: #17202b; --soft: #51606f; --faint: #8fa0b3; --paper: #eef2f6; --box: #ffffff;
+    --blue: #2456a6; --blue-soft: #dbe7f8; --teal: #0f766e; --teal-soft: #e0f2ef;
+    --red: #c2374a; --line: #c8d4e0; --amber: #9a6a00;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    margin: 0; padding: 24px 14px 64px;
+    font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink);
+    background:
+      linear-gradient(var(--paper), var(--paper)),
+      repeating-linear-gradient(0deg, transparent 0 23px, rgba(36,86,166,.06) 23px 24px),
+      repeating-linear-gradient(90deg, transparent 0 23px, rgba(36,86,166,.06) 23px 24px);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 26px; }
+  h1 { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 26px; font-weight: 800; letter-spacing: -.5px; }
+  .sub { color: var(--soft); margin-top: 6px; font-size: 15px; }
+  .stamp {
+    display: inline-block; margin-top: 10px; font-family: ui-monospace, Menlo, monospace;
+    font-size: 11.5px; color: var(--faint); border: 1px solid var(--line);
+    padding: 4px 12px; border-radius: 4px; background: var(--box);
+  }
+  h2 {
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 2px; color: var(--soft);
+    margin: 30px 0 10px; text-align: center;
+  }
+  .item {
+    background: var(--box); border: 2px solid var(--blue); border-left-width: 5px;
+    border-radius: 8px; padding: 13px 17px; margin: 8px 0;
+    font-size: 14.5px; line-height: 1.55; box-shadow: 0 6px 18px rgba(23, 32, 43, .06);
+  }
+  .item b { color: var(--blue); }
+  .item.teal { border-color: var(--teal); }
+  .item.teal b { color: var(--teal); }
+  .item .why { display: block; color: var(--soft); font-size: 13.5px; margin-top: 3px; }
+  .back { display: block; text-align: center; margin-top: 28px; color: var(--blue); font-weight: 700; text-decoration: none; }
+  footer { text-align: center; color: var(--soft); font-size: 13px; margin-top: 40px; }
+  footer a { color: var(--blue); font-weight: 700; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>📖 Feature-map rulebook</h1>
+    <div class="sub">Stage 2 of the pipeline: sliced idea → smallest features + user-side verification. The binding rules, in plain English.</div>
+    <div class="stamp">updated 2026-08-31 · mirrors AGENTS.md in the repo</div>
+  </header>
+
+  <h2>The flow — every idea, every time</h2>
+  <div class="item teal"><b>Link in, three artifacts out — same turn, before any code exists.</b><span class="why">An idea-slicer link produces, together: the feature inventory (<b>maps/&lt;slug&gt;.md</b>), the tester kit (<b>verify-&lt;slug&gt;/</b> — the driving manual + 25-style recipe files), and the rendered page (via <b>node render.js</b>, never hand-edited).</span></div>
+  <div class="item teal"><b>The connection.</b><span class="why">Every feature map tracks an idea-slicer map. A thought sliced into the idea updates the feature map, the page, and the kit's recipes <b>in the same turn</b> — new or changed features only; stable features untouched.</span></div>
+  <div class="item teal"><b>Pre-build honesty.</b><span class="why">The kit exists before anything is built. Harness lines only real code can answer are marked <b>PRE-BUILD</b> — the kit is a draft until its first executed proof run. When an app repo exists: copy the kit in, ground it, prove it end to end once. An ungrounded kit is never reported as proven.</span></div>
+
+  <h2>The page — structure and identity</h2>
+  <div class="item"><b>Its own visual identity.</b><span class="why">Never the idea-slicer look: engineering-blueprint theme — grid paper, monospace labels, blue feature boxes, teal verification boxes. No purple, no pill cards.</span></div>
+  <div class="item"><b>Detail is the product.</b><span class="why">Every aspect written out in full — numbered build steps, behaviour bullets, lifecycle as a trigger→steps→end chain. One-line summaries fail the page.</span></div>
+  <div class="item"><b>Two linked boxes per feature.</b><span class="why">Feature box (steps + sub-feature chips + behaviour + lifecycle), a teal <b>"verified by"</b> connector, then the verification box below. The connector makes the pairing obvious.</span></div>
+  <div class="item"><b>The verification box carries the merged P-Stack recipe.</b><span class="why">How to get to it (user POV) · preconditions · labeled driving steps (action → observable result) · gotchas (amber) · success/failure parameters. One unified page — no separate kit page; the raw kit is footer-linked for the tester agent.</span></div>
+  <div class="item"><b>Counts up top.</b><span class="why">The header stats bar always states how many <b>features</b> and <b>sub-features</b> were found, plus verification recipes.</span></div>
+
+  <h2>The rules</h2>
+  <div class="item"><b>1. Smallest useful feature.</b><span class="why">As small as possible without stopping being a feature — it must do one observable thing for a user or another feature. If splitting removes anything observable, stop.</span></div>
+  <div class="item"><b>2. Anti-over-split.</b><span class="why">Two portions that can never be triggered, failed, or verified independently are one feature.</span></div>
+  <div class="item"><b>3. Three aspects per feature, always.</b><span class="why">The feature (what it is + smallest build steps) · the behaviour (states, what can happen to it, variants) · the lifecycle (every trigger point → progression → every end state).</span></div>
+  <div class="item"><b>4. Verification from the user's endpoint, performed by the tester agent.</b><span class="why">Steps start at the user surface ("can the button be clicked?") and end at visible proof on a system the user can see (the exchange's open-orders list). The <b>tester agent</b> performs every step — never Bobby — inside a <b>ProofShot</b> recording; Bobby witnesses the video. Never backend tests, never a reported "done".</span></div>
+  <div class="item"><b>5. Success and failure parameters, always.</b><span class="why">Success = visible proof it works. Failure = the observable gap that proves it does not (click registers, nothing reaches the exchange).</span></div>
+  <div class="item"><b>6. No user-visible checkpoint? Flag it, don't skip it.</b><span class="why">Name the surface where proof would appear and mark it as needing a user-endpoint view.</span></div>
+  <div class="item"><b>7. Mobile is the primary screen.</b><span class="why">No visual change is done until verified at ~390px as well as desktop.</span></div>
+  <div class="item"><b>8. Contradictions stop the line.</b><span class="why">If the source idea map conflicts (thresholds, better/worse directions), quote both sides and ask Bobby — never map over a conflict.</span></div>
+  <div class="item"><b>9. Terse chat, rich page.</b><span class="why">Plain everyday English; technical terms glossed in a few plain words on first use.</span></div>
+
+  <h2>Publish rhythm</h2>
+  <div class="item teal"><b>Straight to main.</b><span class="why">Bobby's standing instruction (same as idea-slicer and ELI5links). The site updates ~1 min after push — verify with a curl grep on the live URL, never just a clean commit.</span></div>
+
+  <a class="back" href="index.html">← all feature maps</a>
+  <footer>Binding copy: <a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md">AGENTS.md</a> · skill: featuremap</footer>
+
+</div>
+<script src="nav.js" defer></script>
+</body>
+</html>

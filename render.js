@@ -125,6 +125,12 @@ ${lifeHtml}
 const tpl = fs.readFileSync("template.html", "utf8");
 const srcUrl = `https://tr3-ai.github.io/idea-slicer/${slug}.html`;
 const kitFoot = kit.size ? ` · <a href="https://github.com/TR3-AI/feature-map/tree/main/verify-${slug}">raw tester kit</a>` : "";
+const subTotal = [...kit.values()].reduce((n, k) => n + k.subs.length, 0);
+const stats = `<div class="stats">
+    <div class="stat"><span class="snum">${esc(count)}</span><span class="slbl">features found</span></div>${kit.size ? `
+    <div class="stat"><span class="snum">${subTotal}</span><span class="slbl">sub-features</span></div>
+    <div class="stat"><span class="snum">${kit.size}</span><span class="slbl">verification recipes</span></div>` : ""}
+  </div>`;
 const html = tpl
   .replaceAll("{{TITLE}}", esc(title))
   .replaceAll("{{SOURCE_URL}}", srcUrl)
@@ -132,6 +138,7 @@ const html = tpl
   .replaceAll("{{COUNT}}", esc(`${count} features`))
   .replaceAll("{{UPDATED}}", esc(updated))
   .replaceAll("{{KIT_FOOT}}", kitFoot)
+  .replace("{{STATS}}", stats)
   .replace("{{FEATURES}}", features.join("\n"));
 
 fs.writeFileSync(`${slug}.html`, html);
