@@ -28,9 +28,9 @@
   var bar = document.createElement('div');
   bar.className = 'slicenav';
   bar.innerHTML =
-    '<a class="slicenav-home" href="' + OVERVIEW + '">&#129504; All ideas</a>' +
+    '<a class="slicenav-home" href="' + OVERVIEW + '">&#128736;&#65039; All maps</a>' +
     '<div class="slicenav-search">' +
-      '<input type="search" id="slicenav-q" placeholder="Search ideas\u2026" autocomplete="off" aria-label="Search idea maps">' +
+      '<input type="search" id="slicenav-q" placeholder="Search maps\u2026" autocomplete="off" aria-label="Search feature maps">' +
       '<div class="slicenav-results" id="slicenav-results" hidden></div>' +
     '</div>';
   document.body.insertBefore(bar, document.body.firstChild);

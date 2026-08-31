@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memecoin virality trader — feature map</title>
+<style>
+  :root {
+    --ink: #2b2140;
+    --soft: #6b6580;
+    --faint: #b0a9c2;
+    --card: #ffffff;
+    --well: #f7f5fd;
+    --line: #e7e0f5;
+    --shadow: 0 10px 30px rgba(70, 50, 120, .12);
+    --purple: #6b4fd0;
+    --lav: #efe9ff;
+    --b-now: #2ea88a;
+    --b-blocked: #e04f66;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    margin: 0; padding: 24px 16px 64px;
+    font-family: ui-rounded, "Segoe UI", Nunito, system-ui, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(160deg, #fff4e6 0%, #ffe9f3 45%, #e9f0ff 100%);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 26px; }
+  h1 { font-size: 30px; font-weight: 800; letter-spacing: -.5px; line-height: 1.15; }
+  .sub { color: var(--soft); margin-top: 6px; font-size: 15px; }
+  .sub a { color: var(--purple); font-weight: 700; text-decoration: none; }
+  .stamp { color: var(--faint); font-size: 12.5px; margin-top: 6px; }
+  .reco { display: inline-block; background: var(--lav); border-radius: 999px; padding: 4px 14px; font-size: 13px; font-weight: 700; color: var(--purple); margin-top: 8px; }
+
+  h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 2px;
+    color: var(--soft); margin: 32px 0 12px; text-align: center;
+  }
+
+  .feat {
+    background: var(--card); border-radius: 22px; padding: 20px 20px;
+    box-shadow: var(--shadow); border-top: 4px solid var(--purple); margin: 14px 0;
+  }
+  .feat h3 { font-size: 18px; font-weight: 800; margin-bottom: 2px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .feat h3 .from { font-size: 12px; font-weight: 700; color: var(--faint); text-transform: uppercase; letter-spacing: 1px; }
+  .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--faint); margin: 14px 0 6px; }
+  .kv { font-size: 14.5px; line-height: 1.55; margin: 4px 0; }
+  .kv b { color: var(--purple); }
+
+  .life { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .life .pill {
+    background: var(--well); border: 2px solid var(--line);
+    border-radius: 999px; padding: 6px 13px; font-size: 13px; font-weight: 700;
+  }
+  .life .pill.trig { border-color: #c9b8f2; background: var(--lav); color: var(--purple); }
+  .life .pill.end { border-color: rgba(224, 79, 102, .35); color: var(--b-blocked); }
+  .life .arr { color: var(--faint); font-weight: 800; }
+
+  ol.steps { margin-left: 20px; font-size: 14.5px; }
+  ol.steps li { margin: 4px 0; }
+  ol.steps li::marker { color: var(--purple); font-weight: 800; }
+
+  .verdict {
+    border-radius: 14px; padding: 12px 16px; margin: 8px 0; font-size: 14.5px; line-height: 1.5;
+  }
+  .verdict span { font-weight: 800; display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 3px; }
+  .verdict.ok { background: rgba(46, 168, 138, .07); border: 2px solid rgba(46, 168, 138, .35); }
+  .verdict.ok span { color: var(--b-now); }
+  .verdict.bad { background: rgba(224, 79, 102, .06); border: 2px dashed rgba(224, 79, 102, .35); }
+  .verdict.bad span { color: var(--b-blocked); }
+
+  footer { text-align: center; color: var(--soft); font-size: 13px; margin-top: 40px; }
+  footer a { color: var(--purple); font-weight: 700; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Memecoin virality trader</h1>
+    <div class="sub">feature map for <a href="https://tr3-ai.github.io/idea-slicer/memecoin-virality-trader.html">idea-slicer · issue #4</a></div>
+    <div class="reco">25 features</div>
+    <div class="stamp">feature-map · updated 2026-08-31 · verified from the user's side</div>
+  </header>
+
+  
+  <div class="feat">
+    <h3>🧩 <span>Source list config</span> <span class="from">Callout intake</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">The list of tracked traders/devs — only callouts from these sources count. Build: a config Bobby supplies, stored by secret-free name, loaded by the watcher at startup.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Can be edited between runs; an empty or missing list means the watcher picks up nothing (safe failure — no candidates, no trades).</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Bobby supplies the list</span>
+      <span class="arr">→</span> <span class="pill">stored</span>
+      <span class="arr">→</span> <span class="pill">loaded on every run</span>
+      <span class="arr">→</span> <span class="pill end">replaced when Bobby updates it.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Bobby opens the config view and sees his list of sources.</li>
+      <li>A callout from a listed source produces a candidate; a callout from an unlisted source does not.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The list is visible and only listed sources produce candidates.</div>
+    <div class="verdict bad"><span>Failure</span> The list can't be shown, or an unlisted source slips a candidate through.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Callout listener + normalizer</span> <span class="from">Callout intake</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Watches pump.fun / FOMO streams and turns each callout into a normalized candidate: coin address, attached tweet, timestamp, source.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Runs continuously; a malformed callout (missing address) is rejected at intake, never passed downstream.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Callout arrives on a tracked stream</span>
+      <span class="arr">→</span> <span class="pill">normalized</span>
+      <span class="arr">→</span> <span class="pill">emitted to the Virality scorer</span>
+      <span class="arr">→</span> <span class="pill end">done for this callout.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Post a test callout from a tracked source on the test stream.</li>
+      <li>The candidate appears in the intake view with all four fields filled.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The test callout shows up as a complete candidate within seconds.</div>
+    <div class="verdict bad"><span>Failure</span> The callout is posted but no candidate appears, or fields are blank.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>30-day baseline builder</span> <span class="from">Virality scorer</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Captures every tweet from the callout's account over 30 days and averages likes + retweets into a baseline.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Recomputed per candidate; an account with too little history is flagged, not averaged into a fake number.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Candidate arrives</span>
+      <span class="arr">→</span> <span class="pill">30-day pull via X API</span>
+      <span class="arr">→</span> <span class="pill">baseline number attached</span>
+      <span class="arr">→</span> <span class="pill end">passed to the multiplier gate.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Feed a test account with known tweet metrics.</li>
+      <li>The baseline shown matches the hand-computed average.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The displayed baseline equals the real 30-day average for the test account.</div>
+    <div class="verdict bad"><span>Failure</span> No baseline appears, or the number doesn't match the hand check.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Age-band multiplier gate</span> <span class="from">Virality scorer</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Gate 1 — the coin's tweet must beat the baseline by the age-band multiplier: under 1h ≥3x, 1–6h ≥10x, 24h+ ≥50x; anything else (including 6–24h) is rejected.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Thresholds are configurable; every reject logs its reason (failed band, or outside all bands).</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Candidate + baseline</span>
+      <span class="arr">→</span> <span class="pill">band check</span>
+      <span class="arr">→</span> <span class="pill end">pass (to Narrative analysis) or reject (logged, end).</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Send test candidates at known multipliers: 4x at 30min (pass), 4x at 3h (reject), 60x at 2 days (pass), anything at 12h (reject).</li>
+      <li>Each verdict and reason is visible in the gate log.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> All four test candidates get the correct verdict with the reason shown.</div>
+    <div class="verdict bad"><span>Failure</span> A candidate passes or rejects against the band rule, or no reason is logged.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Grok analysis</span> <span class="from">Narrative analysis</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Gate 2 input — Grok 4.6 with the pre-generated prompt extracts narrative, thesis, sentiment, veracity score, and virality (attention) score via X search.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Both scores come back as separate components — veracity (is the narrative real) and virality (is it getting attention); an API failure blocks the candidate, never auto-passes it.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Qualified candidate</span>
+      <span class="arr">→</span> <span class="pill">Grok call</span>
+      <span class="arr">→</span> <span class="pill">five extracted fields + two scores attached</span>
+      <span class="arr">→</span> <span class="pill end">combined-score gate.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Feed a known test coin through the Grok call.</li>
+      <li>The analysis view shows all fields with veracity and virality as two separate numbers.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The five fields and both separate scores are visible for the test coin.</div>
+    <div class="verdict bad"><span>Failure</span> The call errors silently, a field is empty, or the two scores arrive merged into one.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Combined-score gate</span> <span class="from">Narrative analysis</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Gate 2 — with a tweet the combined score must be ≥6; with no tweet it must be &gt;8.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Dual threshold, fixed; rejects log the score and which threshold applied.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Scored candidate</span>
+      <span class="arr">→</span> <span class="pill">threshold check</span>
+      <span class="arr">→</span> <span class="pill end">pass (to Bundler checker) or reject (logged, end).</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Feed test scores: 6.5 with tweet (pass), 5 with tweet (reject), 8.5 without tweet (pass), 7 without tweet (reject).</li>
+      <li>Each verdict + score + applied threshold is visible.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> All four test scores get the correct verdict, threshold shown.</div>
+    <div class="verdict bad"><span>Failure</span> Any verdict contradicts the dual rule.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Bundler share pull</span> <span class="from">Bundler checker</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Pulls the wallets that bought in the creation block and their supply %, excluding program-owned accounts (the bonding curve).</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Uses one pinned provider and counting method; if the provider is down, the candidate waits — it is never waved through.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Scored candidate</span>
+      <span class="arr">→</span> <span class="pill">provider pull</span>
+      <span class="arr">→</span> <span class="pill">bundler % attached</span>
+      <span class="arr">→</span> <span class="pill end">trend classification.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Run against a test token with a known bundler setup.</li>
+      <li>The bundler % shown matches the provider's own dashboard for that token.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The displayed % matches the provider's number for the same token.</div>
+    <div class="verdict bad"><span>Failure</span> No number appears, or it disagrees with the provider's dashboard.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Bundler trend classification</span> <span class="from">Bundler checker</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Classifies the bundler share trend: decreasing, stagnating, or increasing (0% ideal).</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Reads the share over time; a single snapshot classifies as unknown, not as safe.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Bundler % history</span>
+      <span class="arr">→</span> <span class="pill">trend label attached</span>
+      <span class="arr">→</span> <span class="pill end">bundler gate.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Feed a test token whose bundler share is visibly decreasing and one whose share is rising.</li>
+      <li>The labels shown match the visible trend in the data.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> Both test tokens carry the correct trend label.</div>
+    <div class="verdict bad"><span>Failure</span> A rising share is labelled decreasing, or no label appears.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Bundler gate</span> <span class="from">Bundler checker</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Gate 3 — reject anything over 10–15% bundlers (below 10% preferred), especially if the share is increasing.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Strict; every reject logs the %, the trend, and the rule that fired.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Labelled candidate</span>
+      <span class="arr">→</span> <span class="pill">gate</span>
+      <span class="arr">→</span> <span class="pill end">pass (to Signal &amp; trigger) or reject (logged, end).</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Feed test candidates: 5% decreasing (pass), 20% decreasing (reject), 12% increasing (reject).</li>
+      <li>Each verdict with %, trend, and fired rule is visible.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> All three get the correct verdict with full reason shown.</div>
+    <div class="verdict bad"><span>Failure</span> An over-limit or increasing candidate passes.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Divergence watcher</span> <span class="from">Signal &amp; trigger</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Gate 4 — watches the chart for an OBV or RSI divergence against the call-out price (both oscillators = stronger, either works).</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Starts at the call-out price and time; patterns (triangle/pennant) are parked — divergence only.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Clean candidate</span>
+      <span class="arr">→</span> <span class="pill">watch starts</span>
+      <span class="arr">→</span> <span class="pill end">divergence spotted (alert emitted) or staleness guard fires (watch ends) — two end states.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Point the watcher at a replayed chart with a known OBV divergence.</li>
+      <li>The divergence is flagged with the oscillator named; a replay with no divergence is not flagged.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The known divergence is caught and named; the clean replay stays quiet.</div>
+    <div class="verdict bad"><span>Failure</span> The known divergence is missed, or a flat chart produces an alert.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Staleness guards</span> <span class="from">Signal &amp; trigger</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Stops tracking a call-out if price runs +30% from it or 15 one-minute candles pass (combinable).</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Either guard ends the watch; the stop reason is logged (distance or time).</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Watch running</span>
+      <span class="arr">→</span> <span class="pill">guard fires</span>
+      <span class="arr">→</span> <span class="pill">watch ended + reason logged</span>
+      <span class="arr">→</span> <span class="pill end">candidate done.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Replay a chart that runs +31% with no divergence: the watch must stop with &quot;distance&quot;.</li>
+      <li>Replay 16 flat candles: the watch must stop with &quot;time&quot;.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> Both replays end the watch with the correct reason shown.</div>
+    <div class="verdict bad"><span>Failure</span> The watch keeps running past a guard, or stops with the wrong reason.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Divergence alert</span> <span class="from">Signal &amp; trigger</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Emits the alert payload to the Front-end UI: coin, scores, which oscillator diverged, freshness, and the Kelly pre-filled size.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Fires once per candidate; the size attached is computed by the Position manager — the alert never asks Bobby to pick a number.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Divergence spotted</span>
+      <span class="arr">→</span> <span class="pill">payload assembled (with pre-filled size)</span>
+      <span class="arr">→</span> <span class="pill">delivered to the UI</span>
+      <span class="arr">→</span> <span class="pill end">alert waits for Bobby.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Trigger a test divergence end-to-end.</li>
+      <li>The alert arrives in the UI with every field filled, including the size.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The UI shows the complete alert — coin, oscillator, freshness, pre-filled size.</div>
+    <div class="verdict bad"><span>Failure</span> The alert is missing, has empty fields, or arrives without a size.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Alert display</span> <span class="from">Front-end UI</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Shows the divergence alert clearly enough to decide in seconds: coin, which oscillator diverged, how fresh it is, and the pre-filled size.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Newest alert on top; readable on a phone (the primary screen).</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Alert arrives</span>
+      <span class="arr">→</span> <span class="pill">displayed</span>
+      <span class="arr">→</span> <span class="pill">resolved (Bobby clicks buy or ignores it)</span>
+      <span class="arr">→</span> <span class="pill end">archived.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>On Bobby's phone: open the UI with a test alert waiting.</li>
+      <li>Every field is readable without zooming or sideways scrolling.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The full alert is glanceable on the phone in seconds.</div>
+    <div class="verdict bad"><span>Failure</span> Fields are cut off, unreadable, or the alert never renders.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>BUY button</span> <span class="from">Front-end UI</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">One obvious BUY button — one click sends the buy click to the Position manager and executes exactly the pre-filled size. No typing, no sizing at the button.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Disabled until an alert is present; one click only (no double-fire); ignoring the alert is a valid choice that logs &quot;no trade&quot;.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Alert displayed</span>
+      <span class="arr">→</span> <span class="pill">Bobby clicks (or ignores)</span>
+      <span class="arr">→</span> <span class="pill">click sent to Position manager</span>
+      <span class="arr">→</span> <span class="pill end">button resolves.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>On the phone: the button is visibly clickable with an alert present, greyed out without one.</li>
+      <li>Click it: the Position manager receives exactly one buy click with the pre-filled size.</li>
+      <li>Ignore the next alert: it logs &quot;no trade&quot;.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> One click = one buy click with the shown size; ignoring logs cleanly.</div>
+    <div class="verdict bad"><span>Failure</span> The button can't be tapped, fires twice, or sends a different size than shown.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Positions + moon bag view</span> <span class="from">Front-end UI</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Shows open positions and the moon bag status from the position feed — the moon bag's manual home (view + manual sell).</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Read model updates from Position manager events; the moon bag is never auto-sold here.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Position opens</span>
+      <span class="arr">→</span> <span class="pill">appears in the view</span>
+      <span class="arr">→</span> <span class="pill">updates on every fill</span>
+      <span class="arr">→</span> <span class="pill end">leaves the view when flat (moon bag stays until Bobby sells it manually).</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>With a test position open: it appears in the view with its stop and ladder state.</li>
+      <li>After the 2x withdrawal: the moon bag shows as a separate, manual-only holding.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The phone shows the live position and later the separate moon bag.</div>
+    <div class="verdict bad"><span>Failure</span> The position doesn't appear, or the moon bag vanishes after 2x.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Venue router</span> <span class="from">Trade executor</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Routes each order to the chain that lists the coin — Solana or the Robinhood Chain (EVM L2).</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Routing is per order, by listing; an unroutable coin blocks the order, never guesses a venue.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Sized order arrives</span>
+      <span class="arr">→</span> <span class="pill">venue chosen by listing</span>
+      <span class="arr">→</span> <span class="pill end">order handed to that chain's adapter.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Send a test order for a Solana-only coin and one for a Robinhood Chain coin.</li>
+      <li>Each fill report shows the correct venue.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> Each order lands on the right chain, venue named in the fill.</div>
+    <div class="verdict bad"><span>Failure</span> An order goes to the wrong chain, or the venue isn't recorded.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Entry execution</span> <span class="from">Trade executor</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Executes the entry when the sized order arrives from the Position manager — only after Bobby's click; the alert alone never spends money.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Uses the wallet keys (secret names, never raw); a failed transaction reports the failure and does not retry silently.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Sized order</span>
+      <span class="arr">→</span> <span class="pill">transaction built + signed</span>
+      <span class="arr">→</span> <span class="pill">submitted</span>
+      <span class="arr">→</span> <span class="pill end">fill or failure reported.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>On devnet: Bobby clicks buy on a test alert.</li>
+      <li>The fill appears in the fill feed with size, price, and venue.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> One click produces one visible fill matching the pre-filled size.</div>
+    <div class="verdict bad"><span>Failure</span> The click produces no fill, or a fill appears without any click.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Immediate stop-loss</span> <span class="from">Trade executor</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Sets the 30% stop-loss at the moment of entry — the automation starts here.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Lives on the exchange as a real order; cancelled automatically when the 2x rule fires; adjustable while active.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Entry fill</span>
+      <span class="arr">→</span> <span class="pill">stop placed on the exchange</span>
+      <span class="arr">→</span> <span class="pill end">ends when hit (position sold), cancelled at 2x, or failed (alerted).</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>After a devnet entry: the stop-loss shows on the exchange's open-orders list at entry price −30%.</li>
+      <li>Cancel it manually: it disappears from the exchange.</li>
+      <li>At 2x: it cancels itself without Bobby touching anything.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The stop is visible on the exchange, cancellable, and self-cancels at 2x.</div>
+    <div class="verdict bad"><span>Failure</span> The entry fills but no stop exists on the exchange — no proof beyond the fill.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Sell-into-volume filter</span> <span class="from">Trade executor</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Executes exits only into buy pressure — green candles and real volume, never into red.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Waits for a qualifying candle; a clip that can't fill into volume is retried, never dumped into a falling tape.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Exit order (clip or stop)</span>
+      <span class="arr">→</span> <span class="pill">volume check</span>
+      <span class="arr">→</span> <span class="pill">fill on a qualifying candle</span>
+      <span class="arr">→</span> <span class="pill end">fill reported.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Replay a green-volume window: the exit fills.</li>
+      <li>Replay a red window: the exit waits — no fill prints.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The exit fills in the green window and visibly holds in the red one.</div>
+    <div class="verdict bad"><span>Failure</span> A sell prints on a red candle.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Fill reporting</span> <span class="from">Trade executor</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Reports every fill (entry, stop, clip) to the Position manager and the Trade journal.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">One fill = one event, schema frozen; a missed fill corrupts the ladder — so reporting is retried until acknowledged.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Fill happens</span>
+      <span class="arr">→</span> <span class="pill">event emitted</span>
+      <span class="arr">→</span> <span class="pill">acknowledged by Position manager + journal</span>
+      <span class="arr">→</span> <span class="pill end">done.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Execute a devnet entry + one clip.</li>
+      <li>Both fills appear in the journal feed with matching sizes and prices.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The journal shows both fills exactly as executed.</div>
+    <div class="verdict bad"><span>Failure</span> A fill executed on-chain is missing from the journal.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Fractional Kelly sizer</span> <span class="from">Position manager</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Pre-computes the entry size with fractional Kelly (safer slice of the Kelly-optimal size) when the alert fires, using Bobby's inputs: bankroll, win-rate + payoff estimates, chosen fraction.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">The Grok score is never an input; missing Kelly inputs means no size is shown — the alert says so instead of guessing.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Alert fires</span>
+      <span class="arr">→</span> <span class="pill">size computed</span>
+      <span class="arr">→</span> <span class="pill">attached to the alert</span>
+      <span class="arr">→</span> <span class="pill end">executed as-is on Bobby's click.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>With pinned test inputs (bankroll, win-rate, payoff, fraction), fire a test alert.</li>
+      <li>The pre-filled size matches the hand-computed fractional Kelly number.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The alert's size equals the hand check for the same inputs.</div>
+    <div class="verdict bad"><span>Failure</span> No size appears, or the size disagrees with the hand check.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>2x capital recovery</span> <span class="from">Position manager</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">When price reaches 2x, withdraws the initial capital and cancels the stop-loss.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Fires once per position; after it, the position runs on house money (moon bag + clips).</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Position running</span>
+      <span class="arr">→</span> <span class="pill">price hits 2x</span>
+      <span class="arr">→</span> <span class="pill">initial capital sold + stop cancelled</span>
+      <span class="arr">→</span> <span class="pill end">ladder continues.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Run a devnet position to 2x.</li>
+      <li>The withdrawal fill appears, equal to the initial capital; the stop vanishes from the exchange.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> At 2x the initial is visibly out and the stop is gone.</div>
+    <div class="verdict bad"><span>Failure</span> Price crosses 2x and the initial is still in, or the stop is still live.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Moon bag rule</span> <span class="from">Position manager</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">After 2x, 20% of the remaining position becomes the moon bag — manual-only, never auto-sold.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">The bag is flagged in position state; the clip ladder never touches it.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">2x fires</span>
+      <span class="arr">→</span> <span class="pill">20% flagged as moon bag</span>
+      <span class="arr">→</span> <span class="pill">lives in the UI until Bobby sells it himself</span>
+      <span class="arr">→</span> <span class="pill end">ends only on his manual sell.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>After the devnet 2x: the moon bag shows in the UI as manual-only.</li>
+      <li>Run the ladder to completion: the bag is still there, untouched.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The bag survives every automatic exit and only moves on Bobby's click.</div>
+    <div class="verdict bad"><span>Failure</span> An automatic exit sells into the moon bag.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Divergence clip ladder</span> <span class="from">Position manager</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">On each bearish divergence after entry, sells a 15–20% clip of the remaining position (moon bag excluded), executed via the sell-into-volume filter.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">One clip per divergence; clips stop when only the moon bag remains.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Bearish divergence</span>
+      <span class="arr">→</span> <span class="pill">clip order</span>
+      <span class="arr">→</span> <span class="pill">filled into volume</span>
+      <span class="arr">→</span> <span class="pill">position state updated</span>
+      <span class="arr">→</span> <span class="pill end">next divergence or flat.</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Replay two bearish divergences on a devnet position.</li>
+      <li>Two clip fills appear, each 15–20%, each into a green candle.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> Both clips fill at the right size into volume; the moon bag is untouched.</div>
+    <div class="verdict bad"><span>Failure</span> A divergence passes with no clip, a clip prints on a red candle, or a clip eats the moon bag.</div>
+  </div>
+
+  <div class="feat">
+    <h3>🧩 <span>Trade journal</span> <span class="from">Trade journal</span></h3>
+    <div class="lbl">The feature</div>
+    <p class="kv">Logs every event end to end — each gate verdict, the alert, Bobby's click, every fill, every ladder step — as one queryable record per trade.</p>
+    <div class="lbl">Behaviour</div>
+    <p class="kv">Append-only; every department writes through one event schema.</p>
+    <div class="lbl">Lifecycle</div>
+    <div class="life">
+      <span class="pill trig">Callout arrives</span>
+      <span class="arr">→</span> <span class="pill">record opens</span>
+      <span class="arr">→</span> <span class="pill">every event appended</span>
+      <span class="arr">→</span> <span class="pill end">record closes when the position is flat (moon bag noted).</span>
+    </div>
+    <div class="lbl">Verification — from the user's side</div>
+    <ol class="steps">
+      <li>Run one full devnet trade.</li>
+      <li>Open the journal: the whole story is there in order — gates, alert, click, fills, ladder — with no gaps.</li>
+    </ol>
+    <div class="verdict ok"><span>Success</span> The complete trade replays from the journal alone.</div>
+    <div class="verdict bad"><span>Failure</span> Any event that happened is missing from the record.</div>
+  </div>
+
+  <footer>Source of truth: <a href="https://tr3-ai.github.io/idea-slicer/memecoin-virality-trader.html">the idea-slicer map</a> · <a href="index.html">all feature maps</a></footer>
+
+</div>
+<script src="nav.js" defer></script>
+</body>
+</html>
+

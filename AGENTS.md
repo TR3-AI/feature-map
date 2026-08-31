@@ -27,4 +27,4 @@ Every feature map tracks an idea-slicer map (`maps/<slug>.md` in `TR3-AI/idea-sl
 
 ## Publish rhythm
 
-Straight to the branch in use; the site updates ~1 min after push. Verify with a curl grep on the live URL.
+Straight to `main` by Bobby's standing instruction (same as idea-slicer and ELI5links — overrides the protected-main rule for this repo). The site updates ~1 min after push. Verify with a curl grep on the live URL.
