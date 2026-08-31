@@ -44,12 +44,31 @@
     padding: 4px 12px; border-radius: 4px; background: var(--box);
   }
 
-  .kitbanner {
-    background: var(--teal-soft); border: 2px solid var(--teal); border-radius: 8px;
-    padding: 14px 18px; font-size: 14.5px; line-height: 1.55; margin-bottom: 26px;
+  /* sub-feature chips */
+  .subs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .sub {
+    background: var(--blue-soft); border: 1.5px solid var(--blue); border-radius: 6px;
+    padding: 4px 10px; font-size: 12.5px;
   }
-  .kitbanner b { color: var(--teal); }
-  .kitbanner a { color: var(--teal); font-weight: 800; }
+  .sub b { font-family: ui-monospace, Menlo, monospace; color: var(--blue); }
+
+  /* verification: reach / preconditions / drive steps / gotchas */
+  .vreach { font-size: 14px; line-height: 1.55; margin: 0 0 10px 22px; }
+  .vreach li { margin: 4px 0; }
+  .vreach li::marker { color: var(--teal); }
+  .pre {
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--soft);
+    background: var(--paper); border-radius: 6px; padding: 8px 12px; margin-bottom: 8px;
+  }
+  .vbox ol.fsteps b, .vreach b { color: var(--blue); }
+  .vbox code, .vreach code {
+    font-family: ui-monospace, Menlo, monospace; font-size: 12.5px;
+    background: var(--blue-soft); border-radius: 4px; padding: 1px 5px;
+  }
+  .gotcha {
+    background: #fdf6e8; border-left: 4px solid #9a6a00; border-radius: 0 6px 6px 0;
+    padding: 8px 12px; margin: 6px 0; font-size: 13.5px; line-height: 1.5;
+  }
 
   /* ── feature box ─────────────────────────────────── */
   .fbox {
@@ -152,8 +171,6 @@
     <div class="stamp">25 features · updated 2026-08-31</div>
   </header>
 
-  <div class="kitbanner">🧰 <b>Tester kit — the P-Stack side:</b> these 25 features as driving recipes for the tester agent, recorded with ProofShot. <a href="memecoin-virality-trader-kit.html">Open the kit →</a></div>
-
   
   <section class="fbox">
     <div class="fhead"><span class="fnum">F1</span><h3>Source list config</h3><span class="fdept">Callout intake</span></div>
@@ -164,6 +181,14 @@
         <li>Sources are referenced by plain names or handles — never keys, never secrets.</li>
         <li>The Front-end UI shows the active list so Bobby can see exactly who is being watched.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>list-view</b> shows the active source list in the UI.</span>
+        <span class="sub"><b>list-filter</b> admits callouts from listed sources only.</span>
+        <span class="sub"><b>list-edit</b> applies edits on the next run.</span>
+        <span class="sub"><b>list-empty</b> treats a missing/empty list as a safe stop.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -185,11 +210,22 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent opens the config view (ProofShot recording): Bobby's source list is visible.</li>
-      <li>It posts a test callout from a <b>listed</b> source: a candidate appears in the intake view.</li>
-      <li>It posts a test callout from an <b>unlisted</b> source: nothing appears.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Open the config view in the front-end UI.</li>
+      <li>Edit the list file directly between runs (owner action).</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">UI up; ProofShot recording; a test stream with one listed and one unlisted source.</div>
+    <ul class="vreach">
+      <li><b>View list.</b> Open the config view. The recording shows Bobby's source list rendered.</li>
+      <li><b>Listed source.</b> Post a test callout from a listed source. A candidate appears in the intake view.</li>
+      <li><b>Unlisted source.</b> Post a test callout from an unlisted source. No candidate appears.</li>
+      <li><b>Empty list.</b> Point the watcher at an empty list and restart. The intake view shows zero candidates and no error storm — a safe stop.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">A restart (or reload) is needed for edits to apply; a mid-run edit proves nothing.</div>
+    <div class="gotcha">An unlisted-source callout must produce *nothing* — do not accept a candidate with a warning as a pass.</div>
     <div class="verdict ok"><span>Success</span> The visible list matches what Bobby supplied, and only listed sources ever produce candidates — all visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> The list can't be displayed, or an unlisted source slips a candidate through — the filter is not really applied.</div>
   </section>
@@ -203,6 +239,14 @@
         <li>A validator that rejects malformed callouts (missing address, no timestamp) at intake.</li>
         <li>An emitter that hands each valid, normalized candidate to the Virality scorer.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>listen</b> ingests callouts from tracked streams continuously.</span>
+        <span class="sub"><b>normalize</b> extracts the four required fields.</span>
+        <span class="sub"><b>validate</b> rejects malformed callouts with a logged reason.</span>
+        <span class="sub"><b>dedupe</b> emits exactly one candidate per callout.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -224,11 +268,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent posts a test callout from a tracked source on the test stream (ProofShot recording).</li>
-      <li>In the intake view: the candidate appears with all four fields filled.</li>
-      <li>It posts a malformed test callout (no address): the reject log shows it with the reason.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: post a callout on a tracked stream; the candidate appears in the intake view.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Test stream connected; intake view visible; ProofShot recording.</div>
+    <ul class="vreach">
+      <li><b>Good callout.</b> Post a complete test callout. Within seconds the intake view shows a candidate with all four fields filled.</li>
+      <li><b>Malformed callout.</b> Post a callout with no coin address. The reject log shows it with the reason; nothing reaches the intake view.</li>
+      <li><b>Duplicate.</b> Post the same callout twice. Exactly one candidate exists.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">A candidate with a blank field is a failure, not a partial pass.</div>
+    <div class="gotcha">The reject log entry must name the reason — a silent drop is not a pass.</div>
     <div class="verdict ok"><span>Success</span> The good callout shows as a complete candidate within seconds; the bad one is visibly rejected with a reason.</div>
     <div class="verdict bad"><span>Failure</span> The callout is posted but no candidate appears, a field is blank, or the malformed callout flows downstream.</div>
   </section>
@@ -242,6 +295,13 @@
         <li>A history check: accounts with too little history are flagged, not averaged into a fake number.</li>
         <li>The baseline is attached to the candidate for the multiplier gate.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>pull</b> fetches the 30-day tweet history via the X API.</span>
+        <span class="sub"><b>average</b> computes the baseline from likes + retweets.</span>
+        <span class="sub"><b>thin-history</b> flags accounts with too little history instead of inventing a number.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -263,11 +323,19 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent feeds a test account with known tweet metrics (ProofShot recording).</li>
-      <li>The baseline on screen matches the average it computed by hand beforehand.</li>
-      <li>It feeds an account with almost no history: the flag shows, not a number.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: the baseline appears on the candidate in the scorer view.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Scorer view visible; ProofShot recording; a test account whose metrics are known beforehand.</div>
+    <ul class="vreach">
+      <li><b>Known account.</b> Feed the test account. The baseline on screen matches the average computed by hand beforehand.</li>
+      <li><b>Thin account.</b> Feed an account with almost no history. The view shows the low-history flag, not a confident number.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">Compute the expected average before the run; checking afterwards invites rationalizing.</div>
+    <div class="gotcha">A partial pull (rate limit) must wait, not score with half the data.</div>
     <div class="verdict ok"><span>Success</span> The displayed baseline equals the real 30-day average, and thin accounts are visibly flagged.</div>
     <div class="verdict bad"><span>Failure</span> No baseline appears, the number disagrees with the hand check, or a thin account gets a confident fake number.</div>
   </section>
@@ -281,6 +349,13 @@
         <li>Configurable threshold values (owner dependency, supplied with the X API access).</li>
         <li>A reject log recording which band applied and why the verdict fired.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>band-select</b> picks the band from the coin's age.</span>
+        <span class="sub"><b>band-check</b> compares the multiplier against the band threshold.</span>
+        <span class="sub"><b>band-reject</b> logs every rejection with band and reason.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -302,10 +377,21 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent sends four known candidates — 4x at 30min, 4x at 3h, 60x at 2 days, any multiplier at 12h (ProofShot recording).</li>
-      <li>The gate log shows pass, reject, pass, reject — each verdict with its band and reason.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: verdicts appear in the gate log / candidate view.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Gate log visible; ProofShot recording; four test candidates with pinned values.</div>
+    <ul class="vreach">
+      <li><b>Under 1h pass.</b> Send 4x at 30 minutes. The log shows pass, band &quot;&lt;1h&quot;.</li>
+      <li><b>Mid band reject.</b> Send 4x at 3 hours. The log shows reject, band &quot;1–6h&quot;, reason &quot;below 10x&quot;.</li>
+      <li><b>24h+ pass.</b> Send 60x at 2 days. The log shows pass, band &quot;24h+&quot;.</li>
+      <li><b>Dead zone.</b> Send any multiplier at 12 hours. The log shows reject, reason &quot;outside all bands&quot;.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">Boundary values follow the rule exactly (exactly 3x under 1h passes) — test one boundary, not just mid-range values.</div>
+    <div class="gotcha">Every verdict needs its reason; a bare pass/reject is a logging failure.</div>
     <div class="verdict ok"><span>Success</span> All four verdicts are correct, each with its band and reason visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> Any candidate passes or rejects against the band rule, or a verdict appears with no reason attached.</div>
   </section>
@@ -319,6 +405,13 @@
         <li>Veracity and virality are kept as <b>separate score components</b> — never merged, never renamed into each other.</li>
         <li>The extracted fields and both scores are attached to the candidate for the combined-score gate.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>extract</b> pulls the five fields from the pinned prompt.</span>
+        <span class="sub"><b>two-scores</b> keeps veracity and virality as separate numbers.</span>
+        <span class="sub"><b>api-failure</b> blocks the candidate on API errors, never auto-passes.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -340,11 +433,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent feeds a known test coin through the Grok call (ProofShot recording).</li>
-      <li>The analysis view shows all five fields filled, with veracity and virality as <b>two separate numbers</b>.</li>
-      <li>It kills the API on a test run: the candidate shows as blocked, not passed.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: the analysis view shows the fields and scores per candidate.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Analysis view visible; ProofShot recording; a known test coin.</div>
+    <ul class="vreach">
+      <li><b>Known coin.</b> Feed the test coin. The analysis view shows all five fields filled.</li>
+      <li><b>Separate scores.</b> The same view shows veracity and virality as two distinct numbers, not one merged figure.</li>
+      <li><b>API down.</b> Kill the API and feed another candidate. It shows as blocked with the error — it does not advance.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The two-score separation is the whole point (ruling #10); a single merged score is a failure even if the number looks sensible.</div>
+    <div class="gotcha">A blocked candidate must show *why* — a silent stall is not a pass.</div>
     <div class="verdict ok"><span>Success</span> All fields and both separate scores are visible; failures block visibly.</div>
     <div class="verdict bad"><span>Failure</span> A field is empty, the two scores arrive merged, or an API failure lets the candidate through.</div>
   </section>
@@ -357,6 +459,13 @@
         <li>The <b>dual threshold</b>: with a tweet the combined score must be ≥6; with no tweet it must be &gt;8.</li>
         <li>A reject log recording the score and which threshold applied.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>branch</b> selects tweet vs no-tweet threshold from the candidate.</span>
+        <span class="sub"><b>threshold</b> compares the combined score against the branch's bar.</span>
+        <span class="sub"><b>score-reject</b> logs rejections with score, branch, and threshold.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -378,10 +487,21 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent feeds four known scores — 6.5 with tweet, 5 with tweet, 8.5 without tweet, 7 without tweet (ProofShot recording).</li>
-      <li>The gate log shows pass, reject, pass, reject — each with score, branch, and threshold.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: verdicts appear in the gate log / candidate view.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Gate log visible; ProofShot recording; four candidates with pinned scores.</div>
+    <ul class="vreach">
+      <li><b>Tweet pass.</b> Score 6.5 with a tweet. Log shows pass at the ≥6 threshold.</li>
+      <li><b>Tweet reject.</b> Score 5 with a tweet. Log shows reject, branch &quot;tweet&quot;.</li>
+      <li><b>No-tweet pass.</b> Score 8.5 without a tweet. Log shows pass at the &gt;8 threshold.</li>
+      <li><b>No-tweet reject.</b> Score 7 without a tweet. Log shows reject, branch &quot;no-tweet&quot;.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The branch comes from the tweet field only — a candidate with an empty-but-present tweet field is a trap; pin the test data precisely.</div>
+    <div class="gotcha">8 exactly without a tweet fails (&gt;8, not ≥8) — include the boundary in a test.</div>
     <div class="verdict ok"><span>Success</span> All four verdicts match the dual rule with the applied threshold visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> Any verdict contradicts the rule, or the wrong branch was used for a candidate.</div>
   </section>
@@ -395,6 +515,13 @@
         <li>The counting method is pinned in one place — tools disagree on this number, so the method is part of the contract.</li>
         <li>The bundler % is attached to the candidate.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>pull</b> queries the pinned provider for creation-block wallets.</span>
+        <span class="sub"><b>exclude-curve</b> removes program-owned accounts from the %.</span>
+        <span class="sub"><b>provider-down</b> makes the candidate wait, never wave through.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -416,11 +543,19 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent runs a test token with a known bundler setup (ProofShot recording).</li>
-      <li>The bundler % on screen matches the provider's own dashboard for that token — both shown side by side in the recording.</li>
-      <li>It blocks the provider on a test run: the candidate visibly waits, never advances.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: the bundler % appears on the candidate in the checker view.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Checker view visible; ProofShot recording; a test token with a known bundler setup; the provider's own dashboard open for comparison.</div>
+    <ul class="vreach">
+      <li><b>Known token.</b> Run the test token. The bundler % on screen matches the provider's dashboard for that token — both visible in the recording.</li>
+      <li><b>Provider down.</b> Block the provider and run another candidate. It visibly waits; it does not advance without a number.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The comparison is against the *same* counting method — a different tool's number is expected to disagree; use the pinned provider's own dashboard.</div>
+    <div class="gotcha">A token whose creation block can't be read must flag, not report 0%.</div>
     <div class="verdict ok"><span>Success</span> The displayed % matches the provider's number, and failures wait instead of passing.</div>
     <div class="verdict bad"><span>Failure</span> No number appears, the number disagrees with the provider, or a provider failure lets the candidate through.</div>
   </section>
@@ -433,6 +568,13 @@
         <li>Classification into one of three labels: <b>decreasing, stagnating, or increasing</b> (0% ideal).</li>
         <li>The trend label is attached to the candidate for the bundler gate.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>history</b> reads the share over the pinned window.</span>
+        <span class="sub"><b>label</b> assigns decreasing / stagnating / increasing.</span>
+        <span class="sub"><b>unknown</b> marks single-snapshot tokens honestly.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -454,11 +596,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent feeds a token with a visibly decreasing share and one with a rising share (ProofShot recording).</li>
-      <li>The labels on screen match the trend visible in the data.</li>
-      <li>It feeds a token with only one reading: the label shows &quot;unknown&quot;, not a safe one.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: the trend label appears on the candidate in the checker view.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Checker view visible; ProofShot recording; three test tokens.</div>
+    <ul class="vreach">
+      <li><b>Decreasing.</b> Feed a token whose share visibly falls over the window. The label reads decreasing.</li>
+      <li><b>Increasing.</b> Feed a token whose share visibly rises. The label reads increasing.</li>
+      <li><b>Single snapshot.</b> Feed a token with one reading. The label reads unknown — not decreasing, not safe.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The label must match what the underlying readings visibly show; open the readings in the recording, not just the label.</div>
+    <div class="gotcha">&quot;Unknown&quot; must not be treated as a pass by the gate downstream — check the hand-off.</div>
     <div class="verdict ok"><span>Success</span> Both trending tokens get the correct label, and single-snapshot tokens show unknown.</div>
     <div class="verdict bad"><span>Failure</span> A rising share is labelled decreasing, or a single snapshot passes as a real trend.</div>
   </section>
@@ -471,6 +622,13 @@
         <li>The trend modifier: an <b>increasing</b> share is rejected harder — low is good, rising is bad.</li>
         <li>A reject log recording the %, the trend, and the exact rule that fired.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>limit</b> enforces the 10–15% ceiling.</span>
+        <span class="sub"><b>direction</b> rejects increasing shares harder.</span>
+        <span class="sub"><b>bundle-reject</b> logs %, trend, and the fired rule per verdict.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -491,10 +649,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent feeds three known candidates — 5% decreasing, 20% decreasing, 12% increasing (ProofShot recording).</li>
-      <li>The gate log shows pass, reject, reject — each with %, trend, and fired rule.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: verdicts appear in the gate log / candidate view.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Gate log visible; ProofShot recording; three candidates with pinned % and trend.</div>
+    <ul class="vreach">
+      <li><b>Clean pass.</b> 5% decreasing. Log shows pass.</li>
+      <li><b>Over-limit reject.</b> 20% decreasing. Log shows reject, rule &quot;over 15%&quot;.</li>
+      <li><b>Rising reject.</b> 12% increasing. Log shows reject, rule &quot;increasing share&quot;.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The direction check is the one that drifts (Bobby's example): an increasing share passing at any % is the critical failure — test it first.</div>
+    <div class="gotcha">Verdicts need all three of %, trend, rule; a verdict missing one is a logging failure.</div>
     <div class="verdict ok"><span>Success</span> All three verdicts are correct with full reasons visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> An over-limit or increasing candidate passes — the direction of the rule is broken.</div>
   </section>
@@ -508,6 +676,13 @@
         <li>Patterns (descending triangle/pennant) are <b>parked</b> — divergence only, per the signal change.</li>
         <li>On detection, the watcher hands off to the divergence alert.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>anchor</b> starts every watch at the call-out price and time.</span>
+        <span class="sub"><b>detect</b> spots divergence on OBV, RSI, or both (strength recorded).</span>
+        <span class="sub"><b>handoff</b> passes a spotted divergence to the alert emitter.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -529,11 +704,19 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent points the watcher at a replayed chart with a known OBV divergence (ProofShot recording).</li>
-      <li>The flag appears with the oscillator named and the strength recorded.</li>
-      <li>It replays a chart with no divergence: nothing is flagged.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: a spotted divergence becomes the alert in the UI; the watch state is visible in the trigger view.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Trigger view visible; ProofShot recording; chart replay loaded.</div>
+    <ul class="vreach">
+      <li><b>Known divergence.</b> Replay a chart containing a known OBV divergence. The flag appears with the oscillator named and strength recorded.</li>
+      <li><b>Clean replay.</b> Replay a chart with no divergence. Nothing is flagged.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The anchor is the call-out price — a divergence measured from the wrong anchor is a false pass; verify the anchor in the recording.</div>
+    <div class="gotcha">Deterministic: the same replay must give the same result on a second run.</div>
     <div class="verdict ok"><span>Success</span> The known divergence is caught and named; the clean replay stays quiet — both visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> The known divergence is missed, or a flat chart produces a signal.</div>
   </section>
@@ -547,6 +730,13 @@
         <li>The two guards are combinable — either one firing ends the watch.</li>
         <li>The stop reason (distance or time) is logged with the watch.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>distance-guard</b> ends the watch at +30% from call-out.</span>
+        <span class="sub"><b>time-guard</b> ends the watch after 15 one-minute candles.</span>
+        <span class="sub"><b>stop-reason</b> logs which guard fired; stopped watches never resume.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -568,11 +758,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent replays a chart running +31% with no divergence (ProofShot recording): the watch stops with reason &quot;distance&quot;.</li>
-      <li>It replays 16 flat candles: the watch stops with reason &quot;time&quot;.</li>
-      <li>It drops the price back after the stop: the watch does not resume.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: the watch state and stop reason appear in the trigger view / log.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Trigger view visible; ProofShot recording; chart replay loaded.</div>
+    <ul class="vreach">
+      <li><b>Distance.</b> Replay a chart running +31% with no divergence. The watch stops; reason &quot;distance&quot;.</li>
+      <li><b>Time.</b> Replay 16 flat candles. The watch stops; reason &quot;time&quot;.</li>
+      <li><b>No resume.</b> Drop the price back after the stop. The watch stays stopped.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">Candle 15 exactly: the rule is *more than* 15 — pin which side the boundary falls on and test it.</div>
+    <div class="gotcha">A stopped-then-resumed watch is the silent failure; always run the no-resume check.</div>
     <div class="verdict ok"><span>Success</span> Both replays end the watch with the correct reason, and stopped watches stay stopped — all in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A watch runs past a guard, stops with the wrong reason, or quietly resumes.</div>
   </section>
@@ -585,6 +784,13 @@
         <li>The <b>pre-filled size</b> from the Position manager's fractional Kelly calculation, attached to the payload.</li>
         <li>Delivery to the Front-end UI — once per candidate, never duplicated.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>payload</b> assembles coin, scores, oscillator, freshness.</span>
+        <span class="sub"><b>prefill</b> attaches the Position manager's Kelly size.</span>
+        <span class="sub"><b>once</b> fires exactly one alert per candidate.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -606,11 +812,19 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent triggers a test divergence end-to-end (ProofShot recording).</li>
-      <li>The alert arrives in the UI with every field filled, including the pre-filled size.</li>
-      <li>It triggers the same divergence again: no second alert appears.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>The alert card in the front-end UI.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">UI visible at phone width; ProofShot recording; a way to trigger a test divergence end-to-end.</div>
+    <ul class="vreach">
+      <li><b>Fire.</b> Trigger the test divergence. The alert arrives with every field filled, including the pre-filled size.</li>
+      <li><b>Re-fire.</b> Trigger the same divergence again. No second alert appears.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The size must be present *in the payload* — a size that appears only after a refresh is a wiring failure.</div>
+    <div class="gotcha">Freshness must be honest (the divergence's real age), not &quot;just now&quot; forever.</div>
     <div class="verdict ok"><span>Success</span> One complete alert arrives — coin, oscillator, freshness, size — and never duplicates.</div>
     <div class="verdict bad"><span>Failure</span> The alert is missing, has empty fields, arrives without a size, or fires twice.</div>
   </section>
@@ -623,6 +837,13 @@
         <li>Layout designed for the phone (the primary screen): glanceable in seconds, no zooming, no sideways scroll.</li>
         <li>Newest alert on top; resolved alerts archive out of the way.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>glanceable</b> shows every field at phone width, no zoom or sideways scroll.</span>
+        <span class="sub"><b>stack</b> orders multiple alerts newest-first.</span>
+        <span class="sub"><b>archive</b> removes resolved alerts from the active list.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -644,11 +865,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent opens the UI on a phone-width screen with a test alert waiting (ProofShot recording).</li>
-      <li>Every field is readable without zooming or sideways scrolling.</li>
-      <li>It resolves the alert: the card archives and leaves the active list.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>The front-end UI's alert list, on the phone.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">UI at 390px width; ProofShot recording; a test alert waiting.</div>
+    <ul class="vreach">
+      <li><b>Read.</b> Open the UI. Every field is readable without zooming or sideways scrolling.</li>
+      <li><b>Stack.</b> Add a second alert. The newer one sits on top.</li>
+      <li><b>Resolve.</b> Resolve an alert. It leaves the active list and appears in the archive.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">Phone width is the pass/fail surface — a desktop-pretty card that clips at 390px fails.</div>
+    <div class="gotcha">A resolved alert lingering in the active list is a failure, not a cosmetic issue.</div>
     <div class="verdict ok"><span>Success</span> The full alert is glanceable on the phone and archives cleanly after a decision — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> Fields are cut off or unreadable, or a resolved alert stays in the active list.</div>
   </section>
@@ -662,6 +892,14 @@
         <li>Guard states: disabled with no alert present; single-fire (no double-click double-buy).</li>
         <li>Ignoring the alert is a first-class choice and logs &quot;no trade&quot;.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>enabled</b> is tappable only with an alert present.</span>
+        <span class="sub"><b>single-fire</b> sends exactly one buy click per decision.</span>
+        <span class="sub"><b>exact-size</b> executes the shown size, nothing else.</span>
+        <span class="sub"><b>ignore</b> logs &quot;no trade&quot; as a first-class outcome.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -683,11 +921,21 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent checks the button on a phone-width screen (ProofShot recording): tappable with an alert present, greyed out without one.</li>
-      <li>It taps once: the Position manager receives exactly one buy click with the shown size.</li>
-      <li>It ignores the next alert: &quot;no trade&quot; appears in the log.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>The BUY button on the alert card, on the phone.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">UI at 390px; ProofShot recording; a test alert present and a Position manager test receiver watching.</div>
+    <ul class="vreach">
+      <li><b>States.</b> With no alert, the button is greyed out; with an alert, it is tappable.</li>
+      <li><b>Tap.</b> Tap once. The receiver gets exactly one buy click carrying the size shown on the card.</li>
+      <li><b>Double-tap.</b> Tap twice fast. Still exactly one buy click.</li>
+      <li><b>Ignore.</b> Dismiss the next alert. The log shows &quot;no trade&quot;.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The size sent must equal the size *displayed* — compare them in the recording, not from logs alone.</div>
+    <div class="gotcha">Greyed-out must mean truly inert: a disabled button that still fires is the worst failure here.</div>
     <div class="verdict ok"><span>Success</span> One tap = one buy click with the shown size; ignoring logs cleanly; no double-fires — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> The button can't be tapped, fires twice, sends a different size than shown, or the click never arrives.</div>
   </section>
@@ -700,6 +948,14 @@
         <li>A separate <b>moon bag section</b> — the bag's manual home: view it, sell it manually, nothing automatic.</li>
         <li>Live updates from position events (fills, ladder steps) without a refresh.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>live-view</b> shows open positions with stop and ladder state.</span>
+        <span class="sub"><b>live-update</b> refreshes on fill/ladder events without a manual reload.</span>
+        <span class="sub"><b>bag-section</b> shows the moon bag separately, marked manual-only.</span>
+        <span class="sub"><b>flat-clear</b> removes closed positions; the bag remains.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -721,11 +977,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent opens the positions view with a test position running on devnet (ProofShot recording): stop and ladder state are visible.</li>
-      <li>It runs the position to 2x: the moon bag appears separately, marked manual-only.</li>
-      <li>It closes the rest: the position clears, the moon bag remains.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>The positions view in the front-end UI.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">UI visible; ProofShot recording; a devnet test position running.</div>
+    <ul class="vreach">
+      <li><b>Open position.</b> The view shows the position with its stop and ladder state.</li>
+      <li><b>To 2x.</b> Run it to 2x. The moon bag appears as a separate holding, marked manual-only.</li>
+      <li><b>Close out.</b> Close the rest. The position clears; the moon bag remains in its section.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">&quot;Updates live&quot; means without a manual refresh — sit and watch; don't reload between events.</div>
+    <div class="gotcha">Anything offering an automatic sell of the bag from this view is an instant failure.</div>
     <div class="verdict ok"><span>Success</span> The recording shows the live position, then the separate moon bag that outlives the automation.</div>
     <div class="verdict bad"><span>Failure</span> The position doesn't appear, the moon bag vanishes after 2x, or something auto-sells the bag.</div>
   </section>
@@ -738,6 +1003,14 @@
         <li>Hand-off of the order to the matching chain adapter with the correct wallet keys.</li>
         <li>The venue is recorded on every fill report.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>route</b> picks the venue from the coin's listing.</span>
+        <span class="sub"><b>keys</b> uses the right venue's wallet keys (secret names only).</span>
+        <span class="sub"><b>venue-record</b> names the venue on every fill report.</span>
+        <span class="sub"><b>unroutable</b> blocks with a reason instead of guessing.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -759,11 +1032,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent sends a test order for a Solana-only coin and one for a Robinhood Chain coin (ProofShot recording).</li>
-      <li>Each fill report shows the correct venue.</li>
-      <li>It sends an unroutable test coin: the order blocks with the reason shown.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: the venue shows on each fill in the fill feed.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Fill feed visible; ProofShot recording; test coins per venue plus one unroutable.</div>
+    <ul class="vreach">
+      <li><b>Solana coin.</b> Send a Solana-only test order. The fill report shows venue Solana.</li>
+      <li><b>Robinhood coin.</b> Send a Robinhood Chain test order. The fill report shows venue Robinhood Chain.</li>
+      <li><b>Unroutable.</b> Send a coin listed on neither. The order blocks with the reason shown.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The venue must come from the listing, not config preference — force a mismatch in test data and watch it still route correctly.</div>
+    <div class="gotcha">Keys must never appear in the recording; secret names only.</div>
     <div class="verdict ok"><span>Success</span> Each order lands on the right chain with the venue named; unroutable coins block visibly.</div>
     <div class="verdict bad"><span>Failure</span> An order goes to the wrong chain, the venue isn't recorded, or an unroutable coin gets forced through.</div>
   </section>
@@ -777,6 +1059,14 @@
         <li>Submission to the chain and capture of the fill (price, size, venue).</li>
         <li>Failure handling: a failed transaction is reported, never silently retried.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>click-gated</b> executes only on a buy click, never on the alert alone.</span>
+        <span class="sub"><b>onchain-fill</b> captures the real fill: size, price, venue.</span>
+        <span class="sub"><b>no-replay</b> re-clicks never re-enter.</span>
+        <span class="sub"><b>failure-visible</b> reports chain failures with the real error.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -798,11 +1088,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent clicks buy on a devnet test alert (ProofShot recording).</li>
-      <li>The fill appears in the fill feed with size, price, and venue.</li>
-      <li>It clicks again on the same alert: no second entry appears.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>The BUY button (user action); the fill feed (proof).</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Devnet; disposable wallet; ProofShot recording; a test alert with a pre-filled size.</div>
+    <ul class="vreach">
+      <li><b>Click.</b> Tap BUY once. The fill feed shows one fill matching the pre-filled size, with price and venue.</li>
+      <li><b>Re-click.</b> Tap again on the same alert. No second entry appears.</li>
+      <li><b>No click.</b> Fire an alert and never tap. The wallet shows no spend.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">&quot;The alert alone never spends money&quot; is the load-bearing invariant — always run the no-click check, not just the happy path.</div>
+    <div class="gotcha">The fill must be confirmed on-chain, not just optimistically reported; check the explorer in the recording.</div>
     <div class="verdict ok"><span>Success</span> One click produces one on-chain fill matching the pre-filled size; re-clicks do nothing — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> The click produces no fill, a fill appears without any click, or one click enters twice.</div>
   </section>
@@ -816,6 +1115,14 @@
         <li>While active it can be cancelled or adjusted (front end or back end).</li>
         <li>It cancels itself automatically when the 2x rule fires.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>place</b> puts the stop on the exchange at entry −30% at entry time.</span>
+        <span class="sub"><b>inspect</b> shows it on the exchange's open-orders list.</span>
+        <span class="sub"><b>adjust</b> supports manual cancel / price change while active.</span>
+        <span class="sub"><b>self-cancel</b> removes it automatically when 2x fires.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -837,11 +1144,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent enters on devnet, then opens the exchange's open-orders list (ProofShot recording): the stop shows at entry −30%.</li>
-      <li>It cancels the stop manually: it disappears from the exchange.</li>
-      <li>It runs a position to 2x: the stop cancels itself — the recording shows it vanish with no manual action.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>The exchange's open-orders list (the user-visible system of record).</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Devnet; ProofShot recording; the exchange's open-orders view open.</div>
+    <ul class="vreach">
+      <li><b>Place.</b> Enter a position. The open-orders list shows the stop at entry −30%.</li>
+      <li><b>Cancel by hand.</b> Cancel it manually. It disappears from the exchange.</li>
+      <li><b>Self-cancel.</b> Run a fresh position to 2x. The recording shows the stop vanish with no manual action.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The bot saying &quot;stop set&quot; is not proof — only the exchange's own list counts (Bobby's rule).</div>
+    <div class="gotcha">If placement fails, the position must surface as unprotected immediately — simulate a placement failure and check the alarm.</div>
     <div class="verdict ok"><span>Success</span> The stop is visible on the exchange, cancellable by hand, and self-cancels at 2x — every step recorded.</div>
     <div class="verdict bad"><span>Failure</span> The entry fills but no stop exists on the exchange — no proof of protection beyond the bot's word.</div>
   </section>
@@ -854,6 +1170,13 @@
         <li>Execution only into qualifying candles; never into a red tape.</li>
         <li>Retry logic: a clip that can't fill into volume waits and retries — it is never dumped.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>volume-check</b> qualifies the tape before every exit.</span>
+        <span class="sub"><b>green-only</b> fills only on qualifying candles.</span>
+        <span class="sub"><b>wait-visible</b> shows a pending exit's waiting state while red.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -875,11 +1198,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent replays a green-volume window (ProofShot recording): the exit fills.</li>
-      <li>It replays a red window: the exit waits — no fill prints.</li>
-      <li>The pending exit shows its waiting state while the tape stays red.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: the fill feed and the pending-exit state in the UI.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">ProofShot recording; chart replay driving the tape; an exit order ready.</div>
+    <ul class="vreach">
+      <li><b>Green window.</b> Replay a green-volume window. The exit fills.</li>
+      <li><b>Red window.</b> Replay a red window. No fill prints; the exit shows as pending with its waiting state.</li>
+      <li><b>Recovery.</b> Follow red with green. The pending exit fills.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">One red-candle fill fails the whole feature — the replay log and the fill's candle must both be visible in the recording.</div>
+    <div class="gotcha">A waiting exit that silently cancels instead of pending is a failure.</div>
     <div class="verdict ok"><span>Success</span> The exit fills in the green window and visibly holds through the red one — both in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A sell prints on a red candle, or a waiting exit vanishes instead of pending.</div>
   </section>
@@ -892,6 +1224,13 @@
         <li>Delivery to both consumers: the Position manager (ladder state) and the Trade journal (record).</li>
         <li>Acknowledged delivery: reporting retries until both consumers confirm.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>one-event</b> emits exactly one event per fill, no duplicates.</span>
+        <span class="sub"><b>both-consumers</b> delivers to ladder and journal alike.</span>
+        <span class="sub"><b>ack-retry</b> retries until both acknowledge; unacknowledged escalates.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -913,11 +1252,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent executes a devnet entry plus one clip (ProofShot recording).</li>
-      <li>The journal feed shows both fills with matching sizes and prices.</li>
-      <li>The Position manager's ladder state advances on both.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: the journal feed and the ladder state in the UI.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Devnet; ProofShot recording; journal feed and ladder state visible.</div>
+    <ul class="vreach">
+      <li><b>Two fills.</b> Execute an entry plus one clip. The journal shows both, with sizes and prices matching the chain.</li>
+      <li><b>Ladder advances.</b> The ladder state reflects both fills.</li>
+      <li><b>No gaps.</b> Compare the chain's fill list against the journal — identical.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">A missed fill corrupts the ladder silently — the chain-vs-journal comparison is the real check, not either view alone.</div>
+    <div class="gotcha">Duplicate events are as bad as missing ones; count them.</div>
     <div class="verdict ok"><span>Success</span> Every on-chain fill appears once in both places, exactly as executed — verifiable in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A fill executed on-chain is missing from the journal or the ladder — a silent gap.</div>
   </section>
@@ -931,6 +1279,14 @@
         <li>The size is attached to the alert so the UI shows it pre-filled.</li>
         <li>The Grok score is <b>never an input</b> — Grok decides whether, Kelly decides how much.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>compute</b> runs the fractional Kelly calculation at alert time.</span>
+        <span class="sub"><b>prefill</b> attaches the size to the alert payload.</span>
+        <span class="sub"><b>no-grok</b> guarantees the Grok score never touches the size.</span>
+        <span class="sub"><b>missing-inputs</b> shows an honest empty state instead of guessing.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -952,11 +1308,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent pins test inputs (bankroll, win-rate, payoff, fraction) and fires a test alert (ProofShot recording).</li>
-      <li>The pre-filled size matches the fractional Kelly number it computed by hand beforehand.</li>
-      <li>It removes the inputs: the alert shows &quot;no size — inputs missing&quot;, not a guess.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>The pre-filled size on the alert card in the UI.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">ProofShot recording; pinned test inputs (bankroll, win-rate, payoff, fraction); the expected number computed by hand beforehand.</div>
+    <ul class="vreach">
+      <li><b>Known inputs.</b> Fire a test alert. The pre-filled size matches the hand-computed fractional Kelly number.</li>
+      <li><b>Missing inputs.</b> Remove the inputs and fire again. The alert shows &quot;no size — inputs missing&quot;, not a guess.</li>
+      <li><b>Score independence.</b> Fire two alerts with identical inputs but different Grok scores. Identical sizes.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">Compute the expected number before the run — never &quot;verify&quot; against whatever the system produced.</div>
+    <div class="gotcha">The score-independence check is the one that proves the ruling; don't skip it because the happy path passed.</div>
     <div class="verdict ok"><span>Success</span> The alert's size equals the hand check, and missing inputs produce an honest empty state.</div>
     <div class="verdict bad"><span>Failure</span> The size disagrees with the hand check, or the system invents a size when inputs are missing.</div>
   </section>
@@ -970,6 +1335,14 @@
         <li>Simultaneous cancellation of the stop-loss order on the exchange.</li>
         <li>After firing, the position runs on house money — the ladder continues with moon bag + clips.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>watch-2x</b> tracks price against the 2x mark.</span>
+        <span class="sub"><b>withdraw</b> sells exactly the initial capital into volume.</span>
+        <span class="sub"><b>cancel-stop</b> removes the stop from the exchange at the same moment.</span>
+        <span class="sub"><b>once</b> never fires twice on one position.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -991,11 +1364,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent runs a devnet position to 2x (ProofShot recording).</li>
-      <li>The withdrawal fill appears, equal to the initial capital.</li>
-      <li>The exchange's open-orders list no longer shows the stop.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: the withdrawal fill in the fill feed; the stop gone from the exchange's open-orders list.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Devnet position with a known initial capital; ProofShot recording; the exchange's open-orders view open.</div>
+    <ul class="vreach">
+      <li><b>Reach 2x.</b> Run the position to 2x. A withdrawal fill appears equal to the initial capital.</li>
+      <li><b>Stop gone.</b> The open-orders list no longer shows the stop.</li>
+      <li><b>Once only.</b> Push price past 2x, back below, past again. No second withdrawal fires.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The withdrawal must equal the *initial*, not a round number near it — compare exactly.</div>
+    <div class="gotcha">Until the withdrawal fills, the stop must stay live; cancelling first and failing to sell leaves the position naked.</div>
     <div class="verdict ok"><span>Success</span> At 2x the initial is visibly out and the stop is gone from the exchange — both in the recording.</div>
     <div class="verdict bad"><span>Failure</span> Price crosses 2x and the initial is still in, or the stop is still live on the exchange.</div>
   </section>
@@ -1008,6 +1390,14 @@
         <li>The flag is exclusion: the clip ladder and every automatic exit skip the bag.</li>
         <li>The bag's home is the Front-end UI — view it, sell it manually; no automation touches it.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>flag</b> marks 20% of the remainder as the bag at 2x.</span>
+        <span class="sub"><b>exclude</b> keeps the bag out of every clip and stop.</span>
+        <span class="sub"><b>manual-home</b> shows the bag in the UI with a manual sell only.</span>
+        <span class="sub"><b>fixed-size</b> never recalculates the bag after flagging.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -1029,11 +1419,20 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent runs a devnet position past 2x (ProofShot recording): the moon bag shows in the UI, marked manual-only.</li>
-      <li>It runs the ladder to completion: the bag is still there, untouched.</li>
-      <li>It sells the bag manually from the UI: it closes, logged as a manual sell.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>The moon bag section of the positions view; its manual sell button.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Devnet position past 2x; ProofShot recording; the positions view open.</div>
+    <ul class="vreach">
+      <li><b>Flag.</b> After 2x, the bag appears in the UI, marked manual-only.</li>
+      <li><b>Survives ladder.</b> Run the ladder to completion. The bag is still there, untouched.</li>
+      <li><b>Manual sell.</b> Sell the bag from the UI. It closes, logged as a manual sell.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">Any automatic path touching the bag is an instant failure — test the full ladder, not just one clip.</div>
+    <div class="gotcha">The bag's size is fixed at flag time; a bag that shrinks as the ladder runs is a math bug, not a feature.</div>
     <div class="verdict ok"><span>Success</span> The bag survives every automatic exit and moves only on a manual action — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> An automatic exit sells into the bag, or the bag can't be sold manually.</div>
   </section>
@@ -1047,6 +1446,14 @@
         <li>Clips route through the sell-into-volume filter — never into red candles.</li>
         <li>The ladder stops when only the moon bag remains.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>clip-trigger</b> fires one clip per bearish divergence.</span>
+        <span class="sub"><b>clip-size</b> sizes 15–20% of the remaining position, bag excluded.</span>
+        <span class="sub"><b>into-volume</b> routes every clip through the sell-into-volume filter.</span>
+        <span class="sub"><b>ladder-end</b> stops when only the moon bag remains.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -1068,11 +1475,21 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent replays two bearish divergences on a devnet position (ProofShot recording).</li>
-      <li>Two clip fills appear, each 15–20% of the then-remaining position, each into a green candle.</li>
-      <li>The moon bag is untouched after both.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>Indirect: clip fills in the fill feed; the ladder state in the positions view.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Devnet position past entry with a flagged bag; ProofShot recording; replay of two bearish divergences.</div>
+    <ul class="vreach">
+      <li><b>Two clips.</b> Replay two divergences. Two clip fills appear, each 15–20% of the then-remaining position.</li>
+      <li><b>Green only.</b> Both clips fill on green candles with volume — the candle is visible in the recording.</li>
+      <li><b>Bag intact.</b> After both clips, the moon bag is exactly as flagged.</li>
+      <li><b>Ladder ends.</b> Clip until only the bag remains. No further clips fire.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">Clip size is of the *remaining* position at that moment, not the original — check the second clip's math against the first clip's remainder.</div>
+    <div class="gotcha">A repeated signal on the same divergence must not double-clip.</div>
     <div class="verdict ok"><span>Success</span> Both clips fill at the right size into volume; the bag is intact — all in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A divergence passes with no clip, a clip prints on red, or a clip eats the moon bag.</div>
   </section>
@@ -1085,6 +1502,14 @@
         <li>Every department writes through the shared event schema: gate verdicts, the alert, Bobby's click, every fill, every ladder step.</li>
         <li>A queryable view: the whole trade replays in order from the journal alone.</li>
       </ol>
+    </div>
+    <div class="fsec"><div class="flbl">Sub-features</div>
+      <div class="subs">
+        <span class="sub"><b>record</b> opens per callout and appends in order.</span>
+        <span class="sub"><b>one-schema</b> keeps every department on the same event shape.</span>
+        <span class="sub"><b>replay</b> shows the complete trade in order with no gaps.</span>
+        <span class="sub"><b>close</b> seals the record when flat, noting a surviving moon bag.</span>
+      </div>
     </div>
     <div class="fsec"><div class="flbl">Behaviour</div>
       <ul class="fbeh">
@@ -1106,16 +1531,25 @@
   <section class="vbox">
     <div class="flbl">Verification — from the user's side</div>
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
-    <ol class="fsteps">
-      <li>The tester agent runs one full devnet trade end to end (ProofShot recording).</li>
-      <li>The journal shows every step in order — gates, alert, click, fills, ladder — with no gaps.</li>
-      <li>It cross-checks two events against the exchange and the UI: they match.</li>
-    </ol>
+    <div class="flbl">How to get to it (user POV)</div>
+    <ul class="vreach">
+      <li>The journal view in the UI.</li>
+    </ul>
+    <div class="flbl">Driving it with the harness</div>
+    <div class="pre">Devnet; ProofShot recording; one full trade run end to end.</div>
+    <ul class="vreach">
+      <li><b>Full trade.</b> Run one complete trade. The journal shows every step in order: gates, alert, click, fills, ladder.</li>
+      <li><b>No gaps.</b> Cross-check two events against the exchange and the UI — they match.</li>
+      <li><b>Closed record.</b> At flat, the record is sealed and notes any surviving moon bag.</li>
+    </ul>
+    <div class="flbl">Gotchas</div>
+    <div class="gotcha">The journal is the audit trail of last resort — a single missing event fails the feature, even if everything &quot;worked&quot;.</div>
+    <div class="gotcha">Append-only means append-only: no edited or deleted events anywhere in the record.</div>
     <div class="verdict ok"><span>Success</span> The complete trade replays from the journal alone, matching reality.</div>
     <div class="verdict bad"><span>Failure</span> Any event that happened is missing from the record, or the journal disagrees with the exchange.</div>
   </section>
 
-  <footer>Source of truth: <a href="https://tr3-ai.github.io/idea-slicer/memecoin-virality-trader.html">the idea-slicer map</a> · <a href="index.html">all feature maps</a></footer>
+  <footer>Source of truth: <a href="https://tr3-ai.github.io/idea-slicer/memecoin-virality-trader.html">the idea-slicer map</a> · <a href="https://github.com/TR3-AI/feature-map/tree/main/verify-memecoin-virality-trader">raw tester kit</a> · <a href="index.html">all feature maps</a></footer>
 
 </div>
 <script src="nav.js" defer></script>

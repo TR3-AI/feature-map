@@ -44,12 +44,31 @@
     padding: 4px 12px; border-radius: 4px; background: var(--box);
   }
 
-  .kitbanner {
-    background: var(--teal-soft); border: 2px solid var(--teal); border-radius: 8px;
-    padding: 14px 18px; font-size: 14.5px; line-height: 1.55; margin-bottom: 26px;
+  /* sub-feature chips */
+  .subs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .sub {
+    background: var(--blue-soft); border: 1.5px solid var(--blue); border-radius: 6px;
+    padding: 4px 10px; font-size: 12.5px;
   }
-  .kitbanner b { color: var(--teal); }
-  .kitbanner a { color: var(--teal); font-weight: 800; }
+  .sub b { font-family: ui-monospace, Menlo, monospace; color: var(--blue); }
+
+  /* verification: reach / preconditions / drive steps / gotchas */
+  .vreach { font-size: 14px; line-height: 1.55; margin: 0 0 10px 22px; }
+  .vreach li { margin: 4px 0; }
+  .vreach li::marker { color: var(--teal); }
+  .pre {
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--soft);
+    background: var(--paper); border-radius: 6px; padding: 8px 12px; margin-bottom: 8px;
+  }
+  .vbox ol.fsteps b, .vreach b { color: var(--blue); }
+  .vbox code, .vreach code {
+    font-family: ui-monospace, Menlo, monospace; font-size: 12.5px;
+    background: var(--blue-soft); border-radius: 4px; padding: 1px 5px;
+  }
+  .gotcha {
+    background: #fdf6e8; border-left: 4px solid #9a6a00; border-radius: 0 6px 6px 0;
+    padding: 8px 12px; margin: 6px 0; font-size: 13.5px; line-height: 1.5;
+  }
 
   /* ── feature box ─────────────────────────────────── */
   .fbox {
@@ -152,11 +171,9 @@
     <div class="stamp">{{COUNT}} · updated {{UPDATED}}</div>
   </header>
 
-  {{KIT_BANNER}}
-
   {{FEATURES}}
 
-  <footer>Source of truth: <a href="{{SOURCE_URL}}">the idea-slicer map</a> · <a href="index.html">all feature maps</a></footer>
+  <footer>Source of truth: <a href="{{SOURCE_URL}}">the idea-slicer map</a>{{KIT_FOOT}} · <a href="index.html">all feature maps</a></footer>
 
 </div>
 <script src="nav.js" defer></script>
