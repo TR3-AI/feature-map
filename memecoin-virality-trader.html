@@ -272,6 +272,15 @@
       <li>Open the config view in the front-end UI.</li>
       <li>Edit the list file directly between runs (owner action).</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Whitelist/allowlist config in production systems is typically managed as its own isolated config object — a file or store watched independently from the rest of app config — so a bad edit can't take down unrelated features.</li>
+      <li>The standard pattern for live config is: a file watcher detects a change, the new version is parsed and validated before being swapped in atomically, and only a valid config replaces the running one — an invalid edit is rejected rather than crashing or partially applying.</li>
+      <li>The restart-required alternative (load once at startup, keep in memory, refresh only on the next run) trades operational convenience for predictability — nobody has to reason about the list changing mid-run, at the cost of a manual restart to pick up edits.</li>
+      <li>Secrets hygiene for a list like this means it must reference identities by name/handle only — any real credentials (API keys, wallet keys) live in a separate secret store referenced by name, never inlined in the same config a human edits and views.</li>
+      <li>Existence: exists in the requested format — a config file plus an in-memory list is the standard shape for this feature; nothing needs bot-simulation, though &quot;restart to reload&quot; specifically must be tested by actually restarting the watcher rather than editing live.</li>
+      <li>Deviations from standard: yes, deliberately. Production practice increasingly favors hot-reloading whitelist config live (watch, validate, atomic swap, no restart) — the map instead requires a restart/reload between runs for edits to take effect. This matches the file's existing Research-note gotcha; the map stands on this choice.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">UI up; ProofShot recording; a test stream with one listed and one unlisted source.</div>
     
@@ -359,6 +368,15 @@
     <ul class="vreach">
       <li>Indirect: post a callout on a tracked stream; the candidate appears in the intake view.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Real callout/signal channels (Telegram groups, Discord, X) post short, informal messages — a contract address plus hype text and source attribution — with no fixed template; extraction has to handle slang and commentary around the address, not just a clean canonical shape.</li>
+      <li>Spam and scam callouts exploit that looseness: fake tickers, garbled or mismatched addresses, honeypot contracts posted with manufactured urgency (&quot;buy now&quot;) — validating the address against the chain's own format (length/charset) at intake is a real defense against garbled or fake addresses slipping through.</li>
+      <li>Streaming ingestion (Telegram's long-polling <code>getUpdates</code>, or an equivalent feed) tracks position with a cursor/offset that must be persisted and resumed after a drop — reconnecting from the wrong offset either replays old messages (duplicate candidates) or skips ones that arrived during the outage.</li>
+      <li>Production dedupe is typically keyed on message ID or a content hash, matching the map's address+timestamp dedupe approach.</li>
+      <li>Existence: stream-based callout ingestion is native — Telegram/Discord-style bots use exactly this long-poll/reconnect pattern; nothing needs bot-simulation beyond driving the test stream and forcing the disconnect.</li>
+      <li>Deviations from standard: none — research reinforced the spec (strict address-format validation and reason-logged rejection are how production signal bots defend against the loose, scam-prone formats real callout channels actually post; already reflected in the existing Gotchas note on non-canonical shapes).</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Test stream connected; intake view visible; ProofShot recording.</div>
     
@@ -445,6 +463,15 @@
     <ul class="vreach">
       <li>Indirect: the baseline appears on the candidate in the scorer view.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Rolling/trailing-window averages (here, 30 days) are the standard way to build a &quot;normal&quot; baseline before judging a new data point against it — recomputed fresh, never reused from a stale window.</li>
+      <li>The X API (and similar) returns tweet history in pages behind a cursor (<code>next_token</code>); a correct pull follows every page until the cursor is exhausted — stopping at the first short page silently truncates history.</li>
+      <li>Rate limits (429s, time-windowed) are a normal part of a real pull; production pulls pause and resume from the same cursor rather than returning a partial page as if it were complete.</li>
+      <li>Thin-history handling mirrors real practice: flagging &quot;not enough samples&quot; instead of averaging a handful of tweets into a confident-looking number.</li>
+      <li>Existence: 30-day history pulls with cursor-based pagination are native to the X API — nothing here is bot-simulated except forcing the mid-pull rate limit, which has to be induced deliberately for the test.</li>
+      <li>Deviations from standard: production engagement baselines often use outlier-resistant averaging (trimmed mean, rolling median) to blunt viral-tweet skew; the map deliberately uses a plain likes+retweets mean instead (see Research note in Gotchas) — the map stands, outliers count in full rather than being filtered.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Scorer view visible; ProofShot recording; a test account whose known-beforehand metrics include at least one high-engagement outlier tweet in the window; a way to simulate a rate limit mid-pull.</div>
     
@@ -525,6 +552,14 @@
     <ul class="vreach">
       <li>Indirect: verdicts appear in the gate log / candidate view.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Baseline-multiplier spike detection is a standard shape for flagging virality: compute a recent baseline, then require the new reading to clear it by some multiple — real frameworks use similar orders of magnitude, e.g. 5-10x for a mild spike up to 20x+ for a clear breakout.</li>
+      <li>Statistical practice often adds percentile or z-score thresholds (e.g. 90th/99th percentile of the engagement distribution) on top of a flat multiplier, since a flat multiple-of-baseline is noisier for accounts with very low or very spiky baselines — the map's flat-multiplier design is the simpler version of the same idea.</li>
+      <li>Boundary handling (exact-threshold vs just-under, which band an edge-age candidate lands in) is a classic off-by-one source in any banded-threshold system — real implementations pin the comparison operator (≥ vs &gt;) and the edge's band membership explicitly, which the map already does.</li>
+      <li>Existence: age-banded engagement-multiplier gates are bespoke to this system, not an out-of-the-box exchange or social-platform feature — the gate must be bot-built from the coin's own tweet-metric history as the baseline, so this whole feature is bot-computed, not something inspectable on an external venue.</li>
+      <li>Deviations from standard: generic virality-detection frameworks flag a spike by degree alone (percentile/z-score/flat multiplier), independent of how old the post is; the map instead bands the required multiplier by time-since-callout (3x under 1h, up to 50x at 24h+) — a domain-specific adaptation for memecoin timing, not lifted from a generic detection framework; no existing gotcha conflicts with it, so it stands as a deliberate design choice rather than an oversight.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Gate log visible; ProofShot recording; four representative test candidates with pinned values (4x/30min, 4x/3h, 60x/2days, any-multiplier/12h); exact-boundary pairs pinned per band — 3x vs 2.9x at 30 minutes, 10x vs 9.9x at 3 hours — plus three candidates aged exactly at the band edges: 1h, 6h, 24h.</div>
     
@@ -604,6 +639,15 @@
     <ul class="vreach">
       <li>Indirect: the analysis view shows the fields and scores per candidate.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>LLM extraction pipelines split into two failure classes: invalid JSON (parse failure) and valid-but-wrong JSON (schema violation — missing field, merged scores, out-of-range number) — schema violations are the more common and more dangerous because the response still looks fine at a glance.</li>
+      <li>Real practice layers guards: provider-side structured-output/JSON-mode enforcement first, then app-side validation against the exact schema (required fields present, veracity/virality numeric and separate, in range) — anything that fails either layer gets rejected, not silently patched.</li>
+      <li>A live API can return a clean 200 with content that's schema-valid but wrong (a plausible narrative that's fabricated, a score outside sane bounds) — that's a distinct hallucination failure from a dead API, and both need to trip the same block.</li>
+      <li>Retry/repair against a schema failure is bounded (one or two attempts) then a hard fail — never an unbounded retry loop or a silent pass-through on the last attempt.</li>
+      <li>Existence: this kind of pipeline (prompt → LLM call → schema-validated JSON) is standard, off-the-shelf tooling — structured outputs / JSON mode plus an app-side validator exist directly; nothing needs bot-simulation.</li>
+      <li>Deviations from standard: none — research reinforced the spec; the file's <code>api-failure</code> sub-feature already treats a schema-violating 200 as its own failure case distinct from a dead API, which matches real-world data (schema/value errors are the dominant failure mode, not outright API death).</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Analysis view visible; ProofShot recording; a known test coin.</div>
     
@@ -682,6 +726,15 @@
     <ul class="vreach">
       <li>Indirect: verdicts appear in the gate log / candidate view.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Weighted/multi-factor scoring gates combine several signal inputs into one number and compare it to a calibrated bar — weak signals below the bar get discarded before they can trigger a trade.</li>
+      <li>The core design fork is fail-open vs fail-closed: when a gate can't produce a trustworthy score (an input is missing, an upstream API is down), does it block the trade (fail-closed) or wave it through anyway (fail-open)? Production trading risk gates default to fail-closed — uncertain state means &quot;no trade,&quot; not &quot;trade anyway.&quot;</li>
+      <li>Thresholds are commonly context-dependent rather than one flat number — the bar shifts based on a corroborating signal (here: whether a tweet is attached), similar to how a classifier's confidence can shift a stop-loss threshold.</li>
+      <li>A reject log (score, threshold, which branch fired) is what makes a scoring gate auditable instead of a black box — without it nobody can tell whether a specific reject was a bug or a correct call.</li>
+      <li>Existence: this is a standard trading risk-gate pattern — combine inputs, compare to a pinned bar, log the verdict. Nothing needs bot-simulation; only the specific dual-threshold numbers and branch rule are bespoke to this map.</li>
+      <li>Deviations from standard: none — research reinforced the spec. The dual-threshold/branch design matches the fail-closed norm: this gate's own upstream (Grok analysis) blocks candidates rather than passing them when its API is unavailable, so a candidate never reaches this gate with a fabricated or default score.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Gate log visible; ProofShot recording; candidates with pinned scores, including the exact threshold boundaries (6.0 with a tweet, 8.0 without one) and tweet-field edge cases (a tweet present but empty, and a tweet field absent entirely).</div>
     
@@ -759,6 +812,15 @@
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
       <li>Indirect: the bundler % appears on the candidate in the checker view.</li>
+    </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Bubblemaps-style providers scan a token's launch transactions for wallets that bought in the same block or near-simultaneously, then compute what share of total supply those wallets hold — excluding the program-owned bonding-curve account itself, since it isn't a buyer.</li>
+      <li>Providers disagree with each other on the exact % because &quot;same block&quot; windows and wallet-clustering heuristics differ tool to tool — that's the real-world reason to pin one provider and one counting method as the single source of truth rather than average across tools.</li>
+      <li>A 429 rate limit and a 5xx outage look different in provider logs, but both mean the same thing operationally: no trustworthy number right now, so the candidate waits either way.</li>
+      <li>The documented blind spot is real: stealth-bundling tools atomically bundle token creation + buys into one transaction, so on-chain analytics see many distinct, unlinked-looking holders instead of a flagged cluster — providers built for the common case can miss these by design, not by bug.</li>
+      <li>Existence: bundle-percentage pulls with curve exclusion are native — Bubblemaps, Trench Bot, and similar chain-analytics providers do exactly this scan/exclude/aggregate today; only the provider-down state needs to be forced for the test.</li>
+      <li>Deviations from standard: none — research reinforced the spec (pinned provider/method, curve exclusion, and wait-not-wave-through on outage all match how production bundle checkers already behave; the stealth-bundling blind spot is already called out in Gotchas as a provider limit, not a pull-mechanism bug).</li>
     </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Checker view visible; ProofShot recording; a test token with a known bundler setup; the provider's own dashboard open for comparison; a way to block and later restore the provider.</div>
@@ -839,6 +901,15 @@
     <ul class="vreach">
       <li>Indirect: the trend label appears on the candidate in the checker view.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Bundle-wallet supply share is highest right after launch — it's set the moment the coordinated buys land in the creation block, so freshly-launched tokens naturally start at whatever % the bundlers grabbed.</li>
+      <li>From there the share normally either dilutes down as organic buyers accumulate around the bundle (a good sign — bundlers' relative control shrinks) or stays flat/climbs if bundlers keep buying or organic volume never shows up (a danger sign).</li>
+      <li>A falling share can also mean bundlers are actively selling into demand rather than diluting away — a falling % from dumping looks identical to a falling % from dilution unless paired with a price/volume read, which is why &quot;decreasing&quot; is a label, not a safety guarantee.</li>
+      <li>A single reading can't distinguish any of this — a real trend needs at least two points over a time window, which is why one snapshot has to read &quot;unknown&quot; rather than default to the friendliest label.</li>
+      <li>Existence: multi-point trend tracking must be bot-built on top of a snapshot-only provider — poll the pinned provider on a schedule and diff the readings yourself; there's no off-the-shelf &quot;bundle trend&quot; feed to pull.</li>
+      <li>Deviations from standard: most public bundle checkers surface only a single point-in-time %, not a tracked trend — the map's requirement for multiple readings over a pinned window (and &quot;unknown&quot; for a lone snapshot) goes beyond typical tooling rigor, not below it; the map stands.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Checker view visible; ProofShot recording; four test tokens — decreasing, increasing, single snapshot, and one whose readings wobble slightly around a flat level with no real trend.</div>
     
@@ -915,6 +986,15 @@
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
       <li>Indirect: verdicts appear in the gate log / candidate view.</li>
+    </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Bundle-detection tools trace a token's creation-block buys: multiple wallets buying in the same block, funded from a common source, using freshly-created wallets, is the classic signature of a coordinated launch.</li>
+      <li>Public checkers (Trench Bot, Bubblemaps, SolBundler, etc.) surface a combined &quot;bundled supply %&quot;; the higher that number, the more the price sits under one party's control.</li>
+      <li>A trend modifier is standard practice too: a rising bundled share (bundlers accumulating more control) reads worse than a static share at the same %, which is why direction is checked separately from the raw number.</li>
+      <li>The classic failure mode for gates like this is treating the ceiling as advisory — a &quot;close enough&quot; override, or checking only the % and skipping the direction check.</li>
+      <li>Existence: threshold gating on a provider-supplied % is native comparison logic — no bot simulation needed beyond feeding the gate known test %/trend pairs.</li>
+      <li>Deviations from standard: public bundler-detection tooling commonly treats 25–40% combined bundler/sniper holdings as only a caution zone (see Research note in Gotchas) vs the map's stricter 10–15% reject ceiling — the map stands; it's meant to be more conservative than public tools, not a bug.</li>
     </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Gate log visible; ProofShot recording; candidates with pinned % and trend, including one pinned exactly at the 15% ceiling boundary.</div>
@@ -994,6 +1074,15 @@
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
       <li>Indirect: a spotted divergence becomes the alert in the UI; the watch state is visible in the trigger view.</li>
+    </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Divergence compares price structure to an oscillator: price sets a new extreme (e.g. a lower low) that OBV or RSI fails to confirm (a higher low) — the mismatch between the two is the signal, not either reading alone.</li>
+      <li>Standard TA splits divergence into two kinds: &quot;regular&quot; divergence (a reversal signal — price extreme unconfirmed by the oscillator, read at trend extremes) and &quot;hidden&quot; divergence (a continuation signal — the opposite mismatch during a pullback within a healthy trend); this feature is explicitly the regular case only.</li>
+      <li>A pivot (the local high/low a divergence is measured from) can't be fully confirmed until bars form after it — flagging or plotting a pivot before its candle closes is what causes &quot;repainting&quot;: the flag can appear mid-candle, then silently shift or disappear once the candle finishes and the true pivot turns out to be somewhere else.</li>
+      <li>The standard fix is bar-close confirmation: a signal only counts once the candle it depends on has closed; anything computed off a still-forming candle's live price is provisional, not a confirmed flag.</li>
+      <li>Existence: bot-simulated — divergence detection isn't a vendor-provided exchange feature here; it's computed candle by candle from the chart feed's OHLC + OBV/RSI, which is exactly why the confirmed-vs-repainting distinction has to be built and verified deliberately rather than trusted from an off-the-shelf indicator.</li>
+      <li>Deviations from standard: none — the map's &quot;regular divergence only, confirmed on closed candles&quot; spec matches standard TA practice and reinforces the file's existing repainting and regular-vs-hidden gotchas.</li>
     </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Trigger view visible; ProofShot recording; chart replay loaded.</div>
@@ -1075,6 +1164,15 @@
     <ul class="vreach">
       <li>Indirect: the watch state and stop reason appear in the trigger view / log.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Data-freshness guards in trading/market-data systems typically combine two axes: a magnitude/distance check (price moved too far from a reference point) and a time/staleness check (too long since a meaningful update) — either one firing ends the watch.</li>
+      <li>The classic failure mode is the &quot;ghost quote&quot; or frozen feed: the connection stays technically open (no disconnect, no error) but the underlying ticks/candles simply stop arriving — a guard that only reacts to incoming data never notices, because there's no event to react to.</li>
+      <li>Robust staleness checks (e.g. oracle price feeds) compare a wall-clock timestamp against &quot;now&quot; on every read — <code>now - last_update &gt; threshold</code> — rather than counting only ticks that do arrive, specifically so a frozen feed still gets caught even when nothing new shows up.</li>
+      <li>A guard defined purely as &quot;count the candles that arrive&quot; inherits a structural blind spot: if the candle stream itself stops (not just goes flat), the guard has nothing to count against and never fires — it needs a wall-clock fallback to catch that case.</li>
+      <li>Existence: bot-simulated — there's no off-the-shelf &quot;staleness guard&quot; venue feature; distance and time guards are built in-house against the incoming candle stream, so testing has to drive the replay feed directly to exercise both trigger paths.</li>
+      <li>Deviations from standard: yes, deliberately, and already flagged in this file's Research note. Standard stale-feed monitoring uses a wall-clock check that catches a fully frozen feed (zero candles arriving at all); these guards tick only on incoming candles, so a genuinely frozen tape (not just flat/sideways) could starve both — the map stands on this, treating the guards as per-candle rather than wall-clock by design.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Trigger view visible; ProofShot recording; chart replay loaded.</div>
     
@@ -1152,6 +1250,14 @@
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
       <li>The alert card in the front-end UI.</li>
+    </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>An alert payload is normally assembled once per underlying event and delivered with everything a responder needs pre-attached — here that's coin, gate scores, which oscillator diverged, freshness, and the pre-filled Kelly size — nothing fetched lazily after the card renders.</li>
+      <li>Standard alerting practice builds the dedup key (fingerprint) from stable identity fields only — source, resource, alert type — and explicitly excludes anything that naturally changes over time, like a timestamp or freshness/age value.</li>
+      <li>Fingerprinting on a volatile field is the classic cause of duplicate-alert storms and alert fatigue: a static, already-seen issue looks &quot;new&quot; every time a fast-changing field ticks over, training responders to start ignoring the channel.</li>
+      <li>Existence: a standard event/payload-assembly pattern — no simulation needed; the part actually worth testing is the dedup key design, since &quot;once per candidate&quot; only holds if freshness/timestamp never enters the fingerprint.</li>
+      <li>Deviations from standard: none — the map's rule that identity is the candidate alone, never freshness, matches standard alert-dedup practice and reinforces the file's existing gotcha on the same point.</li>
     </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">UI visible at phone width; ProofShot recording; a way to trigger a test divergence end-to-end.</div>
@@ -1319,6 +1425,15 @@
     <ul class="vreach">
       <li>The BUY button on the alert card, on the phone.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>One-tap/one-click trading is a real, named mode on trading platforms (TradingView, CMC Markets, Capital.com) — it executes instantly with no confirmation dialog, trading the safety net of a confirm screen for speed.</li>
+      <li>The classic double-fire failure comes from two directions: a fast double-tap on the same button, and a network-level retry (a timeout causes the client or a gateway to resend the same request) — both must collapse to exactly one order, not two.</li>
+      <li>The standard fix is layered: client-side, the button visually locks the instant the first tap registers (debouncing) so a second tap can't fire; server-side, an idempotency key tags the intent so a retried send resolves to the original order instead of creating a second one.</li>
+      <li>Idempotency-by-key is the same pattern payment APIs (Stripe, Airbnb) use to stop duplicate charges — same intent submitted twice yields one consistent outcome.</li>
+      <li>Existence: one-tap execution is a native toggleable mode on several trading platforms; the idempotency/lock-on-first-tap plumbing behind it is standard engineering, not something that needs bot-simulation — a fast double-tap and a forced retry are both directly reproducible in a test.</li>
+      <li>Deviations from standard: crypto UX guidance often calls for an explicit confirmation step before an irreversible transaction; the map deliberately skips it for one-tap speed (see Research note in Gotchas) — the map stands.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">UI at 390px; ProofShot recording; a test alert present and a Position manager test receiver watching.</div>
     
@@ -1404,6 +1519,15 @@
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
       <li>The positions view in the front-end UI.</li>
+    </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Live trading dashboards typically stream unrealized P&amp;L, entry-vs-current price, and position/order state in real time off a market-data feed — no manual refresh — while closed positions drop out of the active view and remain queryable in history.</li>
+      <li>The classic failure mode is silent staleness: the UI keeps rendering the last-known price or state as if live when the underlying feed actually dropped, and a frozen screen looks identical to a healthy one unless staleness is explicitly signaled.</li>
+      <li>Cross-checking the UI's displayed order/stop state against the venue's own order list is standard due diligence in practice — a dashboard's local cache can lag a real fill or cancellation, so the two can briefly disagree.</li>
+      <li>Separating automated holdings (open position with live stop/ladder) from manual-only holdings (a moon bag with no automated field) into distinct sections is a common UX pattern for keeping the boundary of automation visually unambiguous.</li>
+      <li>Existence: live position + P&amp;L dashboards are a standard, off-the-shelf UI pattern across trading platforms — this exists directly in the requested format; nothing needs bot-simulation beyond wiring it to real position events.</li>
+      <li>Deviations from standard: none — research reinforced the spec; the file's own gotcha about visibly flagging a stale/disconnected feed rather than silently sitting on last-known numbers matches how real live dashboards distinguish themselves from unreliable ones.</li>
     </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">UI visible; ProofShot recording; a devnet test position running; the exchange's own open-orders list visible alongside the UI for cross-checking the displayed stop price.</div>
@@ -1491,6 +1615,15 @@
     <ul class="vreach">
       <li>Indirect: the venue shows on each fill in the fill feed.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Order routing across venues is standard practice for any system trading the same asset in more than one place: a routing layer decides which venue an order goes to before execution, based on where the asset is actually listed/liquid — not a static preference.</li>
+      <li>DEX aggregators and CEX routers solve a similar problem differently: a DEX aggregator scans multiple on-chain liquidity pools and picks (or splits across) routes by price, slippage, and gas; a CEX router matches against a centralized order book on one exchange's matching engine — the map's two-chain routing (Solana vs an EVM L2) picks a chain by listing rather than running a live liquidity scan.</li>
+      <li>API-key scoping is the standard security control for this kind of system: each venue gets its own credential, scoped to only the permissions it needs, so a leaked key for one venue can't touch funds or trigger actions on another venue.</li>
+      <li>&quot;Unroutable&quot; and &quot;illiquid&quot; are different failure conditions, and production routers keep them separate: unroutable means no listing/liquidity path exists at all (block, don't guess); illiquid means a path exists but offers bad pricing (still routes, just poorly) — conflating the two causes a router to wrongly block a thin-but-real market or wrongly force an order into one that doesn't exist.</li>
+      <li>Existence: exists in the requested format — venue routing by listing, per-venue scoped keys, and blocking on no-route are all standard patterns from DEX aggregators and multi-venue trading bots; nothing here needs bot-simulation beyond wiring the two specific chain adapters.</li>
+      <li>Deviations from standard: none — research reinforced the spec. &quot;Route by listing, block don't guess on unroutable, distinct scoped keys per venue&quot; already matches production smart-order-routing and least-privilege API-key practice, including this file's own distinction between unroutable (no listing) and illiquid (listed but thin), which mirrors how real routers treat those as separate cases.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Fill feed visible; ProofShot recording; test coins per venue plus one unroutable coin genuinely absent from both venues' listings.</div>
     
@@ -1577,6 +1710,16 @@
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
       <li>The BUY button (user action); the fill feed (proof).</li>
+    </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>A Solana DEX market buy (via an aggregator like Jupiter, or direct to an AMM like Raydium) is a swap transaction: get a quote, build the transaction, sign, submit, wait for on-chain confirmation — there's no order book guaranteeing the quoted price holds until the trade lands.</li>
+      <li>Slippage tolerance is the safety valve: if the price would land outside the tolerance, the swap program reverts on-chain — the wallet still pays the network fee (and any priority fee), but keeps the swap amount; that's a deliberate rejection, not a crash.</li>
+      <li>A transaction that never lands is a different failure mode entirely: Solana transactions expire after roughly two minutes and get dropped, usually from being outbid on priority fee during congestion — nothing executes, so no fee at all is charged.</li>
+      <li>Priority fees (a per-compute-unit bid layered on the base fee) are the standard lever for landing a transaction fast when competing bots and traders are all racing the same block — a memecoin buy with too low a priority fee simply won't get included, independent of slippage settings.</li>
+      <li>Sandwich attacks are the other standard on-chain risk: because Solana has no public mempool, MEV bots use private bundles to buy ahead of a detected large swap and sell right after it; the victim's transaction still confirms normally, just at a worse price than quoted, with no error at all.</li>
+      <li>Existence: standard on-chain swap mechanics — Jupiter/Raydium natively provide slippage tolerance and priority-fee bidding; nothing here needs bot-simulation beyond the click-gate and the on-chain confirmation check the map already specifies.</li>
+      <li>Deviations from standard: none — the map's two-failure-mode split (lands-and-reverts-with-fee vs never-lands-and-no-fee) and its sandwiched-but-confirmed-fill case both match standard Solana swap behavior; research reinforced the file's existing gotchas rather than changing them.</li>
     </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Devnet; disposable wallet; ProofShot recording; a test alert with a pre-filled size.</div>
@@ -1666,6 +1809,14 @@
     <ul class="vreach">
       <li>The exchange's open-orders list (the user-visible system of record).</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Exchanges offer two stop flavors: stop-market (triggers into a market order — fill guaranteed, price not, no partial-fill risk) and stop-limit (triggers into a limit order — price guaranteed, fill not, and can partial-fill or miss entirely in thin/fast markets).</li>
+      <li>A triggered stop-market order can still slip in a fast-moving or thin memecoin market — the fill price differs from the trigger price by some amount; that gap is the accepted cost of a guaranteed exit, not a bug.</li>
+      <li>Editing a live stop order is cancel-and-replace under the hood on most exchanges, not an in-place mutation — if the trigger fires mid-edit, the edit can lose the race while the order is mid-conversion.</li>
+      <li>Existence: real, exchange-native stop orders sit on the exchange's own matching engine and fire independent of any bot's uptime; bot-simulated (&quot;virtual&quot;) stops are just a price the bot watches locally and convert to a market order only if the bot is alive and connected when the price crosses — an outage or dropped connection leaves the position silently unprotected even though the bot's own state says a stop is active.</li>
+      <li>Deviations from standard: none — research reinforced the spec; placing the stop as a real, inspectable exchange order (rather than a bot-side watcher) is exactly what real trading-bot practice favors for reliability, since it survives bot downtime that would otherwise leave a bot-simulated stop unarmed.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Devnet; ProofShot recording; the exchange's open-orders view open.</div>
     
@@ -1752,6 +1903,15 @@
     <ul class="vreach">
       <li>Indirect: the fill feed and the pending-exit state in the UI.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Selling into volume is a form of participation-based execution (like VWAP/POV algos): instead of dumping full size immediately, the order fills only against candles/prints that show real buy-side participation, slicing into whatever the tape can genuinely absorb.</li>
+      <li>Wash trading (same price, same size, rapid buy/sell round-trips between related wallets) is a known manipulation pattern in illiquid/crypto markets used specifically to fake buy pressure — detection compares trade pairs on price + size + a tight time window between the same or clustered wallets, since organic volume doesn't round-trip that cleanly.</li>
+      <li>The classic failure mode for naive &quot;green candle = sell here&quot; logic is trusting candle color/volume totals without checking whether that volume is real, fillable depth — a candle can be green and &quot;high volume&quot; purely from wash trades with zero actual buyers waiting.</li>
+      <li>The standard mitigation for thin liquidity is order fragmentation: fill only what the current print can absorb and retry the remainder on the next qualifying print rather than forcing the whole clip through — this matches the ladder's &quot;wait and retry&quot; behavior here.</li>
+      <li>Existence: bot-simulated — no venue has a native &quot;sell into green candles only&quot; order type; this is a pre-trade check plus a retry loop wrapped around ordinary exit orders, so testing has to drive the underlying tape (replay) rather than relying on any exchange feature.</li>
+      <li>Deviations from standard: none — research reinforced the spec. Treating wash-traded volume as non-qualifying (instead of trusting raw candle volume) is exactly the gap naive volume checks have in practice, and the map already specs this via the <code>volume-check</code> sub-feature and its wash-trade gotcha.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">ProofShot recording; chart replay driving the tape — a genuine green-volume candle, a thin/wash-traded green candle too small to absorb the full clip, and a red window; an exit order ready.</div>
     
@@ -1829,6 +1989,15 @@
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
       <li>Indirect: the journal feed and the ladder state in the UI.</li>
+    </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Delivering one event per real-world occurrence to multiple independent consumers reliably is standard distributed-systems practice: the transport guarantees at-least-once delivery (retry until acknowledged) because it genuinely can't tell &quot;never arrived&quot; from &quot;arrived but the ack was lost&quot; — duplicates are an expected outcome, not a bug in the wire.</li>
+      <li>The standard way to still get exactly-once *behavior* on top is at-least-once delivery plus an idempotent consumer: every event carries a stable identity (FIX's ExecID field on execution reports is the classic version — unique per fill, and a retransmit with the same ID is recognized as the same fill, not a new one), and consumers dedupe on that ID rather than trusting the wire.</li>
+      <li>Per-consumer retry isolation is the other standard piece: each subscriber (ladder, journal) gets its own delivery/retry path so one down or slow consumer's backlog doesn't hold up delivery to a healthy one — a shared queue instead causes head-of-line blocking, where one stuck message stalls everything behind it.</li>
+      <li>Unacknowledged events are expected to keep retrying and eventually escalate visibly, never silently drop — a missed fill event is state corruption (the ladder or journal quietly falls behind), so a visible escalation path is the standard design, not optional.</li>
+      <li>Existence: standard event-delivery architecture (the same shape as FIX execution reports or at-least-once webhook delivery) — nothing here is bot-simulated; it's a design pattern the fill pipeline has to implement correctly.</li>
+      <li>Deviations from standard: none — the map's ack-until-acknowledged retry plus consumer-side dedup on a stable ID is exactly the standard at-least-once + idempotent-consumer pattern, reinforcing the file's existing gotcha that real delivery underneath is at-least-once, not literally exactly-once.</li>
     </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Devnet; ProofShot recording; journal feed and ladder state visible.</div>
@@ -1909,6 +2078,15 @@
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
       <li>The pre-filled size on the alert card in the UI.</li>
+    </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Full Kelly maximizes long-run growth but produces brutal drawdowns (30-50%+ swings) and is highly sensitive to input error — overestimate the win-rate or payoff ratio even slightly and the formula recommends a dangerously oversized bet.</li>
+      <li>Standard practice is fractional Kelly, most commonly half-Kelly (keeps roughly 75% of full-Kelly's growth while cutting drawdown/variance by about half) or quarter-Kelly in choppier conditions — full Kelly is treated as too aggressive to run live.</li>
+      <li>The formula itself goes to zero or negative whenever there's no real edge (win-rate × payoff at or below break-even) — that's the math correctly saying &quot;don't bet,&quot; not an edge case to patch around.</li>
+      <li>Win-rate is the most sensitive input: a few points of estimation error swings the recommended size dramatically (e.g. a 5-point win-rate drop can cut quarter-Kelly's size by roughly 6x) — the calculation is only as good as the inputs behind it.</li>
+      <li>Existence: fractional Kelly is a standard, well-documented sizing formula from quant/betting practice — it exists exactly in the requested format (bankroll, win-rate, payoff, chosen fraction → deterministic size), nothing needs simulation, only a correct implementation.</li>
+      <li>Deviations from standard: none — research reinforced the spec; treating a zero/negative Kelly result the same as missing inputs (both produce the honest empty state, per the file's own gotcha) is exactly how the formula is meant to be used.</li>
     </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">ProofShot recording; pinned test inputs (bankroll, win-rate, payoff, fraction); the expected number computed by hand beforehand; a second pinned fraction (e.g. quarter vs half) with the same odds for a scaling check; a pinned no-edge input set (win-rate × payoff at or below break-even) where the Kelly formula itself goes to zero or negative.</div>
@@ -1998,6 +2176,15 @@
     <ul class="vreach">
       <li>Indirect: the withdrawal fill in the fill feed; the stop gone from the exchange's open-orders list.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Taking partial profits at a multiple and running the rest risk-free is standard trade management — bank the stake early, remove the stop's job of protecting capital that's already out, let the remainder ride.</li>
+      <li>&quot;House money&quot; is a known psychological trap: traders who feel they're playing with winnings loosen their own discipline (bigger size, wider stops, worse entries) — exactly why this rule has to be mechanical, not a judgment call in the moment.</li>
+      <li>The exit sell is a real AMM trade, not a guaranteed fill: thin memecoin pool depth can push the initial-capital sell's price outside tolerance and reject it, requiring a retry before the withdrawal actually lands.</li>
+      <li>Cancelling the stop races the stop itself: if price wicks the stop level and the 2x mark close together, a naive &quot;cancel&quot; can return success from the exchange when the stop had, in fact, already filled first — the standard defense is sell-then-confirm-then-cancel, never cancel-first.</li>
+      <li>Existence: bot-simulated — no exchange offers a native &quot;withdraw initial at 2x, cancel stop&quot; order type; it's the bot watching price and sequencing a market sell plus a cancel call against the exchange's own order state.</li>
+      <li>Deviations from standard: none — the map's sell-before-cancel sequencing already matches the standard fix for this race, and research reinforced the existing gotcha about never cancelling before the sell confirms.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Devnet position with a known initial capital; ProofShot recording; the exchange's open-orders view open.</div>
     
@@ -2083,6 +2270,15 @@
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
       <li>The moon bag section of the positions view; its manual sell button.</li>
+    </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>A moon bag is a fixed token quantity carved out of a position and excluded from every automatic sell — the token count is what's fixed; its USD value is meant to float freely with price afterward, so a rising or falling dollar value isn't a bug.</li>
+      <li>Sizing the runner is the one part of moon-bag practice that varies most: real setups range from a small 10-20% slice up to much larger cuts (half the position), or tiered exits that peel off more at 5x/10x rather than one carve at a single multiplier.</li>
+      <li>The classic implementation trap is computing clip/stop sizes as a percentage of the total holding instead of the non-bag remainder — a clip that &quot;accidentally&quot; includes the bag in its percentage base quietly eats into supposedly untouchable tokens.</li>
+      <li>Partial fills on a ladder clip are a distinct trap: a sell order that only partially fills leaves the position straddling two states, so exit logic needs to confirm the fill closed what it intended, not just that a sell was sent.</li>
+      <li>Existence: the moon-bag-as-separate-manual-holding pattern is documented, common memecoin trading practice — it exists in the requested format (a UI-visible holding, manual-sell-only) with no bot-simulation needed beyond correctly excluding it from automation.</li>
+      <li>Deviations from standard: the map's 20% cut carved once at 2x is smaller and simpler than common practice, which more often runs a larger runner (up to half the position) or tiers further exits at 5x/10x — consistent with the file's existing Research-note gotcha; the map stands on the smaller fixed rule rather than adopting the larger/tiered norm.</li>
     </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Devnet position past 2x; ProofShot recording; the positions view open; the token quantity remaining right after the 2x capital-recovery sell noted so the bag's 20% can be hand-checked precisely.</div>
@@ -2172,6 +2368,16 @@
     <ul class="vreach">
       <li>Indirect: clip fills in the fill feed; the ladder state in the positions view.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Scaling out — exiting a winner in tranches instead of one shot — is standard trade management: it locks in gains progressively while leaving room to keep participating if the move continues, and each tranche resizes off whatever remains, not the original stake.</li>
+      <li>Real DEX order sizing weighs price impact against pool depth: a sell that's a large slice of a shallow AMM pool moves price a lot (constant-product curve), so aggregators like Jupiter split big sells across multiple pools/venues to keep any one pool's impact small.</li>
+      <li>This map skips that: clip size is a fixed 15–20% of the remaining position (bag excluded) with no price-impact cap or pool-depth check — deliberate, per the file's existing research note.</li>
+      <li>The sell-into-volume filter does the impact-management job instead: clips wait for a green, liquid candle rather than routing around thin liquidity, so a clip landing in a candle too thin to absorb it should keep retrying the remainder, not report itself complete or spill into the next red candle.</li>
+      <li>Classic failure modes: sizing a clip off the original position instead of the live remainder, letting a repeated signal on one divergence fire two clips, or letting a clip eat into the excluded moon bag.</li>
+      <li>Existence: bot-simulated — clip-per-divergence laddering isn't a native exchange feature; it's the bot tracking remaining position state and firing sized market sells keyed to the divergence signal.</li>
+      <li>Deviations from standard: deliberate — standard DEX exits cap price impact against pool depth by splitting orders; this map fixes clip size at 15–20% with no price-impact cap, consistent with the file's existing research-note gotcha; the map stands.</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Devnet position past entry with a flagged bag; ProofShot recording; replay of two bearish divergences.</div>
     
@@ -2257,6 +2463,15 @@
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
       <li>The journal view in the UI.</li>
+    </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>An append-only trade journal is a form of event sourcing: every state change (gate verdict, click, fill) is stored as an immutable event rather than overwritten, and current state (open? flat?) is derived by replaying the events in order, not read from a separate mutable record.</li>
+      <li>A shared event schema across producers typically carries a monotonic per-trade sequence number, a timestamp, an event type, and a payload — the sequence number is what lets replay detect a gap (a skipped number) or out-of-order delivery, which a plain timestamp can't guarantee under retries or clock skew.</li>
+      <li>Idempotent handling of a &quot;close&quot; event is the standard defense against redelivery: a duplicate delivery of the same closing fill must be recognized (by event id, or by an already-sealed record) and dropped, not reapplied — otherwise a network retry can silently duplicate a closing entry.</li>
+      <li>Replay is the audit mechanism: if the full trade can be reconstructed from the journal alone and matches the exchange/UI, the journal is trustworthy; any event that happened but isn't in the log is a silent, hard-to-detect failure, since nothing else fails loudly when a journal write is dropped.</li>
+      <li>Existence: exists in the requested format — append-only event logs with idempotent replay are a standard, well-documented pattern (event sourcing); nothing about the mechanic needs bot-simulation, only the specific nine-department schema is bespoke to this map.</li>
+      <li>Deviations from standard: none — research reinforced the spec. Deduplicating a redelivered closing event by checking for an already-sealed record (rather than trusting &quot;if it arrives, apply it&quot;) is exactly the idempotency practice standard event-sourced systems use, and matches this file's redelivery gotcha.</li>
     </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Devnet; ProofShot recording; one full trade run end to end.</div>

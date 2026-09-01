@@ -12,6 +12,15 @@ Two guards end a stale watch: price +30% from the call-out (distance), or more t
 
 - Indirect: the watch state and stop reason appear in the trigger view / log.
 
+## How it works in practice
+
+- Data-freshness guards in trading/market-data systems typically combine two axes: a magnitude/distance check (price moved too far from a reference point) and a time/staleness check (too long since a meaningful update) — either one firing ends the watch.
+- The classic failure mode is the "ghost quote" or frozen feed: the connection stays technically open (no disconnect, no error) but the underlying ticks/candles simply stop arriving — a guard that only reacts to incoming data never notices, because there's no event to react to.
+- Robust staleness checks (e.g. oracle price feeds) compare a wall-clock timestamp against "now" on every read — `now - last_update > threshold` — rather than counting only ticks that do arrive, specifically so a frozen feed still gets caught even when nothing new shows up.
+- A guard defined purely as "count the candles that arrive" inherits a structural blind spot: if the candle stream itself stops (not just goes flat), the guard has nothing to count against and never fires — it needs a wall-clock fallback to catch that case.
+- Existence: bot-simulated — there's no off-the-shelf "staleness guard" venue feature; distance and time guards are built in-house against the incoming candle stream, so testing has to drive the replay feed directly to exercise both trigger paths.
+- Deviations from standard: yes, deliberately, and already flagged in this file's Research note. Standard stale-feed monitoring uses a wall-clock check that catches a fully frozen feed (zero candles arriving at all); these guards tick only on incoming candles, so a genuinely frozen tape (not just flat/sideways) could starve both — the map stands on this, treating the guards as per-candle rather than wall-clock by design.
+
 ## Test stream
 
 Preconditions:

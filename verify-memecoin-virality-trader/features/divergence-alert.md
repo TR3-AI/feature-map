@@ -12,6 +12,14 @@ The payload delivered to the UI when a divergence fires: coin, gate scores, whic
 
 - The alert card in the front-end UI.
 
+## How it works in practice
+
+- An alert payload is normally assembled once per underlying event and delivered with everything a responder needs pre-attached — here that's coin, gate scores, which oscillator diverged, freshness, and the pre-filled Kelly size — nothing fetched lazily after the card renders.
+- Standard alerting practice builds the dedup key (fingerprint) from stable identity fields only — source, resource, alert type — and explicitly excludes anything that naturally changes over time, like a timestamp or freshness/age value.
+- Fingerprinting on a volatile field is the classic cause of duplicate-alert storms and alert fatigue: a static, already-seen issue looks "new" every time a fast-changing field ticks over, training responders to start ignoring the channel.
+- Existence: a standard event/payload-assembly pattern — no simulation needed; the part actually worth testing is the dedup key design, since "once per candidate" only holds if freshness/timestamp never enters the fingerprint.
+- Deviations from standard: none — the map's rule that identity is the candidate alone, never freshness, matches standard alert-dedup practice and reinforces the file's existing gotcha on the same point.
+
 ## Test stream
 
 Preconditions:

@@ -13,6 +13,14 @@ The 30% stop-loss placed on the exchange the moment the entry fills — a real, 
 
 - The exchange's open-orders list (the user-visible system of record).
 
+## How it works in practice
+
+- Exchanges offer two stop flavors: stop-market (triggers into a market order — fill guaranteed, price not, no partial-fill risk) and stop-limit (triggers into a limit order — price guaranteed, fill not, and can partial-fill or miss entirely in thin/fast markets).
+- A triggered stop-market order can still slip in a fast-moving or thin memecoin market — the fill price differs from the trigger price by some amount; that gap is the accepted cost of a guaranteed exit, not a bug.
+- Editing a live stop order is cancel-and-replace under the hood on most exchanges, not an in-place mutation — if the trigger fires mid-edit, the edit can lose the race while the order is mid-conversion.
+- Existence: real, exchange-native stop orders sit on the exchange's own matching engine and fire independent of any bot's uptime; bot-simulated ("virtual") stops are just a price the bot watches locally and convert to a market order only if the bot is alive and connected when the price crosses — an outage or dropped connection leaves the position silently unprotected even though the bot's own state says a stop is active.
+- Deviations from standard: none — research reinforced the spec; placing the stop as a real, inspectable exchange order (rather than a bot-side watcher) is exactly what real trading-bot practice favors for reliability, since it survives bot downtime that would otherwise leave a bot-simulated stop unarmed.
+
 ## Test stream
 
 Preconditions:

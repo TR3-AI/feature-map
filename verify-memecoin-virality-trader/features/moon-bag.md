@@ -13,6 +13,15 @@ After 2x, 20% of the remaining position is flagged as the moon bag — manual-on
 
 - The moon bag section of the positions view; its manual sell button.
 
+## How it works in practice
+
+- A moon bag is a fixed token quantity carved out of a position and excluded from every automatic sell — the token count is what's fixed; its USD value is meant to float freely with price afterward, so a rising or falling dollar value isn't a bug.
+- Sizing the runner is the one part of moon-bag practice that varies most: real setups range from a small 10-20% slice up to much larger cuts (half the position), or tiered exits that peel off more at 5x/10x rather than one carve at a single multiplier.
+- The classic implementation trap is computing clip/stop sizes as a percentage of the total holding instead of the non-bag remainder — a clip that "accidentally" includes the bag in its percentage base quietly eats into supposedly untouchable tokens.
+- Partial fills on a ladder clip are a distinct trap: a sell order that only partially fills leaves the position straddling two states, so exit logic needs to confirm the fill closed what it intended, not just that a sell was sent.
+- Existence: the moon-bag-as-separate-manual-holding pattern is documented, common memecoin trading practice — it exists in the requested format (a UI-visible holding, manual-sell-only) with no bot-simulation needed beyond correctly excluding it from automation.
+- Deviations from standard: the map's 20% cut carved once at 2x is smaller and simpler than common practice, which more often runs a larger runner (up to half the position) or tiers further exits at 5x/10x — consistent with the file's existing Research-note gotcha; the map stands on the smaller fixed rule rather than adopting the larger/tiered norm.
+
 ## Test stream
 
 Preconditions:

@@ -13,6 +13,15 @@ Watches the tracked streams and turns each callout into a normalized candidate �
 
 - Indirect: post a callout on a tracked stream; the candidate appears in the intake view.
 
+## How it works in practice
+
+- Real callout/signal channels (Telegram groups, Discord, X) post short, informal messages — a contract address plus hype text and source attribution — with no fixed template; extraction has to handle slang and commentary around the address, not just a clean canonical shape.
+- Spam and scam callouts exploit that looseness: fake tickers, garbled or mismatched addresses, honeypot contracts posted with manufactured urgency ("buy now") — validating the address against the chain's own format (length/charset) at intake is a real defense against garbled or fake addresses slipping through.
+- Streaming ingestion (Telegram's long-polling `getUpdates`, or an equivalent feed) tracks position with a cursor/offset that must be persisted and resumed after a drop — reconnecting from the wrong offset either replays old messages (duplicate candidates) or skips ones that arrived during the outage.
+- Production dedupe is typically keyed on message ID or a content hash, matching the map's address+timestamp dedupe approach.
+- Existence: stream-based callout ingestion is native — Telegram/Discord-style bots use exactly this long-poll/reconnect pattern; nothing needs bot-simulation beyond driving the test stream and forcing the disconnect.
+- Deviations from standard: none — research reinforced the spec (strict address-format validation and reason-logged rejection are how production signal bots defend against the loose, scam-prone formats real callout channels actually post; already reflected in the existing Gotchas note on non-canonical shapes).
+
 ## Test stream
 
 Preconditions:

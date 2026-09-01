@@ -12,6 +12,15 @@ Gate 3: reject anything over 10–15% bundlers (below 10% preferred), harder if 
 
 - Indirect: verdicts appear in the gate log / candidate view.
 
+## How it works in practice
+
+- Bundle-detection tools trace a token's creation-block buys: multiple wallets buying in the same block, funded from a common source, using freshly-created wallets, is the classic signature of a coordinated launch.
+- Public checkers (Trench Bot, Bubblemaps, SolBundler, etc.) surface a combined "bundled supply %"; the higher that number, the more the price sits under one party's control.
+- A trend modifier is standard practice too: a rising bundled share (bundlers accumulating more control) reads worse than a static share at the same %, which is why direction is checked separately from the raw number.
+- The classic failure mode for gates like this is treating the ceiling as advisory — a "close enough" override, or checking only the % and skipping the direction check.
+- Existence: threshold gating on a provider-supplied % is native comparison logic — no bot simulation needed beyond feeding the gate known test %/trend pairs.
+- Deviations from standard: public bundler-detection tooling commonly treats 25–40% combined bundler/sniper holdings as only a caution zone (see Research note in Gotchas) vs the map's stricter 10–15% reject ceiling — the map stands; it's meant to be more conservative than public tools, not a bug.
+
 ## Test stream
 
 Preconditions:

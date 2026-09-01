@@ -13,6 +13,15 @@ The only way money moves. One tap sends the buy click to the Position manager ex
 
 - The BUY button on the alert card, on the phone.
 
+## How it works in practice
+
+- One-tap/one-click trading is a real, named mode on trading platforms (TradingView, CMC Markets, Capital.com) — it executes instantly with no confirmation dialog, trading the safety net of a confirm screen for speed.
+- The classic double-fire failure comes from two directions: a fast double-tap on the same button, and a network-level retry (a timeout causes the client or a gateway to resend the same request) — both must collapse to exactly one order, not two.
+- The standard fix is layered: client-side, the button visually locks the instant the first tap registers (debouncing) so a second tap can't fire; server-side, an idempotency key tags the intent so a retried send resolves to the original order instead of creating a second one.
+- Idempotency-by-key is the same pattern payment APIs (Stripe, Airbnb) use to stop duplicate charges — same intent submitted twice yields one consistent outcome.
+- Existence: one-tap execution is a native toggleable mode on several trading platforms; the idempotency/lock-on-first-tap plumbing behind it is standard engineering, not something that needs bot-simulation — a fast double-tap and a forced retry are both directly reproducible in a test.
+- Deviations from standard: crypto UX guidance often calls for an explicit confirmation step before an irreversible transaction; the map deliberately skips it for one-tap speed (see Research note in Gotchas) — the map stands.
+
 ## Test stream
 
 Preconditions:

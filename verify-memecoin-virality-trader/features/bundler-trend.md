@@ -12,6 +12,15 @@ Reads the bundler share over time and labels it decreasing, stagnating, or incre
 
 - Indirect: the trend label appears on the candidate in the checker view.
 
+## How it works in practice
+
+- Bundle-wallet supply share is highest right after launch — it's set the moment the coordinated buys land in the creation block, so freshly-launched tokens naturally start at whatever % the bundlers grabbed.
+- From there the share normally either dilutes down as organic buyers accumulate around the bundle (a good sign — bundlers' relative control shrinks) or stays flat/climbs if bundlers keep buying or organic volume never shows up (a danger sign).
+- A falling share can also mean bundlers are actively selling into demand rather than diluting away — a falling % from dumping looks identical to a falling % from dilution unless paired with a price/volume read, which is why "decreasing" is a label, not a safety guarantee.
+- A single reading can't distinguish any of this — a real trend needs at least two points over a time window, which is why one snapshot has to read "unknown" rather than default to the friendliest label.
+- Existence: multi-point trend tracking must be bot-built on top of a snapshot-only provider — poll the pinned provider on a schedule and diff the readings yourself; there's no off-the-shelf "bundle trend" feed to pull.
+- Deviations from standard: most public bundle checkers surface only a single point-in-time %, not a tracked trend — the map's requirement for multiple readings over a pinned window (and "unknown" for a lone snapshot) goes beyond typical tooling rigor, not below it; the map stands.
+
 ## Test stream
 
 Preconditions:

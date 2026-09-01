@@ -14,6 +14,15 @@ The list of tracked traders/devs — only callouts from these sources produce ca
 - Open the config view in the front-end UI.
 - Edit the list file directly between runs (owner action).
 
+## How it works in practice
+
+- Whitelist/allowlist config in production systems is typically managed as its own isolated config object — a file or store watched independently from the rest of app config — so a bad edit can't take down unrelated features.
+- The standard pattern for live config is: a file watcher detects a change, the new version is parsed and validated before being swapped in atomically, and only a valid config replaces the running one — an invalid edit is rejected rather than crashing or partially applying.
+- The restart-required alternative (load once at startup, keep in memory, refresh only on the next run) trades operational convenience for predictability — nobody has to reason about the list changing mid-run, at the cost of a manual restart to pick up edits.
+- Secrets hygiene for a list like this means it must reference identities by name/handle only — any real credentials (API keys, wallet keys) live in a separate secret store referenced by name, never inlined in the same config a human edits and views.
+- Existence: exists in the requested format — a config file plus an in-memory list is the standard shape for this feature; nothing needs bot-simulation, though "restart to reload" specifically must be tested by actually restarting the watcher rather than editing live.
+- Deviations from standard: yes, deliberately. Production practice increasingly favors hot-reloading whitelist config live (watch, validate, atomic swap, no restart) — the map instead requires a restart/reload between runs for edits to take effect. This matches the file's existing Research-note gotcha; the map stands on this choice.
+
 ## Test stream
 
 Preconditions:

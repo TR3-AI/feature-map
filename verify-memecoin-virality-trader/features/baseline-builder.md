@@ -12,6 +12,15 @@ Pulls the callout account's last 30 days of tweets and averages likes + retweets
 
 - Indirect: the baseline appears on the candidate in the scorer view.
 
+## How it works in practice
+
+- Rolling/trailing-window averages (here, 30 days) are the standard way to build a "normal" baseline before judging a new data point against it — recomputed fresh, never reused from a stale window.
+- The X API (and similar) returns tweet history in pages behind a cursor (`next_token`); a correct pull follows every page until the cursor is exhausted — stopping at the first short page silently truncates history.
+- Rate limits (429s, time-windowed) are a normal part of a real pull; production pulls pause and resume from the same cursor rather than returning a partial page as if it were complete.
+- Thin-history handling mirrors real practice: flagging "not enough samples" instead of averaging a handful of tweets into a confident-looking number.
+- Existence: 30-day history pulls with cursor-based pagination are native to the X API — nothing here is bot-simulated except forcing the mid-pull rate limit, which has to be induced deliberately for the test.
+- Deviations from standard: production engagement baselines often use outlier-resistant averaging (trimmed mean, rolling median) to blunt viral-tweet skew; the map deliberately uses a plain likes+retweets mean instead (see Research note in Gotchas) — the map stands, outliers count in full rather than being filtered.
+
 ## Test stream
 
 Preconditions:

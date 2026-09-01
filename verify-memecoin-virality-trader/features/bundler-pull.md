@@ -12,6 +12,15 @@ Pulls the wallets that bought in the creation block and their combined supply %,
 
 - Indirect: the bundler % appears on the candidate in the checker view.
 
+## How it works in practice
+
+- Bubblemaps-style providers scan a token's launch transactions for wallets that bought in the same block or near-simultaneously, then compute what share of total supply those wallets hold — excluding the program-owned bonding-curve account itself, since it isn't a buyer.
+- Providers disagree with each other on the exact % because "same block" windows and wallet-clustering heuristics differ tool to tool — that's the real-world reason to pin one provider and one counting method as the single source of truth rather than average across tools.
+- A 429 rate limit and a 5xx outage look different in provider logs, but both mean the same thing operationally: no trustworthy number right now, so the candidate waits either way.
+- The documented blind spot is real: stealth-bundling tools atomically bundle token creation + buys into one transaction, so on-chain analytics see many distinct, unlinked-looking holders instead of a flagged cluster — providers built for the common case can miss these by design, not by bug.
+- Existence: bundle-percentage pulls with curve exclusion are native — Bubblemaps, Trench Bot, and similar chain-analytics providers do exactly this scan/exclude/aggregate today; only the provider-down state needs to be forced for the test.
+- Deviations from standard: none — research reinforced the spec (pinned provider/method, curve exclusion, and wait-not-wave-through on outage all match how production bundle checkers already behave; the stealth-bundling blind spot is already called out in Gotchas as a provider limit, not a pull-mechanism bug).
+
 ## Test stream
 
 Preconditions:

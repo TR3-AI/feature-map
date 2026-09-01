@@ -12,6 +12,15 @@ Gate 2's input: Grok 4.6 extracts narrative, thesis, sentiment, a veracity score
 
 - Indirect: the analysis view shows the fields and scores per candidate.
 
+## How it works in practice
+
+- LLM extraction pipelines split into two failure classes: invalid JSON (parse failure) and valid-but-wrong JSON (schema violation — missing field, merged scores, out-of-range number) — schema violations are the more common and more dangerous because the response still looks fine at a glance.
+- Real practice layers guards: provider-side structured-output/JSON-mode enforcement first, then app-side validation against the exact schema (required fields present, veracity/virality numeric and separate, in range) — anything that fails either layer gets rejected, not silently patched.
+- A live API can return a clean 200 with content that's schema-valid but wrong (a plausible narrative that's fabricated, a score outside sane bounds) — that's a distinct hallucination failure from a dead API, and both need to trip the same block.
+- Retry/repair against a schema failure is bounded (one or two attempts) then a hard fail — never an unbounded retry loop or a silent pass-through on the last attempt.
+- Existence: this kind of pipeline (prompt → LLM call → schema-validated JSON) is standard, off-the-shelf tooling — structured outputs / JSON mode plus an app-side validator exist directly; nothing needs bot-simulation.
+- Deviations from standard: none — research reinforced the spec; the file's `api-failure` sub-feature already treats a schema-violating 200 as its own failure case distinct from a dead API, which matches real-world data (schema/value errors are the dominant failure mode, not outright API death).
+
 ## Test stream
 
 Preconditions:
