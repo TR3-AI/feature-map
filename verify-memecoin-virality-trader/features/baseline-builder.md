@@ -14,12 +14,15 @@ Pulls the callout account's last 30 days of tweets and averages likes + retweets
 
 ## How it works in practice
 
-- Rolling/trailing-window averages (here, 30 days) are the standard way to build a "normal" baseline before judging a new data point against it — recomputed fresh, never reused from a stale window.
-- The X API (and similar) returns tweet history in pages behind a cursor (`next_token`); a correct pull follows every page until the cursor is exhausted — stopping at the first short page silently truncates history.
-- Rate limits (429s, time-windowed) are a normal part of a real pull; production pulls pause and resume from the same cursor rather than returning a partial page as if it were complete.
-- Thin-history handling mirrors real practice: flagging "not enough samples" instead of averaging a handful of tweets into a confident-looking number.
-- Existence: 30-day history pulls with cursor-based pagination are native to the X API — nothing here is bot-simulated except forcing the mid-pull rate limit, which has to be induced deliberately for the test.
-- Deviations from standard: production engagement baselines often use outlier-resistant averaging (trimmed mean, rolling median) to blunt viral-tweet skew; the map deliberately uses a plain likes+retweets mean instead (see Research note in Gotchas) — the map stands, outliers count in full rather than being filtered.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** a candidate needs a baseline — the builder starts a 30-day engagement-history pull.
+2. **Mechanism:** it walks the X API's cursor pages (`next_token`) until the cursor is exhausted, pausing and resuming from the same cursor when a 429 rate limit hits.
+3. **Surface:** a fresh "normal engagement" number per candidate — recomputed from the current window, and flagged honestly when history is thin.
+4. **Breaks:** stopping at the first short page (truncated history posing as complete) · returning a partial page after a rate limit as if done · averaging a handful of tweets into a confident-looking number · reusing a stale window.
+
+Existence: 30-day history pulls with cursor-based pagination are native to the X API — nothing bot-simulated except forcing the mid-pull rate limit, which has to be induced deliberately for the test.
+Deviations from standard: production engagement baselines often use outlier-resistant averaging (trimmed mean, rolling median) to blunt viral-tweet skew; the map deliberately uses a plain likes+retweets mean instead (see Research note in Gotchas) — the map stands, outliers count in full rather than being filtered.
 
 ## Test stream
 
@@ -45,4 +48,4 @@ Preconditions:
 - Compute the expected average before the run; checking afterwards invites rationalizing.
 - A partial pull (rate limit) must wait, not score with half the data.
 - A pull that stops early because one page came back shorter than the max page size (instead of stopping only when the API's pagination cursor is exhausted) silently under-counts history — check the raw pull's tweet count, not just that some history appeared.
-- Research note: production engagement baselines commonly use outlier-resistant averaging (trimmed mean, rolling median) to blunt viral-tweet skew vs the map's plain likes+retweets average — the map stands; test with a viral outlier tweet in the window to confirm it's included, not silently filtered.
+- Research note: production engagement baselines commonly use outlier-resistant averaging (trimmed mean, rolling median) to blunt viral-tweet skew vs the map's plain likes+retweets average — the map stands. Tester action: include a viral outlier tweet in the test window and confirm it counts in full — never silently filtered or trimmed by the average.

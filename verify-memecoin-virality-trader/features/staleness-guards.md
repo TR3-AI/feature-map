@@ -14,12 +14,15 @@ Two guards end a stale watch: price +30% from the call-out (distance), or more t
 
 ## How it works in practice
 
-- Data-freshness guards in trading/market-data systems typically combine two axes: a magnitude/distance check (price moved too far from a reference point) and a time/staleness check (too long since a meaningful update) — either one firing ends the watch.
-- The classic failure mode is the "ghost quote" or frozen feed: the connection stays technically open (no disconnect, no error) but the underlying ticks/candles simply stop arriving — a guard that only reacts to incoming data never notices, because there's no event to react to.
-- Robust staleness checks (e.g. oracle price feeds) compare a wall-clock timestamp against "now" on every read — `now - last_update > threshold` — rather than counting only ticks that do arrive, specifically so a frozen feed still gets caught even when nothing new shows up.
-- A guard defined purely as "count the candles that arrive" inherits a structural blind spot: if the candle stream itself stops (not just goes flat), the guard has nothing to count against and never fires — it needs a wall-clock fallback to catch that case.
-- Existence: bot-simulated — there's no off-the-shelf "staleness guard" venue feature; distance and time guards are built in-house against the incoming candle stream, so testing has to drive the replay feed directly to exercise both trigger paths.
-- Deviations from standard: yes, deliberately, and already flagged in this file's Research note. Standard stale-feed monitoring uses a wall-clock check that catches a fully frozen feed (zero candles arriving at all); these guards tick only on incoming candles, so a genuinely frozen tape (not just flat/sideways) could starve both — the map stands on this, treating the guards as per-candle rather than wall-clock by design.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** each incoming candle — or its telling absence.
+2. **Mechanism:** two guards tick per candle: distance (price moved too far from the reference) and time (too long since a meaningful update); either one firing ends the watch.
+3. **Surface:** the watch visibly stops, with the reason shown — distance vs time.
+4. **Breaks:** the ghost quote — a frozen feed delivers no events at all, so a purely per-candle guard has nothing to count and never fires (the structural blind spot already flagged in this file's Research note) · a guard fires but the watch keeps tracking (the stop must be final).
+
+Existence: bot-simulated — there's no off-the-shelf "staleness guard" venue feature; distance and time guards are built in-house against the incoming candle stream, so testing has to drive the replay feed directly to exercise both trigger paths.
+Deviations from standard: yes, deliberately, and already flagged in this file's Research note. Standard stale-feed monitoring uses a wall-clock check that catches a fully frozen feed (zero candles arriving at all); these guards tick only on incoming candles, so a genuinely frozen tape (not just flat/sideways) could starve both — the map stands on this, treating the guards as per-candle rather than wall-clock by design.
 
 ## Test stream
 
@@ -44,4 +47,4 @@ Preconditions:
 
 - Candle 15 exactly: the rule is *more than* 15 — pin which side the boundary falls on and test it.
 - A stopped-then-resumed watch is the silent failure; always run the no-resume check.
-- Research note: production stale-feed monitoring shows a connection can stay open while ticks stop arriving entirely (a frozen tape) — since both guards here tick only on incoming candles, a fully frozen feed (zero candles, not just flat ones) could starve both guards, in tension with the map's "no path where a watch lives forever" guarantee — the map stands (guards are defined as per-candle, not wall-clock).
+- Research note: production stale-feed monitoring shows a connection can stay open while ticks stop arriving entirely (a frozen tape) — since both guards here tick only on incoming candles, a fully frozen feed (zero candles, not just flat ones) could starve both guards, in tension with the map's "no path where a watch lives forever" guarantee — the map stands (guards are defined as per-candle, not wall-clock). Tester action: exercise both guards only with arriving candles, as specced — and never expect a wall-clock fallback; a fully frozen tape (zero candles) is the documented blind spot the map accepts.

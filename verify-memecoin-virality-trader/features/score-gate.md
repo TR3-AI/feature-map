@@ -14,12 +14,15 @@ Gate 2: the combined Grok score must be ≥6 with a tweet attached, >8 without o
 
 ## How it works in practice
 
-- Weighted/multi-factor scoring gates combine several signal inputs into one number and compare it to a calibrated bar — weak signals below the bar get discarded before they can trigger a trade.
-- The core design fork is fail-open vs fail-closed: when a gate can't produce a trustworthy score (an input is missing, an upstream API is down), does it block the trade (fail-closed) or wave it through anyway (fail-open)? Production trading risk gates default to fail-closed — uncertain state means "no trade," not "trade anyway."
-- Thresholds are commonly context-dependent rather than one flat number — the bar shifts based on a corroborating signal (here: whether a tweet is attached), similar to how a classifier's confidence can shift a stop-loss threshold.
-- A reject log (score, threshold, which branch fired) is what makes a scoring gate auditable instead of a black box — without it nobody can tell whether a specific reject was a bug or a correct call.
-- Existence: this is a standard trading risk-gate pattern — combine inputs, compare to a pinned bar, log the verdict. Nothing needs bot-simulation; only the specific dual-threshold numbers and branch rule are bespoke to this map.
-- Deviations from standard: none — research reinforced the spec. The dual-threshold/branch design matches the fail-closed norm: this gate's own upstream (Grok analysis) blocks candidates rather than passing them when its API is unavailable, so a candidate never reaches this gate with a fabricated or default score.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** a candidate arrives with its signal scores — or an upstream failure state.
+2. **Mechanism:** the inputs combine into one weighted number, compared against the calibrated bar — which shifts by context (tweet attached or not); untrustworthy input states fail closed: uncertain means no trade, never trade-anyway.
+3. **Surface:** pass, or reject — with the reject log naming the score, the threshold, and which branch fired.
+4. **Breaks:** fail-open on missing or untrustworthy input (waved through instead of blocked) · a reject with no log line (a black box nobody can audit) · the wrong branch's bar applied.
+
+Existence: this is a standard trading risk-gate pattern — combine inputs, compare to a pinned bar, log the verdict. Nothing needs bot-simulation; only the specific dual-threshold numbers and branch rule are bespoke to this map.
+Deviations from standard: none — research reinforced the spec. The dual-threshold/branch design matches the fail-closed norm: this gate's own upstream (Grok analysis) blocks candidates rather than passing them when its API is unavailable, so a candidate never reaches this gate with a fabricated or default score.
 
 ## Test stream
 

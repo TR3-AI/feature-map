@@ -14,11 +14,15 @@ Gate 1: the coin's tweet must beat its baseline by the age-band multiplier — u
 
 ## How it works in practice
 
-- Baseline-multiplier spike detection is a standard shape for flagging virality: compute a recent baseline, then require the new reading to clear it by some multiple — real frameworks use similar orders of magnitude, e.g. 5-10x for a mild spike up to 20x+ for a clear breakout.
-- Statistical practice often adds percentile or z-score thresholds (e.g. 90th/99th percentile of the engagement distribution) on top of a flat multiplier, since a flat multiple-of-baseline is noisier for accounts with very low or very spiky baselines — the map's flat-multiplier design is the simpler version of the same idea.
-- Boundary handling (exact-threshold vs just-under, which band an edge-age candidate lands in) is a classic off-by-one source in any banded-threshold system — real implementations pin the comparison operator (≥ vs >) and the edge's band membership explicitly, which the map already does.
-- Existence: age-banded engagement-multiplier gates are bespoke to this system, not an out-of-the-box exchange or social-platform feature — the gate must be bot-built from the coin's own tweet-metric history as the baseline, so this whole feature is bot-computed, not something inspectable on an external venue.
-- Deviations from standard: generic virality-detection frameworks flag a spike by degree alone (percentile/z-score/flat multiplier), independent of how old the post is; the map instead bands the required multiplier by time-since-callout (3x under 1h, up to 50x at 24h+) — a domain-specific adaptation for memecoin timing, not lifted from a generic detection framework; no existing gotcha conflicts with it, so it stands as a deliberate design choice rather than an oversight.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** a candidate's tweet metrics arrive, carrying their age since callout.
+2. **Mechanism:** the gate picks the age band, then requires the new reading to clear the coin's own baseline by that band's multiplier (3x under 1h, up to 50x at 24h+).
+3. **Surface:** pass with the band named — or reject, distinguishing "threshold not met" from "outside all bands".
+4. **Breaks:** off-by-one at band edges and thresholds (exact-threshold vs just-under — the comparison operator and edge-age band membership are pinned) · a spike flagged by degree alone, ignoring age (the generic-framework behavior this design deliberately replaces).
+
+Existence: age-banded engagement-multiplier gates are bespoke to this system, not an out-of-the-box exchange or social-platform feature — the gate must be bot-built from the coin's own tweet-metric history as the baseline, so this whole feature is bot-computed, not something inspectable on an external venue.
+Deviations from standard: generic virality-detection frameworks flag a spike by degree alone (percentile/z-score/flat multiplier), independent of how old the post is; the map instead bands the required multiplier by time-since-callout (3x under 1h, up to 50x at 24h+) — a domain-specific adaptation for memecoin timing, not lifted from a generic detection framework; no existing gotcha conflicts with it, so it stands as a deliberate design choice rather than an oversight.
 
 ## Test stream
 

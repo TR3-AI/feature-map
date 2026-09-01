@@ -14,12 +14,15 @@ Exits fill only into buy pressure — green candles with real volume, never into
 
 ## How it works in practice
 
-- Selling into volume is a form of participation-based execution (like VWAP/POV algos): instead of dumping full size immediately, the order fills only against candles/prints that show real buy-side participation, slicing into whatever the tape can genuinely absorb.
-- Wash trading (same price, same size, rapid buy/sell round-trips between related wallets) is a known manipulation pattern in illiquid/crypto markets used specifically to fake buy pressure — detection compares trade pairs on price + size + a tight time window between the same or clustered wallets, since organic volume doesn't round-trip that cleanly.
-- The classic failure mode for naive "green candle = sell here" logic is trusting candle color/volume totals without checking whether that volume is real, fillable depth — a candle can be green and "high volume" purely from wash trades with zero actual buyers waiting.
-- The standard mitigation for thin liquidity is order fragmentation: fill only what the current print can absorb and retry the remainder on the next qualifying print rather than forcing the whole clip through — this matches the ladder's "wait and retry" behavior here.
-- Existence: bot-simulated — no venue has a native "sell into green candles only" order type; this is a pre-trade check plus a retry loop wrapped around ordinary exit orders, so testing has to drive the underlying tape (replay) rather than relying on any exchange feature.
-- Deviations from standard: none — research reinforced the spec. Treating wash-traded volume as non-qualifying (instead of trusting raw candle volume) is exactly the gap naive volume checks have in practice, and the map already specs this via the `volume-check` sub-feature and its wash-trade gotcha.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** the ladder has a clip to release.
+2. **Mechanism:** the filter reads the tape candle by candle and releases the clip only against real buy-side participation — wash-traded prints (same price, same size, rapid round-trips between related wallets) don't count; they fake pressure with zero actual buyers.
+3. **Surface:** the clip fills into genuine demand on the exchange's record; a candle too thin to absorb it fills only what it can and the remainder waits for the next qualifying print.
+4. **Breaks:** trusting candle color/volume without checking it's real, fillable depth · forcing the whole clip through a thin candle instead of fragmenting and retrying · the pending exit sitting passive after the tape turns green (the retry must fire on its own).
+
+Existence: bot-simulated — no venue has a native "sell into green candles only" order type; this is a pre-trade check plus a retry loop wrapped around ordinary exit orders, so testing has to drive the underlying tape (replay) rather than relying on any exchange feature.
+Deviations from standard: none — research reinforced the spec. Treating wash-traded volume as non-qualifying (instead of trusting raw candle volume) is exactly the gap naive volume checks have in practice, and the map already specs this via the `volume-check` sub-feature and its wash-trade gotcha.
 
 ## Test stream
 

@@ -15,13 +15,15 @@ Each bearish divergence after entry sells a 15–20% clip of the remaining posit
 
 ## How it works in practice
 
-- Scaling out — exiting a winner in tranches instead of one shot — is standard trade management: it locks in gains progressively while leaving room to keep participating if the move continues, and each tranche resizes off whatever remains, not the original stake.
-- Real DEX order sizing weighs price impact against pool depth: a sell that's a large slice of a shallow AMM pool moves price a lot (constant-product curve), so aggregators like Jupiter split big sells across multiple pools/venues to keep any one pool's impact small.
-- This map skips that: clip size is a fixed 15–20% of the remaining position (bag excluded) with no price-impact cap or pool-depth check — deliberate, per the file's existing research note.
-- The sell-into-volume filter does the impact-management job instead: clips wait for a green, liquid candle rather than routing around thin liquidity, so a clip landing in a candle too thin to absorb it should keep retrying the remainder, not report itself complete or spill into the next red candle.
-- Classic failure modes: sizing a clip off the original position instead of the live remainder, letting a repeated signal on one divergence fire two clips, or letting a clip eat into the excluded moon bag.
-- Existence: bot-simulated — clip-per-divergence laddering isn't a native exchange feature; it's the bot tracking remaining position state and firing sized market sells keyed to the divergence signal.
-- Deviations from standard: deliberate — standard DEX exits cap price impact against pool depth by splitting orders; this map fixes clip size at 15–20% with no price-impact cap, consistent with the file's existing research-note gotcha; the map stands.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** a divergence signal fires on a held position.
+2. **Mechanism:** the bot sizes one clip off the live remainder (moon bag excluded) and fires a market sell — gated by the sell-into-volume filter, which does the impact-management job a price-impact cap would do elsewhere.
+3. **Surface:** the position steps down in tranches on the exchange's own record; the remainder keeps working.
+4. **Breaks:** a clip sized off the original stake instead of the live remainder · one divergence firing two clips · a clip eating into the excluded moon bag · a clip landing in a candle too thin to absorb it — the remainder must keep retrying, never report complete or spill into a red candle.
+
+Existence: bot-simulated — clip-per-divergence laddering isn't a native exchange feature; it's the bot tracking remaining position state and firing sized market sells keyed to the divergence signal.
+Deviations from standard: deliberate — standard DEX exits cap price impact against pool depth by splitting orders; this map fixes clip size at 15–20% with no price-impact cap, consistent with the file's existing research-note gotcha; the map stands.
 
 ## Test stream
 
@@ -49,4 +51,4 @@ Preconditions:
 
 - Clip size is of the *remaining* position at that moment, not the original — check the second clip's math against the first clip's remainder.
 - A repeated signal on the same divergence must not double-clip.
-- Research note: real DEX exits often cap a single sell's price impact against pool depth (splitting the order if it would move the pool too far) vs the map's fixed 15–20% clip with no price-impact cap — the map stands.
+- Research note: real DEX exits often cap a single sell's price impact against pool depth (splitting the order if it would move the pool too far) vs the map's fixed 15–20% clip with no price-impact cap — the map stands. Tester action: assert each clip is exactly the map's fixed 15–20% of the live remainder, fired as one sell — never split across pools for impact; the sell-into-volume filter is the only impact control.

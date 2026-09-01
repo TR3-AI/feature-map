@@ -9,6 +9,12 @@ if (!slug) { console.error("usage: node render.js <slug>"); process.exit(1); }
 const esc = (s) =>
   String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const rich = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<code>$1</code>");
+const withTact = (s) => {
+  const html = rich(s);
+  const i = html.indexOf("Tester action:");
+  if (i < 0) return html;
+  return html.slice(0, i) + '<span class="tact"><b>Tester action</b>' + html.slice(i + 14) + "</span>";
+};
 
 const md = fs.readFileSync(`maps/${slug}.md`, "utf8").replace(/\r\n/g, "\n");
 const lines = md.split("\n");
@@ -116,7 +122,7 @@ const features = chunks.map((chunk, idx) => {
       <div class="verdict bad"><span>Failure</span> ${rich(u.bad)}</div>
     </div>`).join("\n    ")}
     <div class="flbl">Gotchas</div>
-    ${k.gotchas.map((s) => `<div class="gotcha">${rich(s)}</div>`).join("\n    ")}` : "";
+    ${k.gotchas.map((s) => `<div class="gotcha">${withTact(s)}</div>`).join("\n    ")}` : "";
   return `
   <section class="fbox">
     <div class="fhead"><span class="fnum">F${idx + 1}</span><h3>${esc(name)}</h3><span class="fdept">${esc(inline(chunk, "From"))}</span></div>
@@ -163,7 +169,7 @@ for (const [fname, k] of kit) {
 const research = rnotes.length ? `<section class="rnotes">
     <div class="rnhead">⚠️ ${rnotes.length} research disagreement${rnotes.length > 1 ? "s" : ""} — broadcast, not buried</div>
     <div class="rnsub">These elements specify behaviour that differs from the standard implementation found in external research. The tester tests the map's version knowingly — never by habit. Keep or drop each element is Bobby's call.</div>
-    ${rnotes.map((r) => `<div class="rnote"><b>${esc(r.fname)}</b> — ${rich(r.note)}</div>`).join("\n    ")}
+    ${rnotes.map((r) => `<div class="rnote"><b>${esc(r.fname)}</b> — ${withTact(r.note)}</div>`).join("\n    ")}
   </section>` : "";
 const html = tpl
   .replaceAll("{{TITLE}}", esc(title))

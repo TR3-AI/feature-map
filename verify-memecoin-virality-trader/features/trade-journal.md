@@ -15,12 +15,15 @@ One append-only record per trade: every gate verdict, the alert, Bobby's click, 
 
 ## How it works in practice
 
-- An append-only trade journal is a form of event sourcing: every state change (gate verdict, click, fill) is stored as an immutable event rather than overwritten, and current state (open? flat?) is derived by replaying the events in order, not read from a separate mutable record.
-- A shared event schema across producers typically carries a monotonic per-trade sequence number, a timestamp, an event type, and a payload — the sequence number is what lets replay detect a gap (a skipped number) or out-of-order delivery, which a plain timestamp can't guarantee under retries or clock skew.
-- Idempotent handling of a "close" event is the standard defense against redelivery: a duplicate delivery of the same closing fill must be recognized (by event id, or by an already-sealed record) and dropped, not reapplied — otherwise a network retry can silently duplicate a closing entry.
-- Replay is the audit mechanism: if the full trade can be reconstructed from the journal alone and matches the exchange/UI, the journal is trustworthy; any event that happened but isn't in the log is a silent, hard-to-detect failure, since nothing else fails loudly when a journal write is dropped.
-- Existence: exists in the requested format — append-only event logs with idempotent replay are a standard, well-documented pattern (event sourcing); nothing about the mechanic needs bot-simulation, only the specific nine-department schema is bespoke to this map.
-- Deviations from standard: none — research reinforced the spec. Deduplicating a redelivered closing event by checking for an already-sealed record (rather than trusting "if it arrives, apply it") is exactly the idempotency practice standard event-sourced systems use, and matches this file's redelivery gotcha.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** any trade state change — gate verdict, click, fill, close.
+2. **Mechanism:** the journal appends an immutable event (monotonic per-trade sequence number, timestamp, type, payload) — event sourcing: current state (open? flat?) is derived by replaying events in order, never read from a mutable record.
+3. **Surface:** the full trade reconstructable from the journal alone, matching what the exchange and UI show.
+4. **Breaks:** a dropped write (silent — nothing else fails loudly; only replay against the exchange catches it) · a gap or out-of-order delivery (the monotonic sequence exposes it; a plain timestamp can't under retries or clock skew) · a redelivered close applied twice (must be recognized by the already-sealed record and dropped).
+
+Existence: exists in the requested format — append-only event logs with idempotent replay are a standard, well-documented pattern (event sourcing); nothing about the mechanic needs bot-simulation, only the specific nine-department schema is bespoke to this map.
+Deviations from standard: none — research reinforced the spec. Deduplicating a redelivered closing event by checking for an already-sealed record (rather than trusting "if it arrives, apply it") is exactly the idempotency practice standard event-sourced systems use, and matches this file's redelivery gotcha.
 
 ## Test stream
 

@@ -15,12 +15,15 @@ The live positions screen: open positions with stop and ladder state, and the mo
 
 ## How it works in practice
 
-- Live trading dashboards typically stream unrealized P&L, entry-vs-current price, and position/order state in real time off a market-data feed — no manual refresh — while closed positions drop out of the active view and remain queryable in history.
-- The classic failure mode is silent staleness: the UI keeps rendering the last-known price or state as if live when the underlying feed actually dropped, and a frozen screen looks identical to a healthy one unless staleness is explicitly signaled.
-- Cross-checking the UI's displayed order/stop state against the venue's own order list is standard due diligence in practice — a dashboard's local cache can lag a real fill or cancellation, so the two can briefly disagree.
-- Separating automated holdings (open position with live stop/ladder) from manual-only holdings (a moon bag with no automated field) into distinct sections is a common UX pattern for keeping the boundary of automation visually unambiguous.
-- Existence: live position + P&L dashboards are a standard, off-the-shelf UI pattern across trading platforms — this exists directly in the requested format; nothing needs bot-simulation beyond wiring it to real position events.
-- Deviations from standard: none — research reinforced the spec; the file's own gotcha about visibly flagging a stale/disconnected feed rather than silently sitting on last-known numbers matches how real live dashboards distinguish themselves from unreliable ones.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** any position event — entry, fill, cancel, close — or a price tick.
+2. **Mechanism:** the dashboard streams unrealized P&L, entry-vs-current price, and order/stop state off the live market-data feed — no manual refresh; closed positions drop to history; the moon bag sits in its own manual-only section.
+3. **Surface:** numbers that move on their own, cross-checkable against the venue's own order list.
+4. **Breaks:** silent staleness — a frozen screen looks identical to a healthy one unless a dropped feed is visibly flagged · a local cache disagreeing with the venue after a real fill or cancel · automated and manual holdings visually mixed (the automation boundary must be unambiguous).
+
+Existence: live position + P&L dashboards are a standard, off-the-shelf UI pattern across trading platforms — this exists directly in the requested format; nothing needs bot-simulation beyond wiring it to real position events.
+Deviations from standard: none — research reinforced the spec; the file's own gotcha about visibly flagging a stale/disconnected feed rather than silently sitting on last-known numbers matches how real live dashboards distinguish themselves from unreliable ones.
 
 ## Test stream
 

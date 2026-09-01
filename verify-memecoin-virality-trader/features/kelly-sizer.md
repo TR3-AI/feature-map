@@ -15,12 +15,15 @@ The entry size, computed by fractional Kelly the moment the alert fires and show
 
 ## How it works in practice
 
-- Full Kelly maximizes long-run growth but produces brutal drawdowns (30-50%+ swings) and is highly sensitive to input error — overestimate the win-rate or payoff ratio even slightly and the formula recommends a dangerously oversized bet.
-- Standard practice is fractional Kelly, most commonly half-Kelly (keeps roughly 75% of full-Kelly's growth while cutting drawdown/variance by about half) or quarter-Kelly in choppier conditions — full Kelly is treated as too aggressive to run live.
-- The formula itself goes to zero or negative whenever there's no real edge (win-rate × payoff at or below break-even) — that's the math correctly saying "don't bet," not an edge case to patch around.
-- Win-rate is the most sensitive input: a few points of estimation error swings the recommended size dramatically (e.g. a 5-point win-rate drop can cut quarter-Kelly's size by roughly 6x) — the calculation is only as good as the inputs behind it.
-- Existence: fractional Kelly is a standard, well-documented sizing formula from quant/betting practice — it exists exactly in the requested format (bankroll, win-rate, payoff, chosen fraction → deterministic size), nothing needs simulation, only a correct implementation.
-- Deviations from standard: none — research reinforced the spec; treating a zero/negative Kelly result the same as missing inputs (both produce the honest empty state, per the file's own gotcha) is exactly how the formula is meant to be used.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** an alert needs a position size.
+2. **Mechanism:** bankroll + win-rate + payoff + chosen fraction → the formula returns a deterministic size; at zero or negative edge (win-rate × payoff at/below break-even) it returns zero or negative — the math correctly saying "don't bet", not an edge case to patch.
+3. **Surface:** the pre-filled size on the alert — or the honest empty state (no number) for missing inputs or no edge.
+4. **Breaks:** the fraction knob not actually applied (size identical across different fractions — secretly running full Kelly, the dangerous default) · a no-edge input producing a negative or nonsensical size instead of the empty state · unpinned inputs (small win-rate errors swing the size dramatically — pin before hand-checking).
+
+Existence: fractional Kelly is a standard, well-documented sizing formula from quant/betting practice — it exists exactly in the requested format (bankroll, win-rate, payoff, chosen fraction → deterministic size), nothing needs simulation, only a correct implementation.
+Deviations from standard: none — research reinforced the spec; treating a zero/negative Kelly result the same as missing inputs (both produce the honest empty state, per the file's own gotcha) is exactly how the formula is meant to be used.
 
 ## Test stream
 

@@ -15,13 +15,15 @@ Executes the sized entry on-chain — only after Bobby's click; the alert alone 
 
 ## How it works in practice
 
-- A Solana DEX market buy (via an aggregator like Jupiter, or direct to an AMM like Raydium) is a swap transaction: get a quote, build the transaction, sign, submit, wait for on-chain confirmation — there's no order book guaranteeing the quoted price holds until the trade lands.
-- Slippage tolerance is the safety valve: if the price would land outside the tolerance, the swap program reverts on-chain — the wallet still pays the network fee (and any priority fee), but keeps the swap amount; that's a deliberate rejection, not a crash.
-- A transaction that never lands is a different failure mode entirely: Solana transactions expire after roughly two minutes and get dropped, usually from being outbid on priority fee during congestion — nothing executes, so no fee at all is charged.
-- Priority fees (a per-compute-unit bid layered on the base fee) are the standard lever for landing a transaction fast when competing bots and traders are all racing the same block — a memecoin buy with too low a priority fee simply won't get included, independent of slippage settings.
-- Sandwich attacks are the other standard on-chain risk: because Solana has no public mempool, MEV bots use private bundles to buy ahead of a detected large swap and sell right after it; the victim's transaction still confirms normally, just at a worse price than quoted, with no error at all.
-- Existence: standard on-chain swap mechanics — Jupiter/Raydium natively provide slippage tolerance and priority-fee bidding; nothing here needs bot-simulation beyond the click-gate and the on-chain confirmation check the map already specifies.
-- Deviations from standard: none — the map's two-failure-mode split (lands-and-reverts-with-fee vs never-lands-and-no-fee) and its sandwiched-but-confirmed-fill case both match standard Solana swap behavior; research reinforced the file's existing gotchas rather than changing them.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** a buy clears the click-gate.
+2. **Mechanism:** quote → build → sign → submit the swap (Jupiter/Raydium) with a slippage tolerance and a priority-fee bid → wait for on-chain confirmation. No order book guarantees the quoted price holds until the trade lands.
+3. **Surface:** the fill on the chain's own record, at the real executed price — checked there, never against the pre-trade quote.
+4. **Breaks:** lands-and-reverts (price moved past slippage tolerance — fee charged, swap amount kept; a deliberate rejection, not a crash) · never-lands (outbid on priority fee during congestion, transaction expires ~2 minutes — no fee at all) · sandwiched (MEV bots buy ahead and sell after; the transaction confirms normally at a worse price with no error — only the chain record shows it).
+
+Existence: standard on-chain swap mechanics — Jupiter/Raydium natively provide slippage tolerance and priority-fee bidding; nothing here needs bot-simulation beyond the click-gate and the on-chain confirmation check the map already specifies.
+Deviations from standard: none — the map's two-failure-mode split (lands-and-reverts-with-fee vs never-lands-and-no-fee) and its sandwiched-but-confirmed-fill case both match standard Solana swap behavior; research reinforced the file's existing gotchas rather than changing them.
 
 ## Test stream
 

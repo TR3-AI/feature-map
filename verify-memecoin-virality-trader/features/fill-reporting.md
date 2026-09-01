@@ -14,12 +14,15 @@ One event per fill on the frozen schema, delivered to both consumers — Positio
 
 ## How it works in practice
 
-- Delivering one event per real-world occurrence to multiple independent consumers reliably is standard distributed-systems practice: the transport guarantees at-least-once delivery (retry until acknowledged) because it genuinely can't tell "never arrived" from "arrived but the ack was lost" — duplicates are an expected outcome, not a bug in the wire.
-- The standard way to still get exactly-once *behavior* on top is at-least-once delivery plus an idempotent consumer: every event carries a stable identity (FIX's ExecID field on execution reports is the classic version — unique per fill, and a retransmit with the same ID is recognized as the same fill, not a new one), and consumers dedupe on that ID rather than trusting the wire.
-- Per-consumer retry isolation is the other standard piece: each subscriber (ladder, journal) gets its own delivery/retry path so one down or slow consumer's backlog doesn't hold up delivery to a healthy one — a shared queue instead causes head-of-line blocking, where one stuck message stalls everything behind it.
-- Unacknowledged events are expected to keep retrying and eventually escalate visibly, never silently drop — a missed fill event is state corruption (the ladder or journal quietly falls behind), so a visible escalation path is the standard design, not optional.
-- Existence: standard event-delivery architecture (the same shape as FIX execution reports or at-least-once webhook delivery) — nothing here is bot-simulated; it's a design pattern the fill pipeline has to implement correctly.
-- Deviations from standard: none — the map's ack-until-acknowledged retry plus consumer-side dedup on a stable ID is exactly the standard at-least-once + idempotent-consumer pattern, reinforcing the file's existing gotcha that real delivery underneath is at-least-once, not literally exactly-once.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** an execution fills on the exchange.
+2. **Mechanism:** the reporter emits one event carrying a stable identity (the FIX ExecID pattern — a retransmit with the same ID is the same fill, not a new one) and retries until each consumer acknowledges — at-least-once on the wire by design, because the transport can't tell "never arrived" from "ack lost".
+3. **Surface:** each consumer (ladder, journal) shows the fill exactly once, deduped on the stable ID; a stuck consumer retries and escalates visibly without holding up the healthy one.
+4. **Breaks:** a redelivered event surfacing as a second fill (the consumer trusted the wire) · one consumer's backlog head-of-line blocking the other · an unacknowledged event silently dropping — a missed fill is state corruption, so escalation must be visible.
+
+Existence: standard event-delivery architecture (the same shape as FIX execution reports or at-least-once webhook delivery) — nothing here is bot-simulated; it's a design pattern the fill pipeline has to implement correctly.
+Deviations from standard: none — the map's ack-until-acknowledged retry plus consumer-side dedup on a stable ID is exactly the standard at-least-once + idempotent-consumer pattern, reinforcing the file's existing gotcha that real delivery underneath is at-least-once, not literally exactly-once.
 
 ## Test stream
 

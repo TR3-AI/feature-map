@@ -14,12 +14,15 @@ Gate 4: watches the chart from the call-out moment for an OBV or RSI divergence 
 
 ## How it works in practice
 
-- Divergence compares price structure to an oscillator: price sets a new extreme (e.g. a lower low) that OBV or RSI fails to confirm (a higher low) — the mismatch between the two is the signal, not either reading alone.
-- Standard TA splits divergence into two kinds: "regular" divergence (a reversal signal — price extreme unconfirmed by the oscillator, read at trend extremes) and "hidden" divergence (a continuation signal — the opposite mismatch during a pullback within a healthy trend); this feature is explicitly the regular case only.
-- A pivot (the local high/low a divergence is measured from) can't be fully confirmed until bars form after it — flagging or plotting a pivot before its candle closes is what causes "repainting": the flag can appear mid-candle, then silently shift or disappear once the candle finishes and the true pivot turns out to be somewhere else.
-- The standard fix is bar-close confirmation: a signal only counts once the candle it depends on has closed; anything computed off a still-forming candle's live price is provisional, not a confirmed flag.
-- Existence: bot-simulated — divergence detection isn't a vendor-provided exchange feature here; it's computed candle by candle from the chart feed's OHLC + OBV/RSI, which is exactly why the confirmed-vs-repainting distinction has to be built and verified deliberately rather than trusted from an off-the-shelf indicator.
-- Deviations from standard: none — the map's "regular divergence only, confirmed on closed candles" spec matches standard TA practice and reinforces the file's existing repainting and regular-vs-hidden gotchas.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** each new candle closes on the chart feed.
+2. **Mechanism:** the watcher compares price structure against the oscillator — regular divergence only: price sets a new extreme the OBV/RSI fails to confirm — computed strictly on closed candles, because a pivot can't be confirmed until bars form after it.
+3. **Surface:** a confirmed divergence flag handed downstream; provisional mid-candle reads never leave the watcher.
+4. **Breaks:** repainting — a flag that appears mid-formation then shifts or vanishes once the candle closes · hidden divergence (a continuation signal during a pullback) mistaken for the regular case — the opposite-meaning signal.
+
+Existence: bot-simulated — divergence detection isn't a vendor-provided exchange feature here; it's computed candle by candle from the chart feed's OHLC + OBV/RSI, which is exactly why the confirmed-vs-repainting distinction has to be built and verified deliberately rather than trusted from an off-the-shelf indicator.
+Deviations from standard: none — the map's "regular divergence only, confirmed on closed candles" spec matches standard TA practice and reinforces the file's existing repainting and regular-vs-hidden gotchas.
 
 ## Test stream
 

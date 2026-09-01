@@ -16,12 +16,15 @@ The list of tracked traders/devs — only callouts from these sources produce ca
 
 ## How it works in practice
 
-- Whitelist/allowlist config in production systems is typically managed as its own isolated config object — a file or store watched independently from the rest of app config — so a bad edit can't take down unrelated features.
-- The standard pattern for live config is: a file watcher detects a change, the new version is parsed and validated before being swapped in atomically, and only a valid config replaces the running one — an invalid edit is rejected rather than crashing or partially applying.
-- The restart-required alternative (load once at startup, keep in memory, refresh only on the next run) trades operational convenience for predictability — nobody has to reason about the list changing mid-run, at the cost of a manual restart to pick up edits.
-- Secrets hygiene for a list like this means it must reference identities by name/handle only — any real credentials (API keys, wallet keys) live in a separate secret store referenced by name, never inlined in the same config a human edits and views.
-- Existence: exists in the requested format — a config file plus an in-memory list is the standard shape for this feature; nothing needs bot-simulation, though "restart to reload" specifically must be tested by actually restarting the watcher rather than editing live.
-- Deviations from standard: yes, deliberately. Production practice increasingly favors hot-reloading whitelist config live (watch, validate, atomic swap, no restart) — the map instead requires a restart/reload between runs for edits to take effect. This matches the file's existing Research-note gotcha; the map stands on this choice.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** Bobby edits the source list file.
+2. **Mechanism:** the watcher validates the edit — names/handles only, never keys or secrets; a malformed or empty file is a safe stop, never a partial apply — and the new list takes effect on the next restart: load once, hold in memory, refresh per run.
+3. **Surface:** the active list on screen (plain names/handles only), deciding whose callouts can become candidates.
+4. **Breaks:** a wallet key or API key sitting in the list view (secrets hygiene breach) · a malformed or unparseable file silently applying instead of failing safe · an edit appearing to apply live, without the restart the spec requires.
+
+Existence: exists in the requested format — a config file plus an in-memory list is the standard shape for this feature; nothing needs bot-simulation, though "restart to reload" specifically must be tested by actually restarting the watcher rather than editing live.
+Deviations from standard: yes, deliberately. Production practice increasingly favors hot-reloading whitelist config live (watch, validate, atomic swap, no restart) — the map instead requires a restart/reload between runs for edits to take effect. This matches the file's existing Research-note gotcha; the map stands on this choice.
 
 ## Test stream
 
@@ -49,4 +52,4 @@ Preconditions:
 
 - A restart (or reload) is needed for edits to apply; a mid-run edit proves nothing.
 - An unlisted-source callout must produce *nothing* — do not accept a candidate with a warning as a pass.
-- Research note: production config-management practice favors hot-reloading isolated whitelist config live (file watcher, validated before swap) without a restart — vs the map's requirement that source-list edits apply only via restart/reload between runs — the map stands.
+- Research note: production config-management practice favors hot-reloading isolated whitelist config live (file watcher, validated before swap) without a restart — vs the map's requirement that source-list edits apply only via restart/reload between runs — the map stands. Tester action: edit the list, restart the watcher, and assert the edit takes effect only after the restart — a live hot-reload is the standard behavior the map deliberately skips.

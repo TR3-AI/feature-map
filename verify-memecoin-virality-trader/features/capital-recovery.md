@@ -15,12 +15,15 @@ At 2x from entry, the initial capital comes out (sold into volume) and the stop-
 
 ## How it works in practice
 
-- Taking partial profits at a multiple and running the rest risk-free is standard trade management — bank the stake early, remove the stop's job of protecting capital that's already out, let the remainder ride.
-- "House money" is a known psychological trap: traders who feel they're playing with winnings loosen their own discipline (bigger size, wider stops, worse entries) — exactly why this rule has to be mechanical, not a judgment call in the moment.
-- The exit sell is a real AMM trade, not a guaranteed fill: thin memecoin pool depth can push the initial-capital sell's price outside tolerance and reject it, requiring a retry before the withdrawal actually lands.
-- Cancelling the stop races the stop itself: if price wicks the stop level and the 2x mark close together, a naive "cancel" can return success from the exchange when the stop had, in fact, already filled first — the standard defense is sell-then-confirm-then-cancel, never cancel-first.
-- Existence: bot-simulated — no exchange offers a native "withdraw initial at 2x, cancel stop" order type; it's the bot watching price and sequencing a market sell plus a cancel call against the exchange's own order state.
-- Deviations from standard: none — the map's sell-before-cancel sequencing already matches the standard fix for this race, and research reinforced the existing gotcha about never cancelling before the sell confirms.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** a position reaches 2x.
+2. **Mechanism:** the bot sells the initial stake on the live pool (a real AMM trade — thin depth can slippage-reject it, requiring a retry), confirms the sell landed against the exchange's own record, and only then cancels the stop.
+3. **Surface:** initial capital visibly back out; the remainder rides risk-free with the stop removed.
+4. **Breaks:** the cancel sent before the sell confirms (price wicking both levels close together — the stop may already have filled, and a naive cancel reports success falsely) · the withdrawal sell rejected and never retried · "house money" looseness — the rule is mechanical precisely because judgment-in-the-moment is the known trap.
+
+Existence: bot-simulated — no exchange offers a native "withdraw initial at 2x, cancel stop" order type; the bot watches price and sequences sell → confirm → cancel against the exchange's own order state.
+Deviations from standard: none — the map's sell-before-cancel sequencing already matches the standard fix for this race, and research reinforced the existing gotcha about never cancelling before the sell confirms.
 
 ## Test stream
 
