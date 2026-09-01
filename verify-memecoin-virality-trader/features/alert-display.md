@@ -14,11 +14,16 @@ The alert card readable at a glance on the phone: coin, oscillator, freshness, s
 
 ## How it works in practice
 
-- Alert cards in trading products are glanceable summaries: symbol, signal, freshness, and the action size — readable in seconds on a phone, newest on top.
-- The classic failure is the "ghost quote": the card keeps looking live while the underlying data stopped updating. Freshness must visibly age; a frozen "just now" is the tell.
-- State is never signaled by color alone — severity and gain/loss pair color with text or icons.
-- Existence: a standard UI pattern — it exists in the requested format; nothing to simulate.
-- Deviations from standard: none — research reinforced the spec (freshness honesty is already a spec behaviour).
+The mechanical chain the test stream walks:
+
+1. **Trigger:** an alert payload arrives from Signal & trigger.
+2. **Mechanism:** the UI renders a new card from the payload and pushes it to the top of the active list.
+3. **Surface:** the card is readable at phone width — coin, oscillator, freshness, gate scores, pre-filled size all present.
+4. **Aging:** the freshness label mechanically ticks older as time passes — a frozen "just now" means the data underneath has died (the "ghost quote").
+5. **Breaks:** a field empty or clipped at 390px (render bug) · freshness frozen (dead feed behind a live-looking card) · a resolved card lingering in the active list (archive broken).
+
+Existence: a standard UI pattern — nothing to simulate; all units run against the real UI.
+Deviations from standard: none — research reinforced the spec (freshness honesty is already a spec behaviour).
 
 ## Test stream
 

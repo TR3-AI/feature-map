@@ -220,7 +220,7 @@
     <div class="rnhead">⚠️ 7 research disagreements — broadcast, not buried</div>
     <div class="rnsub">These elements specify behaviour that differs from the standard implementation found in external research. The tester tests the map's version knowingly — never by habit. Keep or drop each element is Bobby's call.</div>
     <div class="rnote"><b>30-day baseline builder</b> — production engagement baselines commonly use outlier-resistant averaging (trimmed mean, rolling median) to blunt viral-tweet skew vs the map's plain likes+retweets average — the map stands; test with a viral outlier tweet in the window to confirm it's included, not silently filtered.</div>
-    <div class="rnote"><b>Bundler gate</b> — public bundler-detection tools commonly treat 25–40% combined bundler/sniper holdings as only a caution zone (some sniper-filter frameworks use a 30% bundler-ratio cutoff) vs the map's stricter 10–15% reject ceiling — the map stands.</div>
+    <div class="rnote"><b>Bundler gate</b> — public bundler-detection tools commonly treat 25–40% combined bundler/sniper holdings as only a caution zone (some sniper-filter frameworks use a 30% bundler-ratio cutoff) vs the map's stricter 10–15% reject ceiling — the map stands. Tester action: pin the boundary at the map's own numbers — 15% exactly must pass, anything over must reject; never test against the industry 25–40% band.</div>
     <div class="rnote"><b>BUY button</b> — crypto UX guidance often calls for an explicit confirmation step before an irreversible transaction, vs the map's one-tap-only design (no typing, no sizing, one click executes) — the map stands.</div>
     <div class="rnote"><b>Divergence clip ladder</b> — real DEX exits often cap a single sell's price impact against pool depth (splitting the order if it would move the pool too far) vs the map's fixed 15–20% clip with no price-impact cap — the map stands.</div>
     <div class="rnote"><b>Moon bag rule</b> — common moon-bag practice sizes the runner much larger than 20% (often half the position, or tiered exits at 5x/10x) vs the map's fixed 20% carved out once at 2x — the map stands.</div>
@@ -370,12 +370,13 @@
     </ul>
     <div class="flbl">How it works in practice (external research)</div>
     <ul class="vreach">
-      <li>pump.fun and FOMO work the SAME way for this feature: both are trading platforms with a social layer on top — a real-time feed plus comments attached to tokens and trades. A callout is a tracked source's activity surfacing there: a post, a comment, a buy, a launch.</li>
-      <li>On pump.fun: every coin page carries comments and recent trades, and a real-time social feed, livestreams with chat, and leaderboards push what is moving — the listener watches that stream for tracked source names.</li>
-      <li>On FOMO (fomo.family): the feed shows followed traders' buys and sells in real time, with optional written theses attached to trades and comment threads under token charts; following a source triggers notifications on their moves.</li>
-      <li>Programmatic access exists on both sides: pump.fun has free WebSocket feeds (e.g. PumpPortal's <code>subscribeNewToken</code>), and FOMO has a social-trading data API (fomoapi.io) — the exact capture path gets grounded against the real app once the repo exists.</li>
-      <li>Because a callout is a loose social post, not a structured order ticket, the four required fields (coin address, attached tweet, timestamp, source) are extracted from free text — slang, hype, and commentary around the address are the normal shape, not the exception.</li>
-      <li>Existence: feed-based callout watching is native to both platforms — same mechanic, two feeds; nothing needs bot-simulation beyond driving test posts through the test stream.</li>
+      <li><b>Trigger:</b> a tracked source acts on a coin — posts a callout into the platform's feed or coin-page comments (pump.fun or FOMO).</li>
+      <li><b>Mechanism:</b> the platform broadcasts that activity to followers in real time — it appears in the social feed, on the coin page, and as a follow-notification.</li>
+      <li><b>Delivery:</b> our listener holds a standing connection to that stream; the callout arrives as an event carrying the raw post. (Exact capture path — WebSocket feed vs data API — is PRE-BUILD until the repo exists; both platforms have one.)</li>
+      <li><b>Extraction:</b> the parser mechanically pulls the four fields out of the free-text post — coin address, attached tweet, timestamp, source — and the validator drops any post missing a field, with the reason logged.</li>
+      <li><b>Surface:</b> a valid callout lands as a normalized candidate in the intake view; a rejected one lands in the reject log with its reason.</li>
+      <li><b>Breaks:</b> the stream drops silently (reconnect must resume without duplicating or skipping) · a field absent in the raw post (must reject, never half-fill) · the same callout arriving twice (must dedupe to one candidate).</li>
+      <li>Existence: feed-based watching is native to both platforms — the listener is a real stream consumer, nothing simulated; the exact capture path is PRE-BUILD until the app repo exists.</li>
       <li>Deviations from standard: none — research reinforced the spec.</li>
     </ul>
     <div class="flbl">Test stream</div>
@@ -1030,7 +1031,7 @@
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The direction check is the one that drifts (Bobby's example): an increasing share passing at any % is the critical failure — test it first.</div>
     <div class="gotcha">Verdicts need all three of %, trend, rule; a verdict missing one is a logging failure.</div>
-    <div class="gotcha">Research note: public bundler-detection tools commonly treat 25–40% combined bundler/sniper holdings as only a caution zone (some sniper-filter frameworks use a 30% bundler-ratio cutoff) vs the map's stricter 10–15% reject ceiling — the map stands.</div>
+    <div class="gotcha">Research note: public bundler-detection tools commonly treat 25–40% combined bundler/sniper holdings as only a caution zone (some sniper-filter frameworks use a 30% bundler-ratio cutoff) vs the map's stricter 10–15% reject ceiling — the map stands. Tester action: pin the boundary at the map's own numbers — 15% exactly must pass, anything over must reject; never test against the industry 25–40% band.</div>
     <div class="verdict ok"><span>Success</span> All three verdicts are correct with full reasons visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> An over-limit or increasing candidate passes — the direction of the rule is broken.</div>
   </section>
@@ -1340,10 +1341,12 @@
     </ul>
     <div class="flbl">How it works in practice (external research)</div>
     <ul class="vreach">
-      <li>Alert cards in trading products are glanceable summaries: symbol, signal, freshness, and the action size — readable in seconds on a phone, newest on top.</li>
-      <li>The classic failure is the &quot;ghost quote&quot;: the card keeps looking live while the underlying data stopped updating. Freshness must visibly age; a frozen &quot;just now&quot; is the tell.</li>
-      <li>State is never signaled by color alone — severity and gain/loss pair color with text or icons.</li>
-      <li>Existence: a standard UI pattern — it exists in the requested format; nothing to simulate.</li>
+      <li><b>Trigger:</b> an alert payload arrives from Signal &amp; trigger.</li>
+      <li><b>Mechanism:</b> the UI renders a new card from the payload and pushes it to the top of the active list.</li>
+      <li><b>Surface:</b> the card is readable at phone width — coin, oscillator, freshness, gate scores, pre-filled size all present.</li>
+      <li><b>Aging:</b> the freshness label mechanically ticks older as time passes — a frozen &quot;just now&quot; means the data underneath has died (the &quot;ghost quote&quot;).</li>
+      <li><b>Breaks:</b> a field empty or clipped at 390px (render bug) · freshness frozen (dead feed behind a live-looking card) · a resolved card lingering in the active list (archive broken).</li>
+      <li>Existence: a standard UI pattern — nothing to simulate; all units run against the real UI.</li>
       <li>Deviations from standard: none — research reinforced the spec (freshness honesty is already a spec behaviour).</li>
     </ul>
     <div class="flbl">Test stream</div>

@@ -15,13 +15,17 @@ Watches the tracked streams and turns each callout into a normalized candidate �
 
 ## How it works in practice
 
-- pump.fun and FOMO work the SAME way for this feature: both are trading platforms with a social layer on top — a real-time feed plus comments attached to tokens and trades. A callout is a tracked source's activity surfacing there: a post, a comment, a buy, a launch.
-- On pump.fun: every coin page carries comments and recent trades, and a real-time social feed, livestreams with chat, and leaderboards push what is moving — the listener watches that stream for tracked source names.
-- On FOMO (fomo.family): the feed shows followed traders' buys and sells in real time, with optional written theses attached to trades and comment threads under token charts; following a source triggers notifications on their moves.
-- Programmatic access exists on both sides: pump.fun has free WebSocket feeds (e.g. PumpPortal's `subscribeNewToken`), and FOMO has a social-trading data API (fomoapi.io) — the exact capture path gets grounded against the real app once the repo exists.
-- Because a callout is a loose social post, not a structured order ticket, the four required fields (coin address, attached tweet, timestamp, source) are extracted from free text — slang, hype, and commentary around the address are the normal shape, not the exception.
-- Existence: feed-based callout watching is native to both platforms — same mechanic, two feeds; nothing needs bot-simulation beyond driving test posts through the test stream.
-- Deviations from standard: none — research reinforced the spec.
+The mechanical chain the test stream walks:
+
+1. **Trigger:** a tracked source acts on a coin — posts a callout into the platform's feed or coin-page comments (pump.fun or FOMO).
+2. **Mechanism:** the platform broadcasts that activity to followers in real time — it appears in the social feed, on the coin page, and as a follow-notification.
+3. **Delivery:** our listener holds a standing connection to that stream; the callout arrives as an event carrying the raw post. (Exact capture path — WebSocket feed vs data API — is PRE-BUILD until the repo exists; both platforms have one.)
+4. **Extraction:** the parser mechanically pulls the four fields out of the free-text post — coin address, attached tweet, timestamp, source — and the validator drops any post missing a field, with the reason logged.
+5. **Surface:** a valid callout lands as a normalized candidate in the intake view; a rejected one lands in the reject log with its reason.
+6. **Breaks:** the stream drops silently (reconnect must resume without duplicating or skipping) · a field absent in the raw post (must reject, never half-fill) · the same callout arriving twice (must dedupe to one candidate).
+
+Existence: feed-based watching is native to both platforms — the listener is a real stream consumer, nothing simulated; the exact capture path is PRE-BUILD until the app repo exists.
+Deviations from standard: none — research reinforced the spec.
 
 ## Test stream
 

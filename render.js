@@ -37,7 +37,7 @@ if (fs.existsSync(kitDir)) {
       return `<span class="sub"><b>${esc(m ? m[1] : "")}</b> ${rich(m ? m[2] : s)}</span>`;
     });
     const reach = li(sec(text, "How to get to it (user POV)"));
-    const knowhow = li(sec(text, "How it works in practice"));
+    const knowhow = [...sec(text, "How it works in practice").matchAll(/^(?:(?:\d+\.|-)\s+(.+)|((?:Existence|Deviations from standard):.*))$/gm)].map((x) => x[1] || x[2]);
     const stream = sec(text, "Test stream");
     const afterPre = stream.split(/^Preconditions:\s*$/m)[1] || stream;
     const firstUnit = afterPre.search(/^\d+\.\s+\*\*/m);

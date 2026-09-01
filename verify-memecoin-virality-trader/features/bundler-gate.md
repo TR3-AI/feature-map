@@ -44,4 +44,4 @@ Preconditions:
 
 - The direction check is the one that drifts (Bobby's example): an increasing share passing at any % is the critical failure — test it first.
 - Verdicts need all three of %, trend, rule; a verdict missing one is a logging failure.
-- Research note: public bundler-detection tools commonly treat 25–40% combined bundler/sniper holdings as only a caution zone (some sniper-filter frameworks use a 30% bundler-ratio cutoff) vs the map's stricter 10–15% reject ceiling — the map stands.
+- Research note: public bundler-detection tools commonly treat 25–40% combined bundler/sniper holdings as only a caution zone (some sniper-filter frameworks use a 30% bundler-ratio cutoff) vs the map's stricter 10–15% reject ceiling — the map stands. Tester action: pin the boundary at the map's own numbers — 15% exactly must pass, anything over must reject; never test against the industry 25–40% band.
