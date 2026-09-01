@@ -156,7 +156,7 @@ for (const [fname, k] of kit) {
 }
 const research = rnotes.length ? `<section class="rnotes">
     <div class="rnhead">⚠️ ${rnotes.length} research disagreement${rnotes.length > 1 ? "s" : ""} — broadcast, not buried</div>
-    <div class="rnsub">External practice disagrees with this map here. A disagreement with the idea is a disagreement with every test stream built from it — the map stands unless Bobby rules otherwise.</div>
+    <div class="rnsub">These elements specify behaviour that differs from the standard implementation found in external research. The tester tests the map's version knowingly — never by habit. Keep or drop each element is Bobby's call.</div>
     ${rnotes.map((r) => `<div class="rnote"><b>${esc(r.fname)}</b> — ${rich(r.note)}</div>`).join("\n    ")}
   </section>` : "";
 const html = tpl
