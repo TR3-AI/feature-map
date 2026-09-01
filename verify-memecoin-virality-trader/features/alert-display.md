@@ -12,6 +12,14 @@ The alert card readable at a glance on the phone: coin, oscillator, freshness, s
 
 - The front-end UI's alert list, on the phone.
 
+## How it works in practice
+
+- Alert cards in trading products are glanceable summaries: symbol, signal, freshness, and the action size — readable in seconds on a phone, newest on top.
+- The classic failure is the "ghost quote": the card keeps looking live while the underlying data stopped updating. Freshness must visibly age; a frozen "just now" is the tell.
+- State is never signaled by color alone — severity and gain/loss pair color with text or icons.
+- Existence: a standard UI pattern — it exists in the requested format; nothing to simulate.
+- Deviations from standard: none — research reinforced the spec (freshness honesty is already a spec behaviour).
+
 ## Test stream
 
 Preconditions:

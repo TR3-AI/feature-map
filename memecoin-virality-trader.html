@@ -1231,6 +1231,14 @@
     <ul class="vreach">
       <li>The front-end UI's alert list, on the phone.</li>
     </ul>
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      <li>Alert cards in trading products are glanceable summaries: symbol, signal, freshness, and the action size — readable in seconds on a phone, newest on top.</li>
+      <li>The classic failure is the &quot;ghost quote&quot;: the card keeps looking live while the underlying data stopped updating. Freshness must visibly age; a frozen &quot;just now&quot; is the tell.</li>
+      <li>State is never signaled by color alone — severity and gain/loss pair color with text or icons.</li>
+      <li>Existence: a standard UI pattern — it exists in the requested format; nothing to simulate.</li>
+      <li>Deviations from standard: none — research reinforced the spec (freshness honesty is already a spec behaviour).</li>
+    </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">UI at 390px width; ProofShot recording; a test alert waiting, plus a way to let time pass (or a pre-aged alert) so the freshness readout can be checked for honest aging.</div>
     

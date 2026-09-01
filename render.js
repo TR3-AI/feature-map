@@ -37,6 +37,7 @@ if (fs.existsSync(kitDir)) {
       return `<span class="sub"><b>${esc(m ? m[1] : "")}</b> ${rich(m ? m[2] : s)}</span>`;
     });
     const reach = li(sec(text, "How to get to it (user POV)"));
+    const knowhow = li(sec(text, "How it works in practice"));
     const stream = sec(text, "Test stream");
     const afterPre = stream.split(/^Preconditions:\s*$/m)[1] || stream;
     const firstUnit = afterPre.search(/^\d+\.\s+\*\*/m);
@@ -58,6 +59,7 @@ if (fs.existsSync(kitDir)) {
     kit.set(name, {
       subs,
       reach,
+      knowhow,
       pre: li(preText).map((s) => esc(s)).join(" · "),
       units,
       gotchas: li(sec(text, "Gotchas")),
@@ -99,7 +101,11 @@ const features = chunks.map((chunk, idx) => {
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
       ${k.reach.map((s) => `<li>${rich(s)}</li>`).join("\n      ")}
-    </ul>
+    </ul>${k.knowhow && k.knowhow.length ? `
+    <div class="flbl">How it works in practice (external research)</div>
+    <ul class="vreach">
+      ${k.knowhow.map((s) => `<li>${rich(s)}</li>`).join("\n      ")}
+    </ul>` : ""}
     <div class="flbl">Test stream</div>
     <div class="pre">${k.pre}</div>
     ${k.units.map((u, i) => `
