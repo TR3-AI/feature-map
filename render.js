@@ -148,6 +148,17 @@ const stats = `<div class="stats">
     <div class="stat"><span class="snum">${subTotal}</span><span class="slbl">sub-features</span></div>
     <div class="stat"><span class="snum">${kit.size}</span><span class="slbl">verification recipes</span></div>` : ""}
   </div>`;
+const rnotes = [];
+for (const [fname, k] of kit) {
+  for (const g of k.gotchas) {
+    if (/^Research note:/i.test(g)) rnotes.push({ fname, note: g.replace(/^Research note:\s*/i, "") });
+  }
+}
+const research = rnotes.length ? `<section class="rnotes">
+    <div class="rnhead">⚠️ ${rnotes.length} research disagreement${rnotes.length > 1 ? "s" : ""} — broadcast, not buried</div>
+    <div class="rnsub">External practice disagrees with this map here. A disagreement with the idea is a disagreement with every test stream built from it — the map stands unless Bobby rules otherwise.</div>
+    ${rnotes.map((r) => `<div class="rnote"><b>${esc(r.fname)}</b> — ${rich(r.note)}</div>`).join("\n    ")}
+  </section>` : "";
 const html = tpl
   .replaceAll("{{TITLE}}", esc(title))
   .replaceAll("{{SOURCE_URL}}", srcUrl)
@@ -156,6 +167,7 @@ const html = tpl
   .replaceAll("{{UPDATED}}", esc(updated))
   .replaceAll("{{KIT_FOOT}}", kitFoot)
   .replace("{{STATS}}", stats)
+  .replace("{{RESEARCH}}", () => research)
   .replace("{{FEATURES}}", features.join("\n"));
 
 fs.writeFileSync(`${slug}.html`, html);

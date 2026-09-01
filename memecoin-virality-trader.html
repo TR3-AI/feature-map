@@ -184,6 +184,19 @@
   .tbody { font-size: 13.5px; line-height: 1.55; margin: 4px 0 6px; }
   .tunit .verdict { padding: 7px 12px; margin: 5px 0 2px; font-size: 13.5px; }
 
+  /* ── research disagreements strip ────────────────── */
+  .rnotes {
+    background: #fdf6e8; border: 2px solid #c9930a; border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 26px; box-shadow: 0 6px 18px rgba(23, 32, 43, .06);
+  }
+  .rnhead { font-weight: 800; font-size: 14.5px; color: #7a5800; margin-bottom: 8px; }
+  .rnsub { font-size: 12.5px; color: #7a5800; opacity: .85; margin-bottom: 10px; }
+  .rnote {
+    background: #fff; border-left: 4px solid #c9930a; border-radius: 0 6px 6px 0;
+    padding: 8px 12px; margin: 6px 0; font-size: 13.5px; line-height: 1.5;
+  }
+  .rnote b { color: #7a5800; }
+
   footer { text-align: center; color: var(--soft); font-size: 13px; margin-top: 44px; }
   footer a { color: var(--blue); font-weight: 700; text-decoration: none; }
 </style>
@@ -202,6 +215,18 @@
     <div class="stat"><span class="snum">87</span><span class="slbl">sub-features</span></div>
     <div class="stat"><span class="snum">25</span><span class="slbl">verification recipes</span></div>
   </div>
+
+  <section class="rnotes">
+    <div class="rnhead">⚠️ 7 research disagreements — broadcast, not buried</div>
+    <div class="rnsub">External practice disagrees with this map here. A disagreement with the idea is a disagreement with every test stream built from it — the map stands unless Bobby rules otherwise.</div>
+    <div class="rnote"><b>30-day baseline builder</b> — production engagement baselines commonly use outlier-resistant averaging (trimmed mean, rolling median) to blunt viral-tweet skew vs the map's plain likes+retweets average — the map stands; test with a viral outlier tweet in the window to confirm it's included, not silently filtered.</div>
+    <div class="rnote"><b>Bundler gate</b> — public bundler-detection tools commonly treat 25–40% combined bundler/sniper holdings as only a caution zone (some sniper-filter frameworks use a 30% bundler-ratio cutoff) vs the map's stricter 10–15% reject ceiling — the map stands.</div>
+    <div class="rnote"><b>BUY button</b> — crypto UX guidance often calls for an explicit confirmation step before an irreversible transaction, vs the map's one-tap-only design (no typing, no sizing, one click executes) — the map stands.</div>
+    <div class="rnote"><b>Divergence clip ladder</b> — real DEX exits often cap a single sell's price impact against pool depth (splitting the order if it would move the pool too far) vs the map's fixed 15–20% clip with no price-impact cap — the map stands.</div>
+    <div class="rnote"><b>Moon bag rule</b> — common moon-bag practice sizes the runner much larger than 20% (often half the position, or tiered exits at 5x/10x) vs the map's fixed 20% carved out once at 2x — the map stands.</div>
+    <div class="rnote"><b>Source list config</b> — production config-management practice favors hot-reloading isolated whitelist config live (file watcher, validated before swap) without a restart — vs the map's requirement that source-list edits apply only via restart/reload between runs — the map stands.</div>
+    <div class="rnote"><b>Staleness guards</b> — production stale-feed monitoring shows a connection can stay open while ticks stop arriving entirely (a frozen tape) — since both guards here tick only on incoming candles, a fully frozen feed (zero candles, not just flat ones) could starve both guards, in tension with the map's &quot;no path where a watch lives forever&quot; guarantee — the map stands (guards are defined as per-candle, not wall-clock).</div>
+  </section>
 
   
   <section class="fbox">
