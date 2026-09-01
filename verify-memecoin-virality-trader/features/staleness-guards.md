@@ -27,11 +27,12 @@ Preconditions:
 3. **time-guard.** Replay 16 flat one-minute candles with no divergence.
    Success: The watch stops with reason "time" once the 16th candle passes.
    Failure: The watch keeps running past 15 candles, or stops with a different reason.
-4. **stop-reason.** After a guard fires, drop the price back to the call-out level.
-   Success: The stop reason (distance or time) stays logged, and the watch stays stopped — it does not resume.
-   Failure: No reason is logged, or the watch resumes tracking after the price drops back.
+4. **stop-reason.** After a guard fires, drop the price back to the call-out level; separately, replay a guard-firing candle that would also qualify as a divergence.
+   Success: The stop reason (distance or time) stays logged and the watch stays stopped in both cases — it does not resume, and a same-candle divergence does not slip out an alert after the guard has already fired.
+   Failure: No reason is logged, the watch resumes tracking after the price drops back, or a divergence alert fires despite the guard having already stopped the watch.
 
 ## Gotchas
 
 - Candle 15 exactly: the rule is *more than* 15 — pin which side the boundary falls on and test it.
 - A stopped-then-resumed watch is the silent failure; always run the no-resume check.
+- Research note: production stale-feed monitoring shows a connection can stay open while ticks stop arriving entirely (a frozen tape) — since both guards here tick only on incoming candles, a fully frozen feed (zero candles, not just flat ones) could starve both guards, in tension with the map's "no path where a watch lives forever" guarantee — the map stands (guards are defined as per-candle, not wall-clock).

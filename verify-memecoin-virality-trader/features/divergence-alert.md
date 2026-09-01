@@ -27,11 +27,12 @@ Preconditions:
 3. **prefill.** Trigger the test divergence and check the size shown on the alert against the Position manager's fractional Kelly calculation.
    Success: the size in the payload matches the Kelly size, present without needing a refresh.
    Failure: the size is missing, wrong, or only shows up after a refresh.
-4. **once.** Trigger the same divergence a second time.
-   Success: no second alert appears for the same candidate.
-   Failure: a second alert appears for the same candidate.
+4. **once.** Trigger the same divergence a second time after enough candles pass that freshness/age would read differently.
+   Success: no second alert appears for the same candidate, regardless of how much the freshness value has shifted between triggers.
+   Failure: a second alert appears for the same candidate, especially one that differs only by an updated freshness/timestamp value.
 
 ## Gotchas
 
 - The size must be present *in the payload* — a size that appears only after a refresh is a wiring failure.
 - Freshness must be honest (the divergence's real age), not "just now" forever.
+- Freshness/age must never be part of what makes an alert "new" — identity for dedup is the candidate alone; a payload whose only change is an updated freshness value is still the same alert, not a second one.

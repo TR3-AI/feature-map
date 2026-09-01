@@ -23,20 +23,21 @@ Preconditions:
 1. **Source list config works end to end.** Open the config view, then post a test callout from the listed source and one from the unlisted source.
    Success: The visible list matches what Bobby supplied, and only the listed source's callout produces a candidate — all visible in the recording.
    Failure: The list can't be displayed, or the unlisted source's callout produces a candidate too.
-2. **list-view.** Open the config view.
-   Success: The recording shows Bobby's source list rendered correctly.
-   Failure: The config view is blank, missing, or shows the wrong list.
+2. **list-view.** Open the config view and inspect the recording.
+   Success: The recording shows Bobby's source list rendered correctly, by plain name or handle only — no wallet keys, API keys, or other secrets appear.
+   Failure: The config view is blank, missing, shows the wrong list, or exposes a key/secret instead of (or alongside) a plain handle.
 3. **list-filter.** Post a test callout from the listed source, then one from the unlisted source.
    Success: The listed source's callout produces a candidate in the intake view; the unlisted source's callout produces nothing.
    Failure: The unlisted source's callout slips a candidate through, or the listed source's callout is blocked.
 4. **list-edit.** Edit the source list to add a new source, post a callout from it without restarting, then restart and post again.
    Success: The callout posted before the restart produces nothing; the same callout after the restart produces a candidate.
    Failure: The edit applies before the restart, or still doesn't apply after it.
-5. **list-empty.** Point the watcher at an empty list and restart.
-   Success: The intake view shows zero candidates and no error storm — a safe stop.
-   Failure: The watcher errors out, crashes, or still produces candidates despite the empty list.
+5. **list-empty.** Point the watcher at an empty list and restart; separately, point it at a malformed/unparseable list file and restart.
+   Success: Both cases show zero candidates in the intake view and no error storm — a safe stop either way.
+   Failure: The watcher errors out, crashes, or still produces candidates despite the empty or malformed list.
 
 ## Gotchas
 
 - A restart (or reload) is needed for edits to apply; a mid-run edit proves nothing.
 - An unlisted-source callout must produce *nothing* — do not accept a candidate with a warning as a pass.
+- Research note: production config-management practice favors hot-reloading isolated whitelist config live (file watcher, validated before swap) without a restart — vs the map's requirement that source-list edits apply only via restart/reload between runs — the map stands.

@@ -17,25 +17,27 @@ The entry size, computed by fractional Kelly the moment the alert fires and show
 
 Preconditions:
 
-- ProofShot recording; pinned test inputs (bankroll, win-rate, payoff, fraction); the expected number computed by hand beforehand.
+- ProofShot recording; pinned test inputs (bankroll, win-rate, payoff, fraction); the expected number computed by hand beforehand; a second pinned fraction (e.g. quarter vs half) with the same odds for a scaling check; a pinned no-edge input set (win-rate × payoff at or below break-even) where the Kelly formula itself goes to zero or negative.
 
 1. **Fractional Kelly sizer works end to end.** Fire a test alert with the pinned inputs.
    Success: the alert's pre-filled size equals the hand-computed fractional Kelly number.
    Failure: the size disagrees with the hand check, or the system invents a size when inputs are missing.
-2. **compute.** Fire a test alert with the pinned inputs.
-   Success: the fractional Kelly calculation runs at alert time and produces the hand-computed number.
-   Failure: no calculation runs, or the result doesn't match the hand check.
+2. **compute.** Fire a test alert with the pinned inputs, then fire a second alert with the same odds but the other pinned fraction (e.g. quarter instead of half).
+   Success: both sizes match their hand-computed fractional Kelly numbers, and the size scales with the fraction (half-Kelly comes out roughly double quarter-Kelly for the same odds) — proving the fraction is actually applied, not decorative.
+   Failure: either result doesn't match its hand check, or the size stays the same across fractions — the sizer is silently running one fixed (possibly full) Kelly regardless of the fraction input.
 3. **prefill.** Check the alert card after firing.
    Success: the computed size is attached to the alert payload and shows pre-filled — nothing left for Bobby to type.
    Failure: the alert arrives without a size, or asks Bobby to enter one.
 4. **no-grok.** Fire two alerts with identical Kelly inputs but different Grok scores.
    Success: both alerts show identical sizes.
    Failure: the sizes differ because the Grok score leaked into the calculation.
-5. **missing-inputs.** Remove the Kelly inputs and fire again.
-   Success: the alert shows "no size — inputs missing".
-   Failure: the alert shows a guessed or default size instead of the honest empty state.
+5. **missing-inputs.** Remove the Kelly inputs and fire again; separately, fire an alert with the pinned no-edge input set.
+   Success: the alert shows "no size — inputs missing" when inputs are absent, and shows the same honest empty state (never a bet) when the inputs imply no real edge.
+   Failure: the alert shows a guessed or default size instead of the honest empty state, or shows a negative or nonsensical size when the Kelly formula returns zero or negative for a no-edge input set.
 
 ## Gotchas
 
 - Compute the expected number before the run — never "verify" against whatever the system produced.
 - The score-independence check is the one that proves the ruling; don't skip it because the happy path passed.
+- Fractional Kelly's whole point is the fraction: a sizer that returns the same number regardless of the chosen fraction is quietly running full Kelly, which real practice treats as dangerously overbet, not just untested.
+- A zero or negative Kelly result means "no real edge, don't bet" — that's the same honest-empty-state case as literally-missing inputs, not a separate bug class.

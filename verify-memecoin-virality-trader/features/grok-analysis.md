@@ -27,11 +27,12 @@ Preconditions:
 3. **two-scores.** Read the same view for the veracity and virality figures.
    Success: veracity and virality show as two distinct numbers.
    Failure: the two scores arrive merged into one figure.
-4. **api-failure.** Kill the API and feed another candidate.
-   Success: the candidate shows as blocked with the error, never advancing.
-   Failure: the candidate advances despite the API failure, or blocks silently with no error shown.
+4. **api-failure.** Kill the API and feed a candidate; separately, feed a candidate for which the API returns a 200 response that fails to parse as the expected schema (malformed JSON, a missing field, or a score outside the valid range) — a distinct failure that, in practice, is more common than a dead API.
+   Success: both the network failure and the schema-violating response show the candidate as blocked with the error, never advancing.
+   Failure: either candidate advances despite the failure, or blocks silently with no error shown.
 
 ## Gotchas
 
 - The two-score separation is the whole point (ruling #10); a single merged score is a failure even if the number looks sensible.
 - A blocked candidate must show *why* — a silent stall is not a pass.
+- A live API can still hand back garbage: a schema-conforming but wrong narrative, or a plausible-looking score outside the valid range, is a distinct failure from a dead API — both must trip the same block, and testing only the killed-API case misses the more common one.

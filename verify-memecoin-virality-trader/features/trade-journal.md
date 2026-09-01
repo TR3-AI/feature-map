@@ -26,16 +26,17 @@ Preconditions:
    Success: The journal record opens at the callout and appends each event in the order it happened.
    Failure: The record opens late, misses an early event, or events appear out of order.
 3. **one-schema.** Compare events from different departments in the journal, such as a gate verdict and a fill.
-   Success: Every event, regardless of which department produced it, uses the same event shape and fields.
-   Failure: An event from one department has a different shape than the rest, or is missing expected fields.
+   Success: Every event, regardless of which department produced it, uses the same event shape and fields — including a monotonic sequence number and a timestamp.
+   Failure: An event from one department has a different shape than the rest, is missing expected fields, or its sequence number/timestamp is missing or out of step with its neighbors.
 4. **replay.** Read the completed trade's journal alone and cross-check two events against the exchange and the UI.
-   Success: The journal shows every step in order with no gaps, matching what the exchange and UI show.
-   Failure: There is a gap in the sequence, or an event in the journal disagrees with the exchange or UI.
-5. **close.** Run the position to flat with a moon bag surviving.
-   Success: At flat, the record is sealed and notes the surviving moon bag.
-   Failure: The record isn't sealed at flat, or doesn't note the surviving moon bag.
+   Success: The journal shows every step in order with no gaps — each event's sequence number follows the last with none skipped — matching what the exchange and UI show.
+   Failure: There is a gap or skip in the sequence, or an event in the journal disagrees with the exchange or UI.
+5. **close.** Run the position to flat with a moon bag surviving, then redeliver the same closing fill event a second time (simulating a retried delivery).
+   Success: At flat, the record is sealed once and notes the surviving moon bag; the redelivered event does not reopen the record, re-seal it, or add a duplicate closing entry.
+   Failure: The record isn't sealed at flat, doesn't note the surviving moon bag, or the redelivered event produces a duplicate seal or a second closing entry.
 
 ## Gotchas
 
 - The journal is the audit trail of last resort — a single missing event fails the feature, even if everything "worked".
 - Append-only means append-only: no edited or deleted events anywhere in the record.
+- A redelivered event that silently produces a second closing entry breaks append-only in spirit even if no existing row was edited — the ledger's tail after redelivery must show exactly one seal, not two.

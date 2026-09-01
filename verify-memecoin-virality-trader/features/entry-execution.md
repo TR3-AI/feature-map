@@ -31,11 +31,13 @@ Preconditions:
 4. **no-replay.** Tap BUY again on the same alert.
    Success: no second entry or fill appears after the re-click.
    Failure: a second entry appears from the re-click.
-5. **failure-visible.** Force a transaction that will fail on-chain (for example, an unfunded wallet) and tap BUY.
-   Success: the failure surfaces with the chain's real error.
-   Failure: the failure is silent, or shows a generic message instead of the chain's real error.
+5. **failure-visible.** Force a swap that will revert on-chain the way real memecoin trades commonly do — set a price move beyond the slippage tolerance so the transaction lands but reverts (not just an unfunded-wallet case that never gets submitted) — and tap BUY.
+   Success: the failure surfaces with the chain's real program error (e.g. a slippage-exceeded revert), and the wallet is only out the network fee, not the swap amount.
+   Failure: the failure is silent, shows a generic message instead of the chain's real error, or the wallet is charged as though the swap succeeded.
 
 ## Gotchas
 
 - "The alert alone never spends money" is the load-bearing invariant — always run the no-click check, not just the happy path.
 - The fill must be confirmed on-chain, not just optimistically reported; check the explorer in the recording.
+- A transaction can fail two different ways: it lands and reverts (e.g. slippage exceeded — the wallet still pays the network fee) or it never lands at all (dropped for too low a priority fee, no fee charged); the failure-visible check should tell which one happened, since "no fill" alone doesn't say whether money moved.
+- Even a fill that lands can be sandwiched — a worse-than-quoted price with no error at all — so "a real price" in the onchain-fill check means the actual chain-recorded price, not the pre-trade quote.

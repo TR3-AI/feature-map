@@ -16,17 +16,17 @@ Pulls the callout account's last 30 days of tweets and averages likes + retweets
 
 Preconditions:
 
-- Scorer view visible; ProofShot recording; a test account whose metrics are known beforehand.
+- Scorer view visible; ProofShot recording; a test account whose known-beforehand metrics include at least one high-engagement outlier tweet in the window; a way to simulate a rate limit mid-pull.
 
 1. **30-day baseline builder works end to end.** Feed the test account with known metrics through the scorer.
    Success: the displayed baseline equals the real 30-day average, and thin accounts are visibly flagged.
    Failure: no baseline appears, the number disagrees with the hand check, or a thin account gets a confident fake number.
-2. **pull.** Feed the test account and inspect the raw pull output before any average appears.
-   Success: the full 30-day tweet history for the test account is visibly present as the pull's raw output.
-   Failure: no history appears, or the average is computed before the pull completes or with partial data.
-3. **average.** With the pulled history visible, compare the baseline number to the average computed by hand beforehand.
-   Success: the baseline on screen matches the hand-computed average.
-   Failure: the number disagrees with the hand check.
+2. **pull.** Feed the test account and inspect the raw pull output before any average appears. Then simulate a rate limit partway through a second pull.
+   Success: the full 30-day tweet history for the test account is visibly present as the pull's raw output, and the rate-limited pull visibly pauses and resumes rather than stopping early with a partial page.
+   Failure: no history appears, the average is computed before the pull completes or with partial data, or the rate-limited pull returns a truncated history without visibly pausing.
+3. **average.** With the pulled history visible — including the outlier tweet — compare the baseline number to the average computed by hand beforehand.
+   Success: the baseline on screen matches the hand-computed average, with the outlier tweet's likes/retweets folded into the arithmetic mean (no silent filtering).
+   Failure: the number disagrees with the hand check, or the outlier tweet is silently excluded from the average.
 4. **thin-history.** Feed an account with almost no tweet history.
    Success: the view shows the low-history flag instead of a number.
    Failure: the account gets a confident baseline number instead of the flag.
@@ -35,3 +35,5 @@ Preconditions:
 
 - Compute the expected average before the run; checking afterwards invites rationalizing.
 - A partial pull (rate limit) must wait, not score with half the data.
+- A pull that stops early because one page came back shorter than the max page size (instead of stopping only when the API's pagination cursor is exhausted) silently under-counts history — check the raw pull's tweet count, not just that some history appeared.
+- Research note: production engagement baselines commonly use outlier-resistant averaging (trimmed mean, rolling median) to blunt viral-tweet skew vs the map's plain likes+retweets average — the map stands; test with a viral outlier tweet in the window to confirm it's included, not silently filtered.

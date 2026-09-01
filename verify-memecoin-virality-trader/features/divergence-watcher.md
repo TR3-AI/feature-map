@@ -24,9 +24,9 @@ Preconditions:
 2. **anchor.** Replay a chart from a known call-out price and time, and check where the watch starts.
    Success: the watch's starting price and time match the call-out's price and time exactly.
    Failure: the watch starts from a different price or time than the call-out.
-3. **detect.** Replay the chart with the known OBV divergence.
-   Success: the flag names the correct oscillator that diverged, with its strength recorded.
-   Failure: the wrong oscillator is named, or the strength is missing or wrong.
+3. **detect.** Replay the chart with the known OBV divergence candle by candle, watching the flag both while the pivot candle is still forming and after it closes.
+   Success: the flag names the correct oscillator that diverged, with its strength recorded, and only confirms once the pivot candle closes — no flag flip or vanish on the still-forming candle.
+   Failure: the wrong oscillator is named, the strength is missing or wrong, or the flag fires (or changes) on an unclosed candle and repaints once it closes.
 4. **handoff.** After the known divergence is detected, check the front-end UI.
    Success: the detected divergence produces a divergence alert in the UI.
    Failure: the divergence is detected but no alert ever appears downstream.
@@ -35,3 +35,5 @@ Preconditions:
 
 - The anchor is the call-out price — a divergence measured from the wrong anchor is a false pass; verify the anchor in the recording.
 - Deterministic: the same replay must give the same result on a second run.
+- Divergence built on an unconfirmed (still-forming) pivot candle can repaint — the flag appears, then silently vanishes or changes once the candle closes; that's a distinct failure mode from run-to-run drift, and the replay-twice check alone doesn't catch it.
+- This is "regular" divergence (price extreme not confirmed by the oscillator) in standard TA terms, not "hidden" divergence (a continuation signal that reads the opposite way) — confirm test fixtures use the regular case the spec calls for.

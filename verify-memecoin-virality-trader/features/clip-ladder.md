@@ -28,9 +28,9 @@ Preconditions:
 3. **clip-size.** Replay two divergences and check each clip's size against the position remaining at that moment, bag excluded.
    Success: each clip is 15–20% of the remaining position at that moment, with the bag excluded from the math.
    Failure: a clip falls outside 15–20%, is sized off the original position instead of the remainder, or eats into the bag.
-4. **into-volume.** Replay a divergence during a red, no-volume window, then let a green candle with volume arrive.
-   Success: the clip only fills once a qualifying green candle with volume shows up, visible in the recording.
-   Failure: the clip fills on a red or no-volume candle.
+4. **into-volume.** Replay a divergence during a red, no-volume window, then let a green candle arrive with volume too thin to absorb the whole clip before it dries up again.
+   Success: the clip only fills once qualifying volume shows up, and if the first qualifying candle can't absorb the full clip, the remainder keeps waiting/retrying rather than being marked filled or dumped into the next red candle.
+   Failure: the clip fills on a red or no-volume candle, or a partially-filled clip is reported as complete or finishes filling into a red/no-volume candle.
 5. **ladder-end.** Clip the position down until only the moon bag remains, then replay another divergence.
    Success: no further clip fires once only the bag is left.
    Failure: a clip fires after only the bag remains, eating into it.
@@ -39,3 +39,4 @@ Preconditions:
 
 - Clip size is of the *remaining* position at that moment, not the original — check the second clip's math against the first clip's remainder.
 - A repeated signal on the same divergence must not double-clip.
+- Research note: real DEX exits often cap a single sell's price impact against pool depth (splitting the order if it would move the pool too far) vs the map's fixed 15–20% clip with no price-impact cap — the map stands.

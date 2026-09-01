@@ -19,18 +19,18 @@ Preconditions:
 
 - Devnet; ProofShot recording; the exchange's open-orders view open.
 
-1. **Immediate stop-loss works end to end.** Enter a position on devnet and check the exchange's open-orders list, then cancel the stop manually on a second position, then run a fresh position to 2x.
-   Success: the stop is visible on the exchange, cancellable by hand, and self-cancels at 2x — every step recorded.
-   Failure: the entry fills but no stop exists on the exchange — no proof of protection beyond the bot's word.
+1. **Immediate stop-loss works end to end.** Enter a position on devnet and check the exchange's open-orders list, then cancel the stop manually on a second position, then run a third position down through the stop's trigger price to confirm it actually fills and closes the position, then run a fourth position to 2x.
+   Success: the stop is visible on the exchange, cancellable by hand, actually fills and closes the position when the trigger price is hit (fill price and any slippage from the trigger visible in the recording), and self-cancels at 2x — every step recorded.
+   Failure: the entry fills but no stop exists on the exchange, the stop triggers but leaves the position open (no fill or only a partial fill) with no alert, or the 2x self-cancel never fires.
 2. **place.** Enter a position on devnet.
    Success: the open-orders list shows the stop placed at entry −30%.
    Failure: no stop order appears on the exchange, or it's placed at the wrong price.
 3. **inspect.** Open the exchange's open-orders list after entry.
    Success: the stop is listed there as a real, inspectable order.
    Failure: the stop is not visible on the exchange's own list — only the bot's word for it.
-4. **adjust.** Cancel the stop manually while it's active.
-   Success: it disappears from the exchange the moment it's cancelled.
-   Failure: the cancel has no effect, or the exchange still shows the stop as live.
+4. **adjust.** Cancel the stop manually while it's active, then on another live stop change its price instead of cancelling.
+   Success: the cancel makes it disappear from the exchange immediately; the price change shows as the old order gone and a new order live at the new price (real cancel-and-replace mechanics), not the same order silently mutated in place.
+   Failure: the cancel has no effect, the exchange still shows the stop as live, or the price-changed order can't be found on the exchange's list under its new price.
 5. **self-cancel.** Run a fresh position to 2x.
    Success: the recording shows the stop vanish from the exchange with no manual action.
    Failure: the stop remains active past 2x, or requires manual cancellation.
@@ -39,3 +39,5 @@ Preconditions:
 
 - The bot saying "stop set" is not proof — only the exchange's own list counts (Bobby's rule).
 - If placement fails, the position must surface as unprotected immediately — simulate a placement failure and check the alarm.
+- A triggered stop is an immediate-or-cancel order — thin liquidity can partial-fill it and cancel the remainder, leaving part of the position exposed with no stop live anymore; the "hit" check must confirm the position is fully closed, not just that some sell happened.
+- Order edits are cancel-and-replace under the hood, not an in-place mutation — if the trigger fires mid-adjust, the edit can lose the race and fail silently because the order already converted to a market/limit order in flight; check for that failure, not just the happy-path edit.

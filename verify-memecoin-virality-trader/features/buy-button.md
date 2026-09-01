@@ -25,9 +25,9 @@ Preconditions:
 2. **enabled.** With no alert present, check the button; then let an alert arrive and check again.
    Success: the button is greyed out with no alert, and tappable once an alert is present.
    Failure: the button is tappable with no alert, or stays greyed out once an alert arrives.
-3. **single-fire.** Tap the button twice fast.
-   Success: the receiver gets exactly one buy click despite the double-tap.
-   Failure: the receiver gets two buy clicks, or the button fires again while the first is in flight.
+3. **single-fire.** Tap the button twice fast, then separately force a delayed/retried send of the same buy intent (e.g. a network timeout that causes a resend).
+   Success: the button visibly locks the instant the first tap registers, the receiver gets exactly one buy click despite the double-tap, and a retried send resolves to the original order instead of creating a second one.
+   Failure: the button stays tappable after the first tap, the receiver gets two buy clicks, or a retried send creates a second order.
 4. **exact-size.** Compare the size shown on the card against the size the receiver got.
    Success: the buy click carries exactly the size shown on the card.
    Failure: the size sent differs from the size displayed.
@@ -39,3 +39,4 @@ Preconditions:
 
 - The size sent must equal the size *displayed* — compare them in the recording, not from logs alone.
 - Greyed-out must mean truly inert: a disabled button that still fires is the worst failure here.
+- Research note: crypto UX guidance often calls for an explicit confirmation step before an irreversible transaction, vs the map's one-tap-only design (no typing, no sizing, one click executes) — the map stands.

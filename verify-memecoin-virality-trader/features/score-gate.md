@@ -16,18 +16,18 @@ Gate 2: the combined Grok score must be ≥6 with a tweet attached, >8 without o
 
 Preconditions:
 
-- Gate log visible; ProofShot recording; four candidates with pinned scores.
+- Gate log visible; ProofShot recording; candidates with pinned scores, including the exact threshold boundaries (6.0 with a tweet, 8.0 without one) and tweet-field edge cases (a tweet present but empty, and a tweet field absent entirely).
 
 1. **Combined-score gate works end to end.** Feed all four candidates — 6.5 with a tweet, 5 with a tweet, 8.5 without a tweet, 7 without a tweet — through the gate and read the log.
    Success: All four verdicts match the dual rule with the applied threshold visible in the recording.
    Failure: Any verdict contradicts the rule, or the wrong branch was used for a candidate.
-2. **branch.** Feed a candidate with a tweet and one without a tweet through the gate.
-   Success: The log shows branch "tweet" for the first and branch "no-tweet" for the second, each compared against its own threshold.
-   Failure: A candidate is evaluated against the other branch's threshold, or no branch is shown.
-3. **threshold.** Feed the boundary scores: 6.5 and 5 with a tweet, 8.5 and 7 without a tweet.
-   Success: The log shows pass, reject, pass, reject — matching ≥6 with a tweet and >8 without one.
-   Failure: Any score lands on the wrong side of its threshold.
-4. **score-reject.** Feed the two reject cases (5 with a tweet, 7 without a tweet) and read the reject log.
+2. **branch.** Feed a candidate with a tweet, one with no tweet field at all, and one with a tweet field present but empty.
+   Success: The log shows branch "tweet" only for the genuinely non-empty tweet, and branch "no-tweet" for both the absent and the empty-but-present cases, each compared against the no-tweet threshold.
+   Failure: A candidate is evaluated against the wrong branch's threshold, no branch is shown, or an empty-but-present tweet field is treated as branch "tweet".
+3. **threshold.** Feed the exact boundary scores: 6.0 and 5.9 with a tweet, 8.0 and 8.01 without a tweet.
+   Success: The log shows pass, reject, reject, pass — 6.0 with a tweet passes (≥6) and 5.9 rejects; 8.0 without a tweet rejects (>8, not ≥8) and 8.01 passes.
+   Failure: Any score lands on the wrong side of its threshold, especially the exact boundary values themselves.
+4. **score-reject.** Feed the two reject cases (5.9 with a tweet, 8.0 without a tweet) and read the reject log.
    Success: Each reject entry shows the score, the branch, and the threshold that fired.
    Failure: A reject entry is missing the score, branch, or threshold, or the reject isn't logged.
 

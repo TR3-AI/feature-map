@@ -259,9 +259,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> list-view.</div>
-      <div class="tbody">Open the config view.</div>
-      <div class="verdict ok"><span>Success</span> The recording shows Bobby's source list rendered correctly.</div>
-      <div class="verdict bad"><span>Failure</span> The config view is blank, missing, or shows the wrong list.</div>
+      <div class="tbody">Open the config view and inspect the recording.</div>
+      <div class="verdict ok"><span>Success</span> The recording shows Bobby's source list rendered correctly, by plain name or handle only — no wallet keys, API keys, or other secrets appear.</div>
+      <div class="verdict bad"><span>Failure</span> The config view is blank, missing, shows the wrong list, or exposes a key/secret instead of (or alongside) a plain handle.</div>
     </div>
     
     <div class="tunit">
@@ -280,13 +280,14 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">5</span> list-empty.</div>
-      <div class="tbody">Point the watcher at an empty list and restart.</div>
-      <div class="verdict ok"><span>Success</span> The intake view shows zero candidates and no error storm — a safe stop.</div>
-      <div class="verdict bad"><span>Failure</span> The watcher errors out, crashes, or still produces candidates despite the empty list.</div>
+      <div class="tbody">Point the watcher at an empty list and restart; separately, point it at a malformed/unparseable list file and restart.</div>
+      <div class="verdict ok"><span>Success</span> Both cases show zero candidates in the intake view and no error storm — a safe stop either way.</div>
+      <div class="verdict bad"><span>Failure</span> The watcher errors out, crashes, or still produces candidates despite the empty or malformed list.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">A restart (or reload) is needed for edits to apply; a mid-run edit proves nothing.</div>
     <div class="gotcha">An unlisted-source callout must produce *nothing* — do not accept a candidate with a warning as a pass.</div>
+    <div class="gotcha">Research note: production config-management practice favors hot-reloading isolated whitelist config live (file watcher, validated before swap) without a restart — vs the map's requirement that source-list edits apply only via restart/reload between runs — the map stands.</div>
     <div class="verdict ok"><span>Success</span> The visible list matches what Bobby supplied, and only listed sources ever produce candidates — all visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> The list can't be displayed, or an unlisted source slips a candidate through — the filter is not really applied.</div>
   </section>
@@ -345,9 +346,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> listen.</div>
-      <div class="tbody">Post a test callout on the connected test stream.</div>
-      <div class="verdict ok"><span>Success</span> the listener picks up the callout and it flows into processing within seconds.</div>
-      <div class="verdict bad"><span>Failure</span> the callout is posted but the listener never picks it up.</div>
+      <div class="tbody">Post a test callout on the connected test stream; then drop and restore the stream connection and post a second one.</div>
+      <div class="verdict ok"><span>Success</span> both callouts flow into processing within seconds, the connection recovers on its own, and no candidate is duplicated across the reconnect.</div>
+      <div class="verdict bad"><span>Failure</span> the callout is posted but the listener never picks it up, or the reconnect drops or duplicates a callout.</div>
     </div>
     
     <div class="tunit">
@@ -359,9 +360,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> validate.</div>
-      <div class="tbody">Post a callout with no coin address.</div>
-      <div class="verdict ok"><span>Success</span> the reject log shows the callout with the reason; nothing reaches the intake view.</div>
-      <div class="verdict bad"><span>Failure</span> the malformed callout produces a candidate anyway, or the reject log has no reason.</div>
+      <div class="tbody">Post two malformed callouts: one with no coin address, another with a garbled address that fails the chain's own format check (wrong length/charset, not merely absent).</div>
+      <div class="verdict ok"><span>Success</span> both are rejected, each with a reason specific to its own defect (missing vs invalid-format address); nothing reaches the intake view.</div>
+      <div class="verdict bad"><span>Failure</span> either malformed callout produces a candidate anyway, or the reject log doesn't name the specific defect.</div>
     </div>
     
     <div class="tunit">
@@ -373,6 +374,7 @@
     <div class="flbl">Gotchas</div>
     <div class="gotcha">A candidate with a blank field is a failure, not a partial pass.</div>
     <div class="gotcha">The reject log entry must name the reason — a silent drop is not a pass.</div>
+    <div class="gotcha">Real callout sources rarely use one fixed template — test with more than the canonical shape (extra slang/commentary around the address), not just a clean textbook callout.</div>
     <div class="verdict ok"><span>Success</span> The good callout shows as a complete candidate within seconds; the bad one is visibly rejected with a reason.</div>
     <div class="verdict bad"><span>Failure</span> The callout is posted but no candidate appears, a field is blank, or the malformed callout flows downstream.</div>
   </section>
@@ -419,7 +421,7 @@
       <li>Indirect: the baseline appears on the candidate in the scorer view.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">Scorer view visible; ProofShot recording; a test account whose metrics are known beforehand.</div>
+    <div class="pre">Scorer view visible; ProofShot recording; a test account whose known-beforehand metrics include at least one high-engagement outlier tweet in the window; a way to simulate a rate limit mid-pull.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> 30-day baseline builder works end to end.</div>
@@ -430,16 +432,16 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> pull.</div>
-      <div class="tbody">Feed the test account and inspect the raw pull output before any average appears.</div>
-      <div class="verdict ok"><span>Success</span> the full 30-day tweet history for the test account is visibly present as the pull's raw output.</div>
-      <div class="verdict bad"><span>Failure</span> no history appears, or the average is computed before the pull completes or with partial data.</div>
+      <div class="tbody">Feed the test account and inspect the raw pull output before any average appears. Then simulate a rate limit partway through a second pull.</div>
+      <div class="verdict ok"><span>Success</span> the full 30-day tweet history for the test account is visibly present as the pull's raw output, and the rate-limited pull visibly pauses and resumes rather than stopping early with a partial page.</div>
+      <div class="verdict bad"><span>Failure</span> no history appears, the average is computed before the pull completes or with partial data, or the rate-limited pull returns a truncated history without visibly pausing.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> average.</div>
-      <div class="tbody">With the pulled history visible, compare the baseline number to the average computed by hand beforehand.</div>
-      <div class="verdict ok"><span>Success</span> the baseline on screen matches the hand-computed average.</div>
-      <div class="verdict bad"><span>Failure</span> the number disagrees with the hand check.</div>
+      <div class="tbody">With the pulled history visible — including the outlier tweet — compare the baseline number to the average computed by hand beforehand.</div>
+      <div class="verdict ok"><span>Success</span> the baseline on screen matches the hand-computed average, with the outlier tweet's likes/retweets folded into the arithmetic mean (no silent filtering).</div>
+      <div class="verdict bad"><span>Failure</span> the number disagrees with the hand check, or the outlier tweet is silently excluded from the average.</div>
     </div>
     
     <div class="tunit">
@@ -451,6 +453,8 @@
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Compute the expected average before the run; checking afterwards invites rationalizing.</div>
     <div class="gotcha">A partial pull (rate limit) must wait, not score with half the data.</div>
+    <div class="gotcha">A pull that stops early because one page came back shorter than the max page size (instead of stopping only when the API's pagination cursor is exhausted) silently under-counts history — check the raw pull's tweet count, not just that some history appeared.</div>
+    <div class="gotcha">Research note: production engagement baselines commonly use outlier-resistant averaging (trimmed mean, rolling median) to blunt viral-tweet skew vs the map's plain likes+retweets average — the map stands; test with a viral outlier tweet in the window to confirm it's included, not silently filtered.</div>
     <div class="verdict ok"><span>Success</span> The displayed baseline equals the real 30-day average, and thin accounts are visibly flagged.</div>
     <div class="verdict bad"><span>Failure</span> No baseline appears, the number disagrees with the hand check, or a thin account gets a confident fake number.</div>
   </section>
@@ -497,7 +501,7 @@
       <li>Indirect: verdicts appear in the gate log / candidate view.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">Gate log visible; ProofShot recording; four test candidates with pinned values.</div>
+    <div class="pre">Gate log visible; ProofShot recording; four representative test candidates with pinned values (4x/30min, 4x/3h, 60x/2days, any-multiplier/12h); exact-boundary pairs pinned per band — 3x vs 2.9x at 30 minutes, 10x vs 9.9x at 3 hours — plus three candidates aged exactly at the band edges: 1h, 6h, 24h.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Age-band multiplier gate works end to end.</div>
@@ -508,27 +512,28 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> band-select.</div>
-      <div class="tbody">Send candidates at 30 minutes, 3 hours, and 2 days, plus one at 12 hours.</div>
-      <div class="verdict ok"><span>Success</span> the log shows each candidate assigned to the correct age band (&lt;1h, 1–6h, 24h+), and the 12h one flagged outside all bands.</div>
-      <div class="verdict bad"><span>Failure</span> a candidate is assigned to the wrong band.</div>
+      <div class="tbody">Send candidates at 30 minutes, 3 hours, and 2 days, one at 12 hours, plus three at the exact band edges — exactly 1h, exactly 6h, exactly 24h old.</div>
+      <div class="verdict ok"><span>Success</span> the log shows each candidate assigned to the correct age band (&lt;1h, 1–6h, 24h+), the 12h one flagged outside all bands, and each edge-age candidate lands in the band the rule implies (1h and 6h old fall in 1–6h, 24h old falls in 24h+) — not the neighboring band.</div>
+      <div class="verdict bad"><span>Failure</span> a candidate is assigned to the wrong band, or an edge-age candidate slips into the neighboring band — the off-by-one boundary bugs hide in.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> band-check.</div>
-      <div class="tbody">Send 4x at 30 minutes and 4x at 3 hours.</div>
-      <div class="verdict ok"><span>Success</span> the verdicts match each band's threshold — pass for ≥3x under 1h, reject for below 10x in 1–6h.</div>
-      <div class="verdict bad"><span>Failure</span> a candidate passes or rejects against its band's threshold rule.</div>
+      <div class="tbody">Send exactly 3x at 30 minutes and 2.9x at 30 minutes; exactly 10x at 3 hours and 9.9x at 3 hours.</div>
+      <div class="verdict ok"><span>Success</span> the exact-threshold multiplier passes and the just-under value rejects in both bands — the ≥ boundary holds precisely, not approximately.</div>
+      <div class="verdict bad"><span>Failure</span> an exact-threshold value rejects, a just-under value passes, or either boundary is off by even a rounding step.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> band-reject.</div>
-      <div class="tbody">Send 4x at 3 hours and any multiplier at 12 hours.</div>
-      <div class="verdict ok"><span>Success</span> the log records each rejection with its band and the specific reason.</div>
-      <div class="verdict bad"><span>Failure</span> a rejection appears with no reason, or no band recorded.</div>
+      <div class="tbody">Send 4x at 3 hours (fails its band's threshold) and any multiplier at 12 hours (falls outside every band).</div>
+      <div class="verdict ok"><span>Success</span> the log records each rejection with its band and a reason that names which kind of failure it is — threshold not met vs. no band applies — not one generic &quot;rejected&quot;.</div>
+      <div class="verdict bad"><span>Failure</span> a rejection appears with no reason, no band recorded, or both rejections carry the same generic reason with no way to tell threshold-miss from out-of-band.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Boundary values follow the rule exactly (exactly 3x under 1h passes) — test one boundary, not just mid-range values.</div>
     <div class="gotcha">Every verdict needs its reason; a bare pass/reject is a logging failure.</div>
+    <div class="gotcha">Engagement counts keep climbing after the callout — pin the tweet's likes/retweets at the moment you compute the hand-check, or a real (but later) count will make a correct verdict look wrong.</div>
     <div class="verdict ok"><span>Success</span> All four verdicts are correct, each with its band and reason visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> Any candidate passes or rejects against the band rule, or a verdict appears with no reason attached.</div>
   </section>
@@ -600,13 +605,14 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> api-failure.</div>
-      <div class="tbody">Kill the API and feed another candidate.</div>
-      <div class="verdict ok"><span>Success</span> the candidate shows as blocked with the error, never advancing.</div>
-      <div class="verdict bad"><span>Failure</span> the candidate advances despite the API failure, or blocks silently with no error shown.</div>
+      <div class="tbody">Kill the API and feed a candidate; separately, feed a candidate for which the API returns a 200 response that fails to parse as the expected schema (malformed JSON, a missing field, or a score outside the valid range) — a distinct failure that, in practice, is more common than a dead API.</div>
+      <div class="verdict ok"><span>Success</span> both the network failure and the schema-violating response show the candidate as blocked with the error, never advancing.</div>
+      <div class="verdict bad"><span>Failure</span> either candidate advances despite the failure, or blocks silently with no error shown.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The two-score separation is the whole point (ruling #10); a single merged score is a failure even if the number looks sensible.</div>
     <div class="gotcha">A blocked candidate must show *why* — a silent stall is not a pass.</div>
+    <div class="gotcha">A live API can still hand back garbage: a schema-conforming but wrong narrative, or a plausible-looking score outside the valid range, is a distinct failure from a dead API — both must trip the same block, and testing only the killed-API case misses the more common one.</div>
     <div class="verdict ok"><span>Success</span> All fields and both separate scores are visible; failures block visibly.</div>
     <div class="verdict bad"><span>Failure</span> A field is empty, the two scores arrive merged, or an API failure lets the candidate through.</div>
   </section>
@@ -652,7 +658,7 @@
       <li>Indirect: verdicts appear in the gate log / candidate view.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">Gate log visible; ProofShot recording; four candidates with pinned scores.</div>
+    <div class="pre">Gate log visible; ProofShot recording; candidates with pinned scores, including the exact threshold boundaries (6.0 with a tweet, 8.0 without one) and tweet-field edge cases (a tweet present but empty, and a tweet field absent entirely).</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Combined-score gate works end to end.</div>
@@ -663,21 +669,21 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> branch.</div>
-      <div class="tbody">Feed a candidate with a tweet and one without a tweet through the gate.</div>
-      <div class="verdict ok"><span>Success</span> The log shows branch &quot;tweet&quot; for the first and branch &quot;no-tweet&quot; for the second, each compared against its own threshold.</div>
-      <div class="verdict bad"><span>Failure</span> A candidate is evaluated against the other branch's threshold, or no branch is shown.</div>
+      <div class="tbody">Feed a candidate with a tweet, one with no tweet field at all, and one with a tweet field present but empty.</div>
+      <div class="verdict ok"><span>Success</span> The log shows branch &quot;tweet&quot; only for the genuinely non-empty tweet, and branch &quot;no-tweet&quot; for both the absent and the empty-but-present cases, each compared against the no-tweet threshold.</div>
+      <div class="verdict bad"><span>Failure</span> A candidate is evaluated against the wrong branch's threshold, no branch is shown, or an empty-but-present tweet field is treated as branch &quot;tweet&quot;.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> threshold.</div>
-      <div class="tbody">Feed the boundary scores: 6.5 and 5 with a tweet, 8.5 and 7 without a tweet.</div>
-      <div class="verdict ok"><span>Success</span> The log shows pass, reject, pass, reject — matching ≥6 with a tweet and &gt;8 without one.</div>
-      <div class="verdict bad"><span>Failure</span> Any score lands on the wrong side of its threshold.</div>
+      <div class="tbody">Feed the exact boundary scores: 6.0 and 5.9 with a tweet, 8.0 and 8.01 without a tweet.</div>
+      <div class="verdict ok"><span>Success</span> The log shows pass, reject, reject, pass — 6.0 with a tweet passes (≥6) and 5.9 rejects; 8.0 without a tweet rejects (&gt;8, not ≥8) and 8.01 passes.</div>
+      <div class="verdict bad"><span>Failure</span> Any score lands on the wrong side of its threshold, especially the exact boundary values themselves.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> score-reject.</div>
-      <div class="tbody">Feed the two reject cases (5 with a tweet, 7 without a tweet) and read the reject log.</div>
+      <div class="tbody">Feed the two reject cases (5.9 with a tweet, 8.0 without a tweet) and read the reject log.</div>
       <div class="verdict ok"><span>Success</span> Each reject entry shows the score, the branch, and the threshold that fired.</div>
       <div class="verdict bad"><span>Failure</span> A reject entry is missing the score, branch, or threshold, or the reject isn't logged.</div>
     </div>
@@ -730,7 +736,7 @@
       <li>Indirect: the bundler % appears on the candidate in the checker view.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">Checker view visible; ProofShot recording; a test token with a known bundler setup; the provider's own dashboard open for comparison.</div>
+    <div class="pre">Checker view visible; ProofShot recording; a test token with a known bundler setup; the provider's own dashboard open for comparison; a way to block and later restore the provider.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Bundler share pull works end to end.</div>
@@ -755,13 +761,15 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> provider-down.</div>
-      <div class="tbody">Block the provider and run another candidate.</div>
-      <div class="verdict ok"><span>Success</span> the candidate visibly waits and never advances without a number.</div>
-      <div class="verdict bad"><span>Failure</span> the candidate advances anyway, or gets a zeroed or fake % instead of waiting.</div>
+      <div class="tbody">Block the provider and run another candidate; then restore the provider and confirm the resumed pull is fresh.</div>
+      <div class="verdict ok"><span>Success</span> the candidate visibly waits and never advances without a number while blocked; once restored, it advances only with a newly pulled %, not a stale number left over from before the outage.</div>
+      <div class="verdict bad"><span>Failure</span> the candidate advances anyway while blocked, gets a zeroed or fake % instead of waiting, or resumes with a cached/stale % instead of a fresh pull.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The comparison is against the *same* counting method — a different tool's number is expected to disagree; use the pinned provider's own dashboard.</div>
     <div class="gotcha">A token whose creation block can't be read must flag, not report 0%.</div>
+    <div class="gotcha">Stealth-bundling tools exist that launch a token with zero trace on Bubblemaps-type providers — even the pinned provider can undercount a bundle that was specifically built to evade detection; that's a provider blind spot, not a pull-mechanism bug.</div>
+    <div class="gotcha">A rate limit (429) and an outright provider outage (5xx) look different in the logs, but both must collapse to the same behavior here — wait, never fabricate a number; test both, not just a hard block.</div>
     <div class="verdict ok"><span>Success</span> The displayed % matches the provider's number, and failures wait instead of passing.</div>
     <div class="verdict bad"><span>Failure</span> No number appears, the number disagrees with the provider, or a provider failure lets the candidate through.</div>
   </section>
@@ -807,7 +815,7 @@
       <li>Indirect: the trend label appears on the candidate in the checker view.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">Checker view visible; ProofShot recording; three test tokens.</div>
+    <div class="pre">Checker view visible; ProofShot recording; four test tokens — decreasing, increasing, single snapshot, and one whose readings wobble slightly around a flat level with no real trend.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Bundler trend classification works end to end.</div>
@@ -825,9 +833,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> label.</div>
-      <div class="tbody">Feed the token whose share visibly falls, and the one whose share visibly rises.</div>
-      <div class="verdict ok"><span>Success</span> the label reads decreasing for the falling token and increasing for the rising token.</div>
-      <div class="verdict bad"><span>Failure</span> either label is flipped, or reads stagnating when the data clearly moves.</div>
+      <div class="tbody">Feed the token whose share visibly falls, the one whose share visibly rises, and the one whose readings wobble slightly around a flat level with no real trend.</div>
+      <div class="verdict ok"><span>Success</span> the label reads decreasing for the falling token, increasing for the rising token, and stagnating for the noisy-flat token — noise isn't read as a real trend.</div>
+      <div class="verdict bad"><span>Failure</span> either directional label is flipped, a token that clearly moves reads stagnating, or small noise around a flat level gets labelled as a real trend.</div>
     </div>
     
     <div class="tunit">
@@ -839,6 +847,7 @@
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The label must match what the underlying readings visibly show; open the readings in the recording, not just the label.</div>
     <div class="gotcha">&quot;Unknown&quot; must not be treated as a pass by the gate downstream — check the hand-off.</div>
+    <div class="gotcha">A decreasing bundler share can mean bundlers are diluting away (good) or bundlers actively dumping into retail (bad) — the label alone doesn't distinguish the two; that distinction is out of scope for this classifier (price/divergence signals handle it downstream), but a &quot;decreasing&quot; label is not by itself a safety guarantee.</div>
     <div class="verdict ok"><span>Success</span> Both trending tokens get the correct label, and single-snapshot tokens show unknown.</div>
     <div class="verdict bad"><span>Failure</span> A rising share is labelled decreasing, or a single snapshot passes as a real trend.</div>
   </section>
@@ -883,7 +892,7 @@
       <li>Indirect: verdicts appear in the gate log / candidate view.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">Gate log visible; ProofShot recording; three candidates with pinned % and trend.</div>
+    <div class="pre">Gate log visible; ProofShot recording; candidates with pinned % and trend, including one pinned exactly at the 15% ceiling boundary.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Bundler gate works end to end.</div>
@@ -894,9 +903,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> limit.</div>
-      <div class="tbody">Feed 5% decreasing and 20% decreasing.</div>
-      <div class="verdict ok"><span>Success</span> the log shows pass for 5% and reject with rule &quot;over 15%&quot; for 20%.</div>
-      <div class="verdict bad"><span>Failure</span> either verdict is flipped, or the ceiling isn't enforced at 15%.</div>
+      <div class="tbody">Feed 5% decreasing, 20% decreasing, and 15% decreasing (the exact ceiling boundary).</div>
+      <div class="verdict ok"><span>Success</span> the log shows pass for 5%, pass for 15% (the boundary is tolerated, not rejected), and reject with rule &quot;over 15%&quot; for 20%.</div>
+      <div class="verdict bad"><span>Failure</span> any of the three verdicts is flipped, or the 15% boundary is rejected as if the ceiling were inclusive.</div>
     </div>
     
     <div class="tunit">
@@ -915,6 +924,7 @@
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The direction check is the one that drifts (Bobby's example): an increasing share passing at any % is the critical failure — test it first.</div>
     <div class="gotcha">Verdicts need all three of %, trend, rule; a verdict missing one is a logging failure.</div>
+    <div class="gotcha">Research note: public bundler-detection tools commonly treat 25–40% combined bundler/sniper holdings as only a caution zone (some sniper-filter frameworks use a 30% bundler-ratio cutoff) vs the map's stricter 10–15% reject ceiling — the map stands.</div>
     <div class="verdict ok"><span>Success</span> All three verdicts are correct with full reasons visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> An over-limit or increasing candidate passes — the direction of the rule is broken.</div>
   </section>
@@ -979,9 +989,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> detect.</div>
-      <div class="tbody">Replay the chart with the known OBV divergence.</div>
-      <div class="verdict ok"><span>Success</span> the flag names the correct oscillator that diverged, with its strength recorded.</div>
-      <div class="verdict bad"><span>Failure</span> the wrong oscillator is named, or the strength is missing or wrong.</div>
+      <div class="tbody">Replay the chart with the known OBV divergence candle by candle, watching the flag both while the pivot candle is still forming and after it closes.</div>
+      <div class="verdict ok"><span>Success</span> the flag names the correct oscillator that diverged, with its strength recorded, and only confirms once the pivot candle closes — no flag flip or vanish on the still-forming candle.</div>
+      <div class="verdict bad"><span>Failure</span> the wrong oscillator is named, the strength is missing or wrong, or the flag fires (or changes) on an unclosed candle and repaints once it closes.</div>
     </div>
     
     <div class="tunit">
@@ -993,6 +1003,8 @@
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The anchor is the call-out price — a divergence measured from the wrong anchor is a false pass; verify the anchor in the recording.</div>
     <div class="gotcha">Deterministic: the same replay must give the same result on a second run.</div>
+    <div class="gotcha">Divergence built on an unconfirmed (still-forming) pivot candle can repaint — the flag appears, then silently vanishes or changes once the candle closes; that's a distinct failure mode from run-to-run drift, and the replay-twice check alone doesn't catch it.</div>
+    <div class="gotcha">This is &quot;regular&quot; divergence (price extreme not confirmed by the oscillator) in standard TA terms, not &quot;hidden&quot; divergence (a continuation signal that reads the opposite way) — confirm test fixtures use the regular case the spec calls for.</div>
     <div class="verdict ok"><span>Success</span> The known divergence is caught and named; the clean replay stays quiet — both visible in the recording.</div>
     <div class="verdict bad"><span>Failure</span> The known divergence is missed, or a flat chart produces a signal.</div>
   </section>
@@ -1064,13 +1076,14 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> stop-reason.</div>
-      <div class="tbody">After a guard fires, drop the price back to the call-out level.</div>
-      <div class="verdict ok"><span>Success</span> The stop reason (distance or time) stays logged, and the watch stays stopped — it does not resume.</div>
-      <div class="verdict bad"><span>Failure</span> No reason is logged, or the watch resumes tracking after the price drops back.</div>
+      <div class="tbody">After a guard fires, drop the price back to the call-out level; separately, replay a guard-firing candle that would also qualify as a divergence.</div>
+      <div class="verdict ok"><span>Success</span> The stop reason (distance or time) stays logged and the watch stays stopped in both cases — it does not resume, and a same-candle divergence does not slip out an alert after the guard has already fired.</div>
+      <div class="verdict bad"><span>Failure</span> No reason is logged, the watch resumes tracking after the price drops back, or a divergence alert fires despite the guard having already stopped the watch.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Candle 15 exactly: the rule is *more than* 15 — pin which side the boundary falls on and test it.</div>
     <div class="gotcha">A stopped-then-resumed watch is the silent failure; always run the no-resume check.</div>
+    <div class="gotcha">Research note: production stale-feed monitoring shows a connection can stay open while ticks stop arriving entirely (a frozen tape) — since both guards here tick only on incoming candles, a fully frozen feed (zero candles, not just flat ones) could starve both guards, in tension with the map's &quot;no path where a watch lives forever&quot; guarantee — the map stands (guards are defined as per-candle, not wall-clock).</div>
     <div class="verdict ok"><span>Success</span> Both replays end the watch with the correct reason, and stopped watches stay stopped — all in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A watch runs past a guard, stops with the wrong reason, or quietly resumes.</div>
   </section>
@@ -1141,13 +1154,14 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> once.</div>
-      <div class="tbody">Trigger the same divergence a second time.</div>
-      <div class="verdict ok"><span>Success</span> no second alert appears for the same candidate.</div>
-      <div class="verdict bad"><span>Failure</span> a second alert appears for the same candidate.</div>
+      <div class="tbody">Trigger the same divergence a second time after enough candles pass that freshness/age would read differently.</div>
+      <div class="verdict ok"><span>Success</span> no second alert appears for the same candidate, regardless of how much the freshness value has shifted between triggers.</div>
+      <div class="verdict bad"><span>Failure</span> a second alert appears for the same candidate, especially one that differs only by an updated freshness/timestamp value.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The size must be present *in the payload* — a size that appears only after a refresh is a wiring failure.</div>
     <div class="gotcha">Freshness must be honest (the divergence's real age), not &quot;just now&quot; forever.</div>
+    <div class="gotcha">Freshness/age must never be part of what makes an alert &quot;new&quot; — identity for dedup is the candidate alone; a payload whose only change is an updated freshness value is still the same alert, not a second one.</div>
     <div class="verdict ok"><span>Success</span> One complete alert arrives — coin, oscillator, freshness, size — and never duplicates.</div>
     <div class="verdict bad"><span>Failure</span> The alert is missing, has empty fields, arrives without a size, or fires twice.</div>
   </section>
@@ -1193,20 +1207,20 @@
       <li>The front-end UI's alert list, on the phone.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">UI at 390px width; ProofShot recording; a test alert waiting.</div>
+    <div class="pre">UI at 390px width; ProofShot recording; a test alert waiting, plus a way to let time pass (or a pre-aged alert) so the freshness readout can be checked for honest aging.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Alert display works end to end.</div>
-      <div class="tbody">Open the UI on the phone-width screen: the waiting alert card shows the coin, which oscillator diverged, freshness, gate scores, and the pre-filled size.</div>
-      <div class="verdict ok"><span>Success</span> the complete alert card is visible and correct in the recording.</div>
-      <div class="verdict bad"><span>Failure</span> the card is missing, blank, or shows wrong or stale fields.</div>
+      <div class="tbody">Open the UI on the phone-width screen: the waiting alert card shows the coin, which oscillator diverged, freshness, gate scores, and the pre-filled size. Let time pass (or use the pre-aged alert) and re-check the freshness readout.</div>
+      <div class="verdict ok"><span>Success</span> the complete alert card is visible and correct in the recording, and the freshness readout visibly ages rather than staying frozen at &quot;just now.&quot;</div>
+      <div class="verdict bad"><span>Failure</span> the card is missing, blank, shows wrong fields, or the freshness readout looks fresher than the alert actually is (stuck or frozen age) — a stale alert masquerading as live.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> glanceable.</div>
-      <div class="tbody">Read the card at 390px without zooming or sideways scrolling.</div>
-      <div class="verdict ok"><span>Success</span> every field fits and is readable at phone width.</div>
-      <div class="verdict bad"><span>Failure</span> any field is cut off, overlapping, or needs zoom or sideways scroll to read.</div>
+      <div class="tbody">Read the card at 390px without zooming or sideways scrolling, including whether the gate scores and oscillator signal are readable without relying on color alone.</div>
+      <div class="verdict ok"><span>Success</span> every field fits, is readable at phone width, and score/signal meaning is legible from text or icon, not color alone.</div>
+      <div class="verdict bad"><span>Failure</span> any field is cut off, overlapping, needs zoom or sideways scroll to read, or a score/signal is only distinguishable by color.</div>
     </div>
     
     <div class="tunit">
@@ -1225,6 +1239,7 @@
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Phone width is the pass/fail surface — a desktop-pretty card that clips at 390px fails.</div>
     <div class="gotcha">A resolved alert lingering in the active list is a failure, not a cosmetic issue.</div>
+    <div class="gotcha">A freshness readout that stops updating while the card still renders as if live is the classic &quot;ghost quote&quot; failure — check it by letting time actually pass, not just that a freshness field is present at open.</div>
     <div class="verdict ok"><span>Success</span> The full alert is glanceable on the phone and archives cleanly after a decision — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> Fields are cut off or unreadable, or a resolved alert stays in the active list.</div>
   </section>
@@ -1290,9 +1305,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> single-fire.</div>
-      <div class="tbody">Tap the button twice fast.</div>
-      <div class="verdict ok"><span>Success</span> the receiver gets exactly one buy click despite the double-tap.</div>
-      <div class="verdict bad"><span>Failure</span> the receiver gets two buy clicks, or the button fires again while the first is in flight.</div>
+      <div class="tbody">Tap the button twice fast, then separately force a delayed/retried send of the same buy intent (e.g. a network timeout that causes a resend).</div>
+      <div class="verdict ok"><span>Success</span> the button visibly locks the instant the first tap registers, the receiver gets exactly one buy click despite the double-tap, and a retried send resolves to the original order instead of creating a second one.</div>
+      <div class="verdict bad"><span>Failure</span> the button stays tappable after the first tap, the receiver gets two buy clicks, or a retried send creates a second order.</div>
     </div>
     
     <div class="tunit">
@@ -1311,6 +1326,7 @@
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The size sent must equal the size *displayed* — compare them in the recording, not from logs alone.</div>
     <div class="gotcha">Greyed-out must mean truly inert: a disabled button that still fires is the worst failure here.</div>
+    <div class="gotcha">Research note: crypto UX guidance often calls for an explicit confirmation step before an irreversible transaction, vs the map's one-tap-only design (no typing, no sizing, one click executes) — the map stands.</div>
     <div class="verdict ok"><span>Success</span> One tap = one buy click with the shown size; ignoring logs cleanly; no double-fires — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> The button can't be tapped, fires twice, sends a different size than shown, or the click never arrives.</div>
   </section>
@@ -1357,7 +1373,7 @@
       <li>The positions view in the front-end UI.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">UI visible; ProofShot recording; a devnet test position running.</div>
+    <div class="pre">UI visible; ProofShot recording; a devnet test position running; the exchange's own open-orders list visible alongside the UI for cross-checking the displayed stop price.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Positions + moon bag view works end to end.</div>
@@ -1368,34 +1384,35 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> live-view.</div>
-      <div class="tbody">Open the positions view with a devnet position running.</div>
-      <div class="verdict ok"><span>Success</span> the view shows the open position with its stop and ladder state.</div>
-      <div class="verdict bad"><span>Failure</span> the position is missing, or the stop/ladder state isn't shown.</div>
+      <div class="tbody">Open the positions view with a devnet position running, alongside the exchange's own order list.</div>
+      <div class="verdict ok"><span>Success</span> the view shows the open position with a stop price and ladder state that match what the exchange's order list actually shows — not just a number the bot claims.</div>
+      <div class="verdict bad"><span>Failure</span> the position is missing, the stop/ladder state isn't shown, or the displayed stop price disagrees with the exchange's real order.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> live-update.</div>
-      <div class="tbody">Sit and watch the view through a fill or ladder event without reloading.</div>
-      <div class="verdict ok"><span>Success</span> the view updates on its own as events happen, with no manual refresh.</div>
-      <div class="verdict bad"><span>Failure</span> the view only updates after a manual reload, or misses an event.</div>
+      <div class="tbody">Sit and watch the view through a fill or ladder event without reloading, noting the exact stop price or ladder step shown before and after.</div>
+      <div class="verdict ok"><span>Success</span> the view updates on its own to the new stop price/ladder step within seconds of each event, with no manual refresh, and if the underlying feed ever drops it visibly flags itself as stale or disconnected rather than sitting on the last-known state.</div>
+      <div class="verdict bad"><span>Failure</span> the view only updates after a manual reload, misses an event, or keeps showing old state as if it were current with no indication the feed is dead.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> bag-section.</div>
-      <div class="tbody">Run the position to 2x.</div>
-      <div class="verdict ok"><span>Success</span> the moon bag appears as a separate section, marked manual-only.</div>
-      <div class="verdict bad"><span>Failure</span> the bag doesn't appear separately, or isn't marked manual-only.</div>
+      <div class="tbody">Run the position to 2x, then let at least one ladder clip fire.</div>
+      <div class="verdict ok"><span>Success</span> the moon bag shows in its own section with only a manual sell control (no stop price, no ladder step against it), while the rest of the position's stop/ladder state keeps updating independently in its own section.</div>
+      <div class="verdict bad"><span>Failure</span> the bag doesn't appear separately, isn't marked manual-only, or shares stop/ladder fields with the still-automated remainder as if they were one holding.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">5</span> flat-clear.</div>
-      <div class="tbody">Close out the rest of the position.</div>
-      <div class="verdict ok"><span>Success</span> the position clears from the view while the moon bag remains in its section.</div>
-      <div class="verdict bad"><span>Failure</span> the position lingers after closing, or the moon bag disappears along with it.</div>
+      <div class="tbody">Close out the rest of the position without reloading the view.</div>
+      <div class="verdict ok"><span>Success</span> the position clears from the view on its own within seconds of the closing fill, while the moon bag remains, unaffected, in its section.</div>
+      <div class="verdict bad"><span>Failure</span> the position lingers after closing, needs a manual reload to disappear, or the moon bag disappears along with it.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">&quot;Updates live&quot; means without a manual refresh — sit and watch; don't reload between events.</div>
     <div class="gotcha">Anything offering an automatic sell of the bag from this view is an instant failure.</div>
+    <div class="gotcha">A live view that goes stale should say so — a feed that silently stops updating while the last-known numbers sit on screen looks trustworthy and isn't; cross-check against the exchange's own order list rather than trusting the bot's display alone.</div>
     <div class="verdict ok"><span>Success</span> The recording shows the live position, then the separate moon bag that outlives the automation.</div>
     <div class="verdict bad"><span>Failure</span> The position doesn't appear, the moon bag vanishes after 2x, or something auto-sells the bag.</div>
   </section>
@@ -1442,7 +1459,7 @@
       <li>Indirect: the venue shows on each fill in the fill feed.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">Fill feed visible; ProofShot recording; test coins per venue plus one unroutable.</div>
+    <div class="pre">Fill feed visible; ProofShot recording; test coins per venue plus one unroutable coin genuinely absent from both venues' listings.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Venue router works end to end.</div>
@@ -1461,8 +1478,8 @@
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> keys.</div>
       <div class="tbody">Send a test order on each venue and inspect the recording.</div>
-      <div class="verdict ok"><span>Success</span> Each venue's order is signed with that venue's own wallet keys, referenced by secret name only — no raw key appears anywhere in the recording.</div>
-      <div class="verdict bad"><span>Failure</span> The wrong venue's keys are used, or a raw key appears in the recording.</div>
+      <div class="verdict ok"><span>Success</span> Each venue's order is signed with that venue's own wallet key, referenced by a distinct secret name per venue — no raw key, seed phrase, or private key material appears anywhere in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> The wrong venue's key is used, the same secret name is reused across venues, or raw key/seed material appears in the recording.</div>
     </div>
     
     <div class="tunit">
@@ -1475,12 +1492,13 @@
     <div class="tunit">
       <div class="thead"><span class="tnum">5</span> unroutable.</div>
       <div class="tbody">Send a coin listed on neither venue.</div>
-      <div class="verdict ok"><span>Success</span> The order blocks with the reason shown.</div>
-      <div class="verdict bad"><span>Failure</span> The order goes through on some venue, or blocks with no reason shown.</div>
+      <div class="verdict ok"><span>Success</span> The order blocks, and the shown reason specifically names the listing failure — not a generic or opaque error.</div>
+      <div class="verdict bad"><span>Failure</span> The order goes through on some venue, blocks with no reason shown, or the reason given is generic/unclear about why.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The venue must come from the listing, not config preference — force a mismatch in test data and watch it still route correctly.</div>
     <div class="gotcha">Keys must never appear in the recording; secret names only.</div>
+    <div class="gotcha">A &quot;listed but illiquid&quot; coin (dead or rugged pool, zero real depth) is not the same as unroutable — the router checks listing, not liquidity. Picking a listed-but-illiquid coin as unroutable test data would be the wrong fixture.</div>
     <div class="verdict ok"><span>Success</span> Each order lands on the right chain with the venue named; unroutable coins block visibly.</div>
     <div class="verdict bad"><span>Failure</span> An order goes to the wrong chain, the venue isn't recorded, or an unroutable coin gets forced through.</div>
   </section>
@@ -1560,13 +1578,15 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">5</span> failure-visible.</div>
-      <div class="tbody">Force a transaction that will fail on-chain (for example, an unfunded wallet) and tap BUY.</div>
-      <div class="verdict ok"><span>Success</span> the failure surfaces with the chain's real error.</div>
-      <div class="verdict bad"><span>Failure</span> the failure is silent, or shows a generic message instead of the chain's real error.</div>
+      <div class="tbody">Force a swap that will revert on-chain the way real memecoin trades commonly do — set a price move beyond the slippage tolerance so the transaction lands but reverts (not just an unfunded-wallet case that never gets submitted) — and tap BUY.</div>
+      <div class="verdict ok"><span>Success</span> the failure surfaces with the chain's real program error (e.g. a slippage-exceeded revert), and the wallet is only out the network fee, not the swap amount.</div>
+      <div class="verdict bad"><span>Failure</span> the failure is silent, shows a generic message instead of the chain's real error, or the wallet is charged as though the swap succeeded.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">&quot;The alert alone never spends money&quot; is the load-bearing invariant — always run the no-click check, not just the happy path.</div>
     <div class="gotcha">The fill must be confirmed on-chain, not just optimistically reported; check the explorer in the recording.</div>
+    <div class="gotcha">A transaction can fail two different ways: it lands and reverts (e.g. slippage exceeded — the wallet still pays the network fee) or it never lands at all (dropped for too low a priority fee, no fee charged); the failure-visible check should tell which one happened, since &quot;no fill&quot; alone doesn't say whether money moved.</div>
+    <div class="gotcha">Even a fill that lands can be sandwiched — a worse-than-quoted price with no error at all — so &quot;a real price&quot; in the onchain-fill check means the actual chain-recorded price, not the pre-trade quote.</div>
     <div class="verdict ok"><span>Success</span> One click produces one on-chain fill matching the pre-filled size; re-clicks do nothing — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> The click produces no fill, a fill appears without any click, or one click enters twice.</div>
   </section>
@@ -1618,9 +1638,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Immediate stop-loss works end to end.</div>
-      <div class="tbody">Enter a position on devnet and check the exchange's open-orders list, then cancel the stop manually on a second position, then run a fresh position to 2x.</div>
-      <div class="verdict ok"><span>Success</span> the stop is visible on the exchange, cancellable by hand, and self-cancels at 2x — every step recorded.</div>
-      <div class="verdict bad"><span>Failure</span> the entry fills but no stop exists on the exchange — no proof of protection beyond the bot's word.</div>
+      <div class="tbody">Enter a position on devnet and check the exchange's open-orders list, then cancel the stop manually on a second position, then run a third position down through the stop's trigger price to confirm it actually fills and closes the position, then run a fourth position to 2x.</div>
+      <div class="verdict ok"><span>Success</span> the stop is visible on the exchange, cancellable by hand, actually fills and closes the position when the trigger price is hit (fill price and any slippage from the trigger visible in the recording), and self-cancels at 2x — every step recorded.</div>
+      <div class="verdict bad"><span>Failure</span> the entry fills but no stop exists on the exchange, the stop triggers but leaves the position open (no fill or only a partial fill) with no alert, or the 2x self-cancel never fires.</div>
     </div>
     
     <div class="tunit">
@@ -1639,9 +1659,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> adjust.</div>
-      <div class="tbody">Cancel the stop manually while it's active.</div>
-      <div class="verdict ok"><span>Success</span> it disappears from the exchange the moment it's cancelled.</div>
-      <div class="verdict bad"><span>Failure</span> the cancel has no effect, or the exchange still shows the stop as live.</div>
+      <div class="tbody">Cancel the stop manually while it's active, then on another live stop change its price instead of cancelling.</div>
+      <div class="verdict ok"><span>Success</span> the cancel makes it disappear from the exchange immediately; the price change shows as the old order gone and a new order live at the new price (real cancel-and-replace mechanics), not the same order silently mutated in place.</div>
+      <div class="verdict bad"><span>Failure</span> the cancel has no effect, the exchange still shows the stop as live, or the price-changed order can't be found on the exchange's list under its new price.</div>
     </div>
     
     <div class="tunit">
@@ -1653,6 +1673,8 @@
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The bot saying &quot;stop set&quot; is not proof — only the exchange's own list counts (Bobby's rule).</div>
     <div class="gotcha">If placement fails, the position must surface as unprotected immediately — simulate a placement failure and check the alarm.</div>
+    <div class="gotcha">A triggered stop is an immediate-or-cancel order — thin liquidity can partial-fill it and cancel the remainder, leaving part of the position exposed with no stop live anymore; the &quot;hit&quot; check must confirm the position is fully closed, not just that some sell happened.</div>
+    <div class="gotcha">Order edits are cancel-and-replace under the hood, not an in-place mutation — if the trigger fires mid-adjust, the edit can lose the race and fail silently because the order already converted to a market/limit order in flight; check for that failure, not just the happy-path edit.</div>
     <div class="verdict ok"><span>Success</span> The stop is visible on the exchange, cancellable by hand, and self-cancels at 2x — every step recorded.</div>
     <div class="verdict bad"><span>Failure</span> The entry fills but no stop exists on the exchange — no proof of protection beyond the bot's word.</div>
   </section>
@@ -1698,7 +1720,7 @@
       <li>Indirect: the fill feed and the pending-exit state in the UI.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">ProofShot recording; chart replay driving the tape; an exit order ready.</div>
+    <div class="pre">ProofShot recording; chart replay driving the tape — a genuine green-volume candle, a thin/wash-traded green candle too small to absorb the full clip, and a red window; an exit order ready.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Sell-into-volume filter works end to end.</div>
@@ -1709,27 +1731,28 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> volume-check.</div>
-      <div class="tbody">Replay a red window and watch the exit order.</div>
-      <div class="verdict ok"><span>Success</span> The exit does not fill while the tape is red — the check holds it back.</div>
-      <div class="verdict bad"><span>Failure</span> The exit fills against a red or non-qualifying candle.</div>
+      <div class="tbody">Replay a red window, then a thin/wash-traded green candle sized too small to absorb the full clip, and watch the exit order.</div>
+      <div class="verdict ok"><span>Success</span> The exit does not fill while the tape is red, and on the thin candle it fills only what that candle can genuinely absorb — the unfilled remainder keeps waiting instead of forcing through.</div>
+      <div class="verdict bad"><span>Failure</span> The exit fills against a red or non-qualifying candle, or the full clip forces through a candle that can't actually absorb it.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> green-only.</div>
-      <div class="tbody">Replay a green-volume window.</div>
-      <div class="verdict ok"><span>Success</span> The exit fills exactly on the qualifying green candle.</div>
-      <div class="verdict bad"><span>Failure</span> The exit fills on a non-qualifying candle, or fails to fill on the qualifying one.</div>
+      <div class="tbody">Replay a genuine green-volume window sized to fully absorb the clip.</div>
+      <div class="verdict ok"><span>Success</span> The exit fills exactly on the qualifying green candle, in full.</div>
+      <div class="verdict bad"><span>Failure</span> The exit fills on a non-qualifying candle, only partially fills a candle that could have absorbed it in full, or fails to fill on the qualifying one.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> wait-visible.</div>
-      <div class="tbody">Replay a red window and check the pending exit's state.</div>
-      <div class="verdict ok"><span>Success</span> The pending exit visibly shows its waiting state for as long as the tape stays red.</div>
-      <div class="verdict bad"><span>Failure</span> The waiting exit shows no state, or silently cancels instead of showing pending.</div>
+      <div class="tbody">Replay a red window, then flip to a qualifying green candle, and watch the pending exit's state throughout.</div>
+      <div class="verdict ok"><span>Success</span> The pending exit visibly shows its waiting state for as long as the tape stays red, then fires on its own the moment a qualifying candle appears — no manual nudge needed.</div>
+      <div class="verdict bad"><span>Failure</span> The waiting exit shows no state, silently cancels instead of showing pending, or needs a manual retry to fire once the tape turns green.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">One red-candle fill fails the whole feature — the replay log and the fill's candle must both be visible in the recording.</div>
     <div class="gotcha">A waiting exit that silently cancels instead of pending is a failure.</div>
+    <div class="gotcha">A green candle can carry wash-traded or self-crossed volume (same price, same size, round-tripped) that reads as buy pressure on a naive check but offers no real fillable depth — test data should include one such candle distinct from a genuine one, and it must not fully absorb the clip.</div>
     <div class="verdict ok"><span>Success</span> The exit fills in the green window and visibly holds through the red one — both in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A sell prints on a red candle, or a waiting exit vanishes instead of pending.</div>
   </section>
@@ -1786,9 +1809,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> one-event.</div>
-      <div class="tbody">Execute the entry plus one clip and count the events for each fill.</div>
-      <div class="verdict ok"><span>Success</span> exactly one event appears per fill — two fills, two events, no duplicates.</div>
-      <div class="verdict bad"><span>Failure</span> a fill produces zero events, or more than one, for the same fill.</div>
+      <div class="tbody">Execute the entry plus one clip, then force a redelivery of one already-acknowledged fill (simulating the retry a real at-least-once delivery layer sends after a lost ack), and count the events for each fill in both the journal and the ladder.</div>
+      <div class="verdict ok"><span>Success</span> exactly one event appears per fill — two fills, two events — and the forced redelivery does not add a second visible event for the fill it repeats.</div>
+      <div class="verdict bad"><span>Failure</span> a fill produces zero events, more than one, or the forced redelivery shows up as a second fill downstream.</div>
     </div>
     
     <div class="tunit">
@@ -1800,13 +1823,14 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> ack-retry.</div>
-      <div class="tbody">Block one consumer temporarily during a fill, then restore it.</div>
-      <div class="verdict ok"><span>Success</span> the event keeps retrying until the consumer acknowledges, or raises a visible escalation if it never does.</div>
-      <div class="verdict bad"><span>Failure</span> the event is dropped with no retry and no escalation after the consumer is blocked.</div>
+      <div class="tbody">Block one consumer (say, the journal) during a fill while leaving the other (the ladder) reachable, then restore the blocked one.</div>
+      <div class="verdict ok"><span>Success</span> the reachable consumer updates immediately and is never stalled by the blocked one; the blocked consumer's event keeps retrying until it acknowledges, or raises a visible escalation if it never does.</div>
+      <div class="verdict bad"><span>Failure</span> the reachable consumer also stalls waiting on the blocked one, or the event is dropped with no retry and no escalation.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">A missed fill corrupts the ladder silently — the chain-vs-journal comparison is the real check, not either view alone.</div>
     <div class="gotcha">Duplicate events are as bad as missing ones; count them.</div>
+    <div class="gotcha">Real delivery underneath &quot;ack-retry&quot; is at-least-once, not literally exactly-once — the no-duplicates guarantee has to come from the consumer deduping a stable event ID, not from the wire only ever sending once. The forced-redelivery check in one-event is what actually proves that; a natural-fill event count alone doesn't.</div>
     <div class="verdict ok"><span>Success</span> Every on-chain fill appears once in both places, exactly as executed — verifiable in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A fill executed on-chain is missing from the journal or the ladder — a silent gap.</div>
   </section>
@@ -1854,7 +1878,7 @@
       <li>The pre-filled size on the alert card in the UI.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">ProofShot recording; pinned test inputs (bankroll, win-rate, payoff, fraction); the expected number computed by hand beforehand.</div>
+    <div class="pre">ProofShot recording; pinned test inputs (bankroll, win-rate, payoff, fraction); the expected number computed by hand beforehand; a second pinned fraction (e.g. quarter vs half) with the same odds for a scaling check; a pinned no-edge input set (win-rate × payoff at or below break-even) where the Kelly formula itself goes to zero or negative.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Fractional Kelly sizer works end to end.</div>
@@ -1865,9 +1889,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> compute.</div>
-      <div class="tbody">Fire a test alert with the pinned inputs.</div>
-      <div class="verdict ok"><span>Success</span> the fractional Kelly calculation runs at alert time and produces the hand-computed number.</div>
-      <div class="verdict bad"><span>Failure</span> no calculation runs, or the result doesn't match the hand check.</div>
+      <div class="tbody">Fire a test alert with the pinned inputs, then fire a second alert with the same odds but the other pinned fraction (e.g. quarter instead of half).</div>
+      <div class="verdict ok"><span>Success</span> both sizes match their hand-computed fractional Kelly numbers, and the size scales with the fraction (half-Kelly comes out roughly double quarter-Kelly for the same odds) — proving the fraction is actually applied, not decorative.</div>
+      <div class="verdict bad"><span>Failure</span> either result doesn't match its hand check, or the size stays the same across fractions — the sizer is silently running one fixed (possibly full) Kelly regardless of the fraction input.</div>
     </div>
     
     <div class="tunit">
@@ -1886,13 +1910,15 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">5</span> missing-inputs.</div>
-      <div class="tbody">Remove the Kelly inputs and fire again.</div>
-      <div class="verdict ok"><span>Success</span> the alert shows &quot;no size — inputs missing&quot;.</div>
-      <div class="verdict bad"><span>Failure</span> the alert shows a guessed or default size instead of the honest empty state.</div>
+      <div class="tbody">Remove the Kelly inputs and fire again; separately, fire an alert with the pinned no-edge input set.</div>
+      <div class="verdict ok"><span>Success</span> the alert shows &quot;no size — inputs missing&quot; when inputs are absent, and shows the same honest empty state (never a bet) when the inputs imply no real edge.</div>
+      <div class="verdict bad"><span>Failure</span> the alert shows a guessed or default size instead of the honest empty state, or shows a negative or nonsensical size when the Kelly formula returns zero or negative for a no-edge input set.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Compute the expected number before the run — never &quot;verify&quot; against whatever the system produced.</div>
     <div class="gotcha">The score-independence check is the one that proves the ruling; don't skip it because the happy path passed.</div>
+    <div class="gotcha">Fractional Kelly's whole point is the fraction: a sizer that returns the same number regardless of the chosen fraction is quietly running full Kelly, which real practice treats as dangerously overbet, not just untested.</div>
+    <div class="gotcha">A zero or negative Kelly result means &quot;no real edge, don't bet&quot; — that's the same honest-empty-state case as literally-missing inputs, not a separate bug class.</div>
     <div class="verdict ok"><span>Success</span> The alert's size equals the hand check, and missing inputs produce an honest empty state.</div>
     <div class="verdict bad"><span>Failure</span> The size disagrees with the hand check, or the system invents a size when inputs are missing.</div>
   </section>
@@ -1958,16 +1984,16 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> withdraw.</div>
-      <div class="tbody">Run the position to 2x and check the withdrawal fill.</div>
-      <div class="verdict ok"><span>Success</span> the withdrawal fill equals the initial capital exactly, sold into a green candle with volume.</div>
-      <div class="verdict bad"><span>Failure</span> the withdrawal is more or less than the initial capital, or fills on a red or no-volume candle.</div>
+      <div class="tbody">Run the position to 2x and check the withdrawal fill against the exchange's own trade record, including one run where the first sell attempt is rejected by slippage and must retry.</div>
+      <div class="verdict ok"><span>Success</span> the settled withdrawal fill equals the initial capital exactly, matching the exchange's own record, sold into a green candle with volume — even after a slippage-rejected attempt retries.</div>
+      <div class="verdict bad"><span>Failure</span> the withdrawal is more or less than the initial capital, fills on a red or no-volume candle, or a slippage-rejected attempt is logged as a completed withdrawal when it wasn't.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> cancel-stop.</div>
-      <div class="tbody">At the same 2x run, check the exchange's open-orders list.</div>
-      <div class="verdict ok"><span>Success</span> the stop disappears from the open-orders list at the same moment the withdrawal fills.</div>
-      <div class="verdict bad"><span>Failure</span> the stop stays listed after the withdrawal fills, or disappears before the withdrawal actually fills.</div>
+      <div class="tbody">At the same 2x run, check the exchange's open-orders list; also replay a case where price wicks through the stop level and the 2x mark in close succession.</div>
+      <div class="verdict ok"><span>Success</span> the stop disappears from the open-orders list at the same moment the withdrawal fills; if the stop had already filled first, the position shows as stopped-out rather than a falsely-successful cancel.</div>
+      <div class="verdict bad"><span>Failure</span> the stop stays listed after the withdrawal fills, disappears before the withdrawal actually fills, or the system reports the cancel as successful when the exchange actually rejected it because the stop had already filled.</div>
     </div>
     
     <div class="tunit">
@@ -1979,6 +2005,7 @@
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The withdrawal must equal the *initial*, not a round number near it — compare exactly.</div>
     <div class="gotcha">Until the withdrawal fills, the stop must stay live; cancelling first and failing to sell leaves the position naked.</div>
+    <div class="gotcha">Thin memecoin liquidity means a single trade can wick price through 2x for one tick and retreat — use a test replay with a real sustained crossing, not an artificial instantaneous spike, or the recording proves nothing.</div>
     <div class="verdict ok"><span>Success</span> At 2x the initial is visibly out and the stop is gone from the exchange — both in the recording.</div>
     <div class="verdict bad"><span>Failure</span> Price crosses 2x and the initial is still in, or the stop is still live on the exchange.</div>
   </section>
@@ -2025,7 +2052,7 @@
       <li>The moon bag section of the positions view; its manual sell button.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">Devnet position past 2x; ProofShot recording; the positions view open.</div>
+    <div class="pre">Devnet position past 2x; ProofShot recording; the positions view open; the token quantity remaining right after the 2x capital-recovery sell noted so the bag's 20% can be hand-checked precisely.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Moon bag rule works end to end.</div>
@@ -2036,34 +2063,36 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> flag.</div>
-      <div class="tbody">Run a devnet position past 2x.</div>
-      <div class="verdict ok"><span>Success</span> the bag appears in the UI, marked manual-only, sized at 20% of the remainder.</div>
-      <div class="verdict bad"><span>Failure</span> no bag appears at 2x, or it isn't marked manual-only.</div>
+      <div class="tbody">Run a devnet position past 2x; hand-compute 20% of the token quantity left right after the 2x sell (not 20% of the original entry size).</div>
+      <div class="verdict ok"><span>Success</span> the bag appears in the UI, marked manual-only, and its token quantity equals that hand-computed 20% of the post-2x remainder.</div>
+      <div class="verdict bad"><span>Failure</span> no bag appears at 2x, it isn't marked manual-only, or its size is computed off the wrong base — the original position instead of the post-2x remainder.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> exclude.</div>
-      <div class="tbody">Run the ladder to completion after the bag is flagged.</div>
-      <div class="verdict ok"><span>Success</span> the bag stays untouched through every clip and stop in the ladder.</div>
-      <div class="verdict bad"><span>Failure</span> any automatic clip or stop sells into the bag.</div>
+      <div class="tbody">Run the ladder to completion after the bag is flagged, checking each clip's size against the remainder with the bag subtracted out.</div>
+      <div class="verdict ok"><span>Success</span> the bag stays untouched through every clip and stop, and each clip's percentage is visibly computed off the non-bag remainder, not the total holding.</div>
+      <div class="verdict bad"><span>Failure</span> any automatic clip or stop sells into the bag, or a clip's size is computed as if the bag were still part of the sellable remainder.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> manual-home.</div>
       <div class="tbody">Sell the bag from the UI.</div>
-      <div class="verdict ok"><span>Success</span> the bag is shown marked manual-only, and the manual sell closes it, logged as a manual sell.</div>
-      <div class="verdict bad"><span>Failure</span> the bag isn't shown as manual-only, or the manual sell fails to close it or isn't logged.</div>
+      <div class="verdict ok"><span>Success</span> the bag is shown marked manual-only, and the manual sell closes it with a matching on-exchange fill (price and size) logged as a manual sell.</div>
+      <div class="verdict bad"><span>Failure</span> the bag isn't shown as manual-only, the manual sell fails to close it, or the UI marks it closed while the exchange shows a partial fill or a rejected order.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">5</span> fixed-size.</div>
-      <div class="tbody">Compare the bag's size at flag time against its size after the ladder runs.</div>
-      <div class="verdict ok"><span>Success</span> the bag's size stays exactly what it was at flag time.</div>
-      <div class="verdict bad"><span>Failure</span> the bag's size changes as the ladder runs.</div>
+      <div class="tbody">Compare the bag's token quantity at flag time against its token quantity after the ladder runs, while its USD value is free to float with price.</div>
+      <div class="verdict ok"><span>Success</span> the bag's token quantity stays exactly what it was at flag time even as its USD value rises or falls with price.</div>
+      <div class="verdict bad"><span>Failure</span> the bag's token quantity changes as the ladder runs, or the system re-derives the quantity from a moving dollar target instead of holding the token count fixed.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Any automatic path touching the bag is an instant failure — test the full ladder, not just one clip.</div>
     <div class="gotcha">The bag's size is fixed at flag time; a bag that shrinks as the ladder runs is a math bug, not a feature.</div>
+    <div class="gotcha">&quot;Fixed size&quot; means fixed token quantity, not fixed dollar value — the bag's USD value is supposed to move with price; don't mistake that for a bug.</div>
+    <div class="gotcha">Research note: common moon-bag practice sizes the runner much larger than 20% (often half the position, or tiered exits at 5x/10x) vs the map's fixed 20% carved out once at 2x — the map stands.</div>
     <div class="verdict ok"><span>Success</span> The bag survives every automatic exit and moves only on a manual action — all recorded.</div>
     <div class="verdict bad"><span>Failure</span> An automatic exit sells into the bag, or the bag can't be sold manually.</div>
   </section>
@@ -2136,9 +2165,9 @@
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> into-volume.</div>
-      <div class="tbody">Replay a divergence during a red, no-volume window, then let a green candle with volume arrive.</div>
-      <div class="verdict ok"><span>Success</span> the clip only fills once a qualifying green candle with volume shows up, visible in the recording.</div>
-      <div class="verdict bad"><span>Failure</span> the clip fills on a red or no-volume candle.</div>
+      <div class="tbody">Replay a divergence during a red, no-volume window, then let a green candle arrive with volume too thin to absorb the whole clip before it dries up again.</div>
+      <div class="verdict ok"><span>Success</span> the clip only fills once qualifying volume shows up, and if the first qualifying candle can't absorb the full clip, the remainder keeps waiting/retrying rather than being marked filled or dumped into the next red candle.</div>
+      <div class="verdict bad"><span>Failure</span> the clip fills on a red or no-volume candle, or a partially-filled clip is reported as complete or finishes filling into a red/no-volume candle.</div>
     </div>
     
     <div class="tunit">
@@ -2150,6 +2179,7 @@
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Clip size is of the *remaining* position at that moment, not the original — check the second clip's math against the first clip's remainder.</div>
     <div class="gotcha">A repeated signal on the same divergence must not double-clip.</div>
+    <div class="gotcha">Research note: real DEX exits often cap a single sell's price impact against pool depth (splitting the order if it would move the pool too far) vs the map's fixed 15–20% clip with no price-impact cap — the map stands.</div>
     <div class="verdict ok"><span>Success</span> Both clips fill at the right size into volume; the bag is intact — all in the recording.</div>
     <div class="verdict bad"><span>Failure</span> A divergence passes with no clip, a clip prints on red, or a clip eats the moon bag.</div>
   </section>
@@ -2215,26 +2245,27 @@
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> one-schema.</div>
       <div class="tbody">Compare events from different departments in the journal, such as a gate verdict and a fill.</div>
-      <div class="verdict ok"><span>Success</span> Every event, regardless of which department produced it, uses the same event shape and fields.</div>
-      <div class="verdict bad"><span>Failure</span> An event from one department has a different shape than the rest, or is missing expected fields.</div>
+      <div class="verdict ok"><span>Success</span> Every event, regardless of which department produced it, uses the same event shape and fields — including a monotonic sequence number and a timestamp.</div>
+      <div class="verdict bad"><span>Failure</span> An event from one department has a different shape than the rest, is missing expected fields, or its sequence number/timestamp is missing or out of step with its neighbors.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> replay.</div>
       <div class="tbody">Read the completed trade's journal alone and cross-check two events against the exchange and the UI.</div>
-      <div class="verdict ok"><span>Success</span> The journal shows every step in order with no gaps, matching what the exchange and UI show.</div>
-      <div class="verdict bad"><span>Failure</span> There is a gap in the sequence, or an event in the journal disagrees with the exchange or UI.</div>
+      <div class="verdict ok"><span>Success</span> The journal shows every step in order with no gaps — each event's sequence number follows the last with none skipped — matching what the exchange and UI show.</div>
+      <div class="verdict bad"><span>Failure</span> There is a gap or skip in the sequence, or an event in the journal disagrees with the exchange or UI.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">5</span> close.</div>
-      <div class="tbody">Run the position to flat with a moon bag surviving.</div>
-      <div class="verdict ok"><span>Success</span> At flat, the record is sealed and notes the surviving moon bag.</div>
-      <div class="verdict bad"><span>Failure</span> The record isn't sealed at flat, or doesn't note the surviving moon bag.</div>
+      <div class="tbody">Run the position to flat with a moon bag surviving, then redeliver the same closing fill event a second time (simulating a retried delivery).</div>
+      <div class="verdict ok"><span>Success</span> At flat, the record is sealed once and notes the surviving moon bag; the redelivered event does not reopen the record, re-seal it, or add a duplicate closing entry.</div>
+      <div class="verdict bad"><span>Failure</span> The record isn't sealed at flat, doesn't note the surviving moon bag, or the redelivered event produces a duplicate seal or a second closing entry.</div>
     </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The journal is the audit trail of last resort — a single missing event fails the feature, even if everything &quot;worked&quot;.</div>
     <div class="gotcha">Append-only means append-only: no edited or deleted events anywhere in the record.</div>
+    <div class="gotcha">A redelivered event that silently produces a second closing entry breaks append-only in spirit even if no existing row was edited — the ledger's tail after redelivery must show exactly one seal, not two.</div>
     <div class="verdict ok"><span>Success</span> The complete trade replays from the journal alone, matching reality.</div>
     <div class="verdict bad"><span>Failure</span> Any event that happened is missing from the record, or the journal disagrees with the exchange.</div>
   </section>
