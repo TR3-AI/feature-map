@@ -27,6 +27,7 @@ A feature map born from an Idea Slicer map tracks it (`maps/<slug>.md` in `TR3-A
 7. **Mobile is the primary screen.** No visual change is done until verified at ~390px as well as desktop.
 8. **Contradictions stop the line.** If the source idea map conflicts (thresholds, directions), quote both sides and ask Bobby — never map over a conflict.
 9. **Terse chat, rich page.** Plain everyday English; technical terms glossed in a few plain words on first use.
+10. **The verification unit: feature + sub-features, tested on build completion.** What gets verified is never a feature ticket — a ticket can be very large. The unit is a built feature plus every one of its sub-features, checked whenever an agent finishes building that feature. A sub-feature is one part of the feature's life cycle: how it works, what it does, every variation it can handle. Stop-loss example: 1) cancel, 2) move price, 3) open-order display on the front end, 4) execution — when price reaches the trigger level the order actually fills; if it just stays open or never triggers, it is not a working stop-loss. A feature counts as "working" only when the feature AND all its sub-features are proven on the front end.
 
 ## The standard flow (every idea, every time)
 

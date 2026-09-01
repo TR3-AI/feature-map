@@ -79,6 +79,7 @@
   <div class="item"><b>7. Mobile is the primary screen.</b><span class="why">No visual change is done until verified at ~390px as well as desktop.</span></div>
   <div class="item"><b>8. Contradictions stop the line.</b><span class="why">If the source idea map conflicts (thresholds, better/worse directions), quote both sides and ask Bobby — never map over a conflict.</span></div>
   <div class="item"><b>9. Terse chat, rich page.</b><span class="why">Plain everyday English; technical terms glossed in a few plain words on first use.</span></div>
+  <div class="item"><b>10. The verification unit: feature + sub-features, tested on build completion.</b><span class="why">Never a feature ticket — a ticket can be very large. The unit is a built feature plus every sub-feature, checked whenever an agent finishes building it. A sub-feature is one part of the feature's life cycle: how it works, what it does, every variation it handles. Stop-loss: 1) cancel, 2) move price, 3) open-order display, 4) execution — price hits the trigger and the order actually fills; sitting open or never triggering is not a working stop-loss. A feature is "working" only when it and all its sub-features are proven on the front end.</span></div>
 
   <h2>Publish rhythm</h2>
   <div class="item teal"><b>Straight to main.</b><span class="why">Bobby's standing instruction (same as Idea Slicer and ELI5links). The site updates ~1 min after push — verify with a curl grep on the live URL, never just a clean commit.</span></div>
