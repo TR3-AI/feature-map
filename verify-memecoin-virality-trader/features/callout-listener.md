@@ -15,13 +15,13 @@ Watches the tracked streams and turns each callout into a normalized candidate �
 
 ## How it works in practice
 
-- The map's sources are two specific platforms, and a "callout" means something different on each. On **pump.fun** (the Solana launchpad) it is an on-chain event: a tracked source launches or trades a token, and the event arrives already structured — mint address, creator wallet, market cap, timestamp.
-- pump.fun watching is machine-native: free WebSocket feeds (e.g. PumpPortal's `subscribeNewToken`, no API key) stream every launch and trade in near real time — no polling, no scraping.
-- On **FOMO (fomo.family)** — a social trading app — a callout is a followed trader's buy: you track sources (KOLs, leaderboard wallets) and their buys surface in a real-time feed with notifications. No public bot API is documented, so ingestion means notification/feed capture or an unofficial endpoint — the fragile half of the pair, and the part the reconnect and dedupe tests must exercise hardest.
-- The "attached tweet" field maps to the token's linked X post (pump.fun tokens can carry social links at creation) — but socials are optional there, so launches without a linked tweet exist in the wild.
-- WebSocket streams have no replay cursor: events missed during a drop are simply gone unless the provider replays them. Dedupe keys on the event's own signature (mint + timestamp), matching the map's address+timestamp rule.
-- Existence: pump.fun ingestion is native and documented (structured WebSocket events); FOMO ingestion is not publicly documented — its capture path must be proven against the real app once built.
-- Deviations from standard: the spec makes the attached tweet a REQUIRED field while pump.fun socials are optional — tweet-less launches will be rejected at intake; flagged as a Research note below (likely deliberate: the virality scorer needs the tweet to score).
+- pump.fun and FOMO work the SAME way for this feature: both are trading platforms with a social layer on top — a real-time feed plus comments attached to tokens and trades. A callout is a tracked source's activity surfacing there: a post, a comment, a buy, a launch.
+- On pump.fun: every coin page carries comments and recent trades, and a real-time social feed, livestreams with chat, and leaderboards push what is moving — the listener watches that stream for tracked source names.
+- On FOMO (fomo.family): the feed shows followed traders' buys and sells in real time, with optional written theses attached to trades and comment threads under token charts; following a source triggers notifications on their moves.
+- Programmatic access exists on both sides: pump.fun has free WebSocket feeds (e.g. PumpPortal's `subscribeNewToken`), and FOMO has a social-trading data API (fomoapi.io) — the exact capture path gets grounded against the real app once the repo exists.
+- Because a callout is a loose social post, not a structured order ticket, the four required fields (coin address, attached tweet, timestamp, source) are extracted from free text — slang, hype, and commentary around the address are the normal shape, not the exception.
+- Existence: feed-based callout watching is native to both platforms — same mechanic, two feeds; nothing needs bot-simulation beyond driving test posts through the test stream.
+- Deviations from standard: none — research reinforced the spec.
 
 ## Test stream
 
@@ -50,4 +50,3 @@ Preconditions:
 - A candidate with a blank field is a failure, not a partial pass.
 - The reject log entry must name the reason — a silent drop is not a pass.
 - Real callout sources rarely use one fixed template — test with more than the canonical shape (extra slang/commentary around the address), not just a clean textbook callout.
-- Research note: pump.fun launch events only optionally carry a linked tweet vs the map's four-required-fields spec, which rejects callouts missing one — likely deliberate (the virality scorer needs the tweet to score), but it means tweet-less launches never become candidates — the map stands.

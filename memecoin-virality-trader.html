@@ -217,12 +217,11 @@
   </div>
 
   <section class="rnotes">
-    <div class="rnhead">⚠️ 8 research disagreements — broadcast, not buried</div>
+    <div class="rnhead">⚠️ 7 research disagreements — broadcast, not buried</div>
     <div class="rnsub">These elements specify behaviour that differs from the standard implementation found in external research. The tester tests the map's version knowingly — never by habit. Keep or drop each element is Bobby's call.</div>
     <div class="rnote"><b>30-day baseline builder</b> — production engagement baselines commonly use outlier-resistant averaging (trimmed mean, rolling median) to blunt viral-tweet skew vs the map's plain likes+retweets average — the map stands; test with a viral outlier tweet in the window to confirm it's included, not silently filtered.</div>
     <div class="rnote"><b>Bundler gate</b> — public bundler-detection tools commonly treat 25–40% combined bundler/sniper holdings as only a caution zone (some sniper-filter frameworks use a 30% bundler-ratio cutoff) vs the map's stricter 10–15% reject ceiling — the map stands.</div>
     <div class="rnote"><b>BUY button</b> — crypto UX guidance often calls for an explicit confirmation step before an irreversible transaction, vs the map's one-tap-only design (no typing, no sizing, one click executes) — the map stands.</div>
-    <div class="rnote"><b>Callout listener + normalizer</b> — pump.fun launch events only optionally carry a linked tweet vs the map's four-required-fields spec, which rejects callouts missing one — likely deliberate (the virality scorer needs the tweet to score), but it means tweet-less launches never become candidates — the map stands.</div>
     <div class="rnote"><b>Divergence clip ladder</b> — real DEX exits often cap a single sell's price impact against pool depth (splitting the order if it would move the pool too far) vs the map's fixed 15–20% clip with no price-impact cap — the map stands.</div>
     <div class="rnote"><b>Moon bag rule</b> — common moon-bag practice sizes the runner much larger than 20% (often half the position, or tiered exits at 5x/10x) vs the map's fixed 20% carved out once at 2x — the map stands.</div>
     <div class="rnote"><b>Source list config</b> — production config-management practice favors hot-reloading isolated whitelist config live (file watcher, validated before swap) without a restart — vs the map's requirement that source-list edits apply only via restart/reload between runs — the map stands.</div>
@@ -371,13 +370,13 @@
     </ul>
     <div class="flbl">How it works in practice (external research)</div>
     <ul class="vreach">
-      <li>The map's sources are two specific platforms, and a &quot;callout&quot; means something different on each. On <b>pump.fun</b> (the Solana launchpad) it is an on-chain event: a tracked source launches or trades a token, and the event arrives already structured — mint address, creator wallet, market cap, timestamp.</li>
-      <li>pump.fun watching is machine-native: free WebSocket feeds (e.g. PumpPortal's <code>subscribeNewToken</code>, no API key) stream every launch and trade in near real time — no polling, no scraping.</li>
-      <li>On <b>FOMO (fomo.family)</b> — a social trading app — a callout is a followed trader's buy: you track sources (KOLs, leaderboard wallets) and their buys surface in a real-time feed with notifications. No public bot API is documented, so ingestion means notification/feed capture or an unofficial endpoint — the fragile half of the pair, and the part the reconnect and dedupe tests must exercise hardest.</li>
-      <li>The &quot;attached tweet&quot; field maps to the token's linked X post (pump.fun tokens can carry social links at creation) — but socials are optional there, so launches without a linked tweet exist in the wild.</li>
-      <li>WebSocket streams have no replay cursor: events missed during a drop are simply gone unless the provider replays them. Dedupe keys on the event's own signature (mint + timestamp), matching the map's address+timestamp rule.</li>
-      <li>Existence: pump.fun ingestion is native and documented (structured WebSocket events); FOMO ingestion is not publicly documented — its capture path must be proven against the real app once built.</li>
-      <li>Deviations from standard: the spec makes the attached tweet a REQUIRED field while pump.fun socials are optional — tweet-less launches will be rejected at intake; flagged as a Research note below (likely deliberate: the virality scorer needs the tweet to score).</li>
+      <li>pump.fun and FOMO work the SAME way for this feature: both are trading platforms with a social layer on top — a real-time feed plus comments attached to tokens and trades. A callout is a tracked source's activity surfacing there: a post, a comment, a buy, a launch.</li>
+      <li>On pump.fun: every coin page carries comments and recent trades, and a real-time social feed, livestreams with chat, and leaderboards push what is moving — the listener watches that stream for tracked source names.</li>
+      <li>On FOMO (fomo.family): the feed shows followed traders' buys and sells in real time, with optional written theses attached to trades and comment threads under token charts; following a source triggers notifications on their moves.</li>
+      <li>Programmatic access exists on both sides: pump.fun has free WebSocket feeds (e.g. PumpPortal's <code>subscribeNewToken</code>), and FOMO has a social-trading data API (fomoapi.io) — the exact capture path gets grounded against the real app once the repo exists.</li>
+      <li>Because a callout is a loose social post, not a structured order ticket, the four required fields (coin address, attached tweet, timestamp, source) are extracted from free text — slang, hype, and commentary around the address are the normal shape, not the exception.</li>
+      <li>Existence: feed-based callout watching is native to both platforms — same mechanic, two feeds; nothing needs bot-simulation beyond driving test posts through the test stream.</li>
+      <li>Deviations from standard: none — research reinforced the spec.</li>
     </ul>
     <div class="flbl">Test stream</div>
     <div class="pre">Test stream connected; intake view visible; ProofShot recording.</div>
@@ -420,7 +419,6 @@
     <div class="gotcha">A candidate with a blank field is a failure, not a partial pass.</div>
     <div class="gotcha">The reject log entry must name the reason — a silent drop is not a pass.</div>
     <div class="gotcha">Real callout sources rarely use one fixed template — test with more than the canonical shape (extra slang/commentary around the address), not just a clean textbook callout.</div>
-    <div class="gotcha">Research note: pump.fun launch events only optionally carry a linked tweet vs the map's four-required-fields spec, which rejects callouts missing one — likely deliberate (the virality scorer needs the tweet to score), but it means tweet-less launches never become candidates — the map stands.</div>
     <div class="verdict ok"><span>Success</span> The good callout shows as a complete candidate within seconds; the bad one is visibly rejected with a reason.</div>
     <div class="verdict bad"><span>Failure</span> The callout is posted but no candidate appears, a field is blank, or the malformed callout flows downstream.</div>
   </section>
