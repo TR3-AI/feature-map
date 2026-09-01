@@ -15,12 +15,13 @@ Watches the tracked streams and turns each callout into a normalized candidate �
 
 ## How it works in practice
 
-- Real callout/signal channels (Telegram groups, Discord, X) post short, informal messages — a contract address plus hype text and source attribution — with no fixed template; extraction has to handle slang and commentary around the address, not just a clean canonical shape.
-- Spam and scam callouts exploit that looseness: fake tickers, garbled or mismatched addresses, honeypot contracts posted with manufactured urgency ("buy now") — validating the address against the chain's own format (length/charset) at intake is a real defense against garbled or fake addresses slipping through.
-- Streaming ingestion (Telegram's long-polling `getUpdates`, or an equivalent feed) tracks position with a cursor/offset that must be persisted and resumed after a drop — reconnecting from the wrong offset either replays old messages (duplicate candidates) or skips ones that arrived during the outage.
-- Production dedupe is typically keyed on message ID or a content hash, matching the map's address+timestamp dedupe approach.
-- Existence: stream-based callout ingestion is native — Telegram/Discord-style bots use exactly this long-poll/reconnect pattern; nothing needs bot-simulation beyond driving the test stream and forcing the disconnect.
-- Deviations from standard: none — research reinforced the spec (strict address-format validation and reason-logged rejection are how production signal bots defend against the loose, scam-prone formats real callout channels actually post; already reflected in the existing Gotchas note on non-canonical shapes).
+- The map's sources are two specific platforms, and a "callout" means something different on each. On **pump.fun** (the Solana launchpad) it is an on-chain event: a tracked source launches or trades a token, and the event arrives already structured — mint address, creator wallet, market cap, timestamp.
+- pump.fun watching is machine-native: free WebSocket feeds (e.g. PumpPortal's `subscribeNewToken`, no API key) stream every launch and trade in near real time — no polling, no scraping.
+- On **FOMO (fomo.family)** — a social trading app — a callout is a followed trader's buy: you track sources (KOLs, leaderboard wallets) and their buys surface in a real-time feed with notifications. No public bot API is documented, so ingestion means notification/feed capture or an unofficial endpoint — the fragile half of the pair, and the part the reconnect and dedupe tests must exercise hardest.
+- The "attached tweet" field maps to the token's linked X post (pump.fun tokens can carry social links at creation) — but socials are optional there, so launches without a linked tweet exist in the wild.
+- WebSocket streams have no replay cursor: events missed during a drop are simply gone unless the provider replays them. Dedupe keys on the event's own signature (mint + timestamp), matching the map's address+timestamp rule.
+- Existence: pump.fun ingestion is native and documented (structured WebSocket events); FOMO ingestion is not publicly documented — its capture path must be proven against the real app once built.
+- Deviations from standard: the spec makes the attached tweet a REQUIRED field while pump.fun socials are optional — tweet-less launches will be rejected at intake; flagged as a Research note below (likely deliberate: the virality scorer needs the tweet to score).
 
 ## Test stream
 
@@ -49,3 +50,4 @@ Preconditions:
 - A candidate with a blank field is a failure, not a partial pass.
 - The reject log entry must name the reason — a silent drop is not a pass.
 - Real callout sources rarely use one fixed template — test with more than the canonical shape (extra slang/commentary around the address), not just a clean textbook callout.
+- Research note: pump.fun launch events only optionally carry a linked tweet vs the map's four-required-fields spec, which rejects callouts missing one — likely deliberate (the virality scorer needs the tweet to score), but it means tweet-less launches never become candidates — the map stands.
