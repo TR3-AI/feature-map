@@ -13,15 +13,27 @@ One append-only record per trade: every gate verdict, the alert, Bobby's click, 
 
 - The journal view in the UI.
 
-## Driving it with the harness
+## Test stream
 
 Preconditions:
 
 - Devnet; ProofShot recording; one full trade run end to end.
 
-- **Full trade.** Run one complete trade. The journal shows every step in order: gates, alert, click, fills, ladder.
-- **No gaps.** Cross-check two events against the exchange and the UI — they match.
-- **Closed record.** At flat, the record is sealed and notes any surviving moon bag.
+1. **Trade journal works end to end.** Run one complete devnet trade end to end and read the journal.
+   Success: The complete trade replays from the journal alone, matching reality.
+   Failure: Any event that happened is missing from the record, or the journal disagrees with the exchange.
+2. **record.** Run a trade starting from the callout.
+   Success: The journal record opens at the callout and appends each event in the order it happened.
+   Failure: The record opens late, misses an early event, or events appear out of order.
+3. **one-schema.** Compare events from different departments in the journal, such as a gate verdict and a fill.
+   Success: Every event, regardless of which department produced it, uses the same event shape and fields.
+   Failure: An event from one department has a different shape than the rest, or is missing expected fields.
+4. **replay.** Read the completed trade's journal alone and cross-check two events against the exchange and the UI.
+   Success: The journal shows every step in order with no gaps, matching what the exchange and UI show.
+   Failure: There is a gap in the sequence, or an event in the journal disagrees with the exchange or UI.
+5. **close.** Run the position to flat with a moon bag surviving.
+   Success: At flat, the record is sealed and notes the surviving moon bag.
+   Failure: The record isn't sealed at flat, or doesn't note the surviving moon bag.
 
 ## Gotchas
 

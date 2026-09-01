@@ -174,6 +174,16 @@
   .verdict.bad { border-left: 4px solid var(--red); }
   .verdict.bad span { color: var(--red); }
 
+  /* ── test stream ─────────────────────────────────── */
+  .tunit { border-top: 1.5px dashed rgba(23, 32, 43, .14); padding: 10px 0 6px; }
+  .thead { display: flex; align-items: baseline; gap: 7px; font-weight: 800; font-size: 14px; }
+  .tnum {
+    font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; font-weight: 800;
+    color: #fff; background: var(--teal); border-radius: 4px; padding: 1px 6px;
+  }
+  .tbody { font-size: 13.5px; line-height: 1.55; margin: 4px 0 6px; }
+  .tunit .verdict { padding: 7px 12px; margin: 5px 0 2px; font-size: 13.5px; }
+
   footer { text-align: center; color: var(--soft); font-size: 13px; margin-top: 44px; }
   footer a { color: var(--blue); font-weight: 700; text-decoration: none; }
 </style>
@@ -237,14 +247,43 @@
       <li>Open the config view in the front-end UI.</li>
       <li>Edit the list file directly between runs (owner action).</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">UI up; ProofShot recording; a test stream with one listed and one unlisted source.</div>
-    <ul class="vreach">
-      <li><b>View list.</b> Open the config view. The recording shows Bobby's source list rendered.</li>
-      <li><b>Listed source.</b> Post a test callout from a listed source. A candidate appears in the intake view.</li>
-      <li><b>Unlisted source.</b> Post a test callout from an unlisted source. No candidate appears.</li>
-      <li><b>Empty list.</b> Point the watcher at an empty list and restart. The intake view shows zero candidates and no error storm — a safe stop.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Source list config works end to end.</div>
+      <div class="tbody">Open the config view, then post a test callout from the listed source and one from the unlisted source.</div>
+      <div class="verdict ok"><span>Success</span> The visible list matches what Bobby supplied, and only the listed source's callout produces a candidate — all visible in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> The list can't be displayed, or the unlisted source's callout produces a candidate too.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> list-view.</div>
+      <div class="tbody">Open the config view.</div>
+      <div class="verdict ok"><span>Success</span> The recording shows Bobby's source list rendered correctly.</div>
+      <div class="verdict bad"><span>Failure</span> The config view is blank, missing, or shows the wrong list.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> list-filter.</div>
+      <div class="tbody">Post a test callout from the listed source, then one from the unlisted source.</div>
+      <div class="verdict ok"><span>Success</span> The listed source's callout produces a candidate in the intake view; the unlisted source's callout produces nothing.</div>
+      <div class="verdict bad"><span>Failure</span> The unlisted source's callout slips a candidate through, or the listed source's callout is blocked.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> list-edit.</div>
+      <div class="tbody">Edit the source list to add a new source, post a callout from it without restarting, then restart and post again.</div>
+      <div class="verdict ok"><span>Success</span> The callout posted before the restart produces nothing; the same callout after the restart produces a candidate.</div>
+      <div class="verdict bad"><span>Failure</span> The edit applies before the restart, or still doesn't apply after it.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> list-empty.</div>
+      <div class="tbody">Point the watcher at an empty list and restart.</div>
+      <div class="verdict ok"><span>Success</span> The intake view shows zero candidates and no error storm — a safe stop.</div>
+      <div class="verdict bad"><span>Failure</span> The watcher errors out, crashes, or still produces candidates despite the empty list.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">A restart (or reload) is needed for edits to apply; a mid-run edit proves nothing.</div>
     <div class="gotcha">An unlisted-source callout must produce *nothing* — do not accept a candidate with a warning as a pass.</div>
@@ -294,13 +333,43 @@
     <ul class="vreach">
       <li>Indirect: post a callout on a tracked stream; the candidate appears in the intake view.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Test stream connected; intake view visible; ProofShot recording.</div>
-    <ul class="vreach">
-      <li><b>Good callout.</b> Post a complete test callout. Within seconds the intake view shows a candidate with all four fields filled.</li>
-      <li><b>Malformed callout.</b> Post a callout with no coin address. The reject log shows it with the reason; nothing reaches the intake view.</li>
-      <li><b>Duplicate.</b> Post the same callout twice. Exactly one candidate exists.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Callout listener + normalizer works end to end.</div>
+      <div class="tbody">Post a complete test callout on the tracked test stream.</div>
+      <div class="verdict ok"><span>Success</span> the good callout shows as a complete candidate with all four fields filled within seconds; a malformed one is visibly rejected with a reason — both in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> the callout is posted but no candidate appears, a field is blank, or the malformed callout flows downstream.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> listen.</div>
+      <div class="tbody">Post a test callout on the connected test stream.</div>
+      <div class="verdict ok"><span>Success</span> the listener picks up the callout and it flows into processing within seconds.</div>
+      <div class="verdict bad"><span>Failure</span> the callout is posted but the listener never picks it up.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> normalize.</div>
+      <div class="tbody">Post a complete test callout and inspect the resulting candidate.</div>
+      <div class="verdict ok"><span>Success</span> the intake view shows a candidate with all four required fields filled — coin address, attached tweet, timestamp, source.</div>
+      <div class="verdict bad"><span>Failure</span> the candidate is missing, or any of the four fields is blank.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> validate.</div>
+      <div class="tbody">Post a callout with no coin address.</div>
+      <div class="verdict ok"><span>Success</span> the reject log shows the callout with the reason; nothing reaches the intake view.</div>
+      <div class="verdict bad"><span>Failure</span> the malformed callout produces a candidate anyway, or the reject log has no reason.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> dedupe.</div>
+      <div class="tbody">Post the same callout twice.</div>
+      <div class="verdict ok"><span>Success</span> exactly one candidate exists for the callout.</div>
+      <div class="verdict bad"><span>Failure</span> two candidates appear, or the second post is dropped without producing the first.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">A candidate with a blank field is a failure, not a partial pass.</div>
     <div class="gotcha">The reject log entry must name the reason — a silent drop is not a pass.</div>
@@ -349,12 +418,36 @@
     <ul class="vreach">
       <li>Indirect: the baseline appears on the candidate in the scorer view.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Scorer view visible; ProofShot recording; a test account whose metrics are known beforehand.</div>
-    <ul class="vreach">
-      <li><b>Known account.</b> Feed the test account. The baseline on screen matches the average computed by hand beforehand.</li>
-      <li><b>Thin account.</b> Feed an account with almost no history. The view shows the low-history flag, not a confident number.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> 30-day baseline builder works end to end.</div>
+      <div class="tbody">Feed the test account with known metrics through the scorer.</div>
+      <div class="verdict ok"><span>Success</span> the displayed baseline equals the real 30-day average, and thin accounts are visibly flagged.</div>
+      <div class="verdict bad"><span>Failure</span> no baseline appears, the number disagrees with the hand check, or a thin account gets a confident fake number.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> pull.</div>
+      <div class="tbody">Feed the test account and inspect the raw pull output before any average appears.</div>
+      <div class="verdict ok"><span>Success</span> the full 30-day tweet history for the test account is visibly present as the pull's raw output.</div>
+      <div class="verdict bad"><span>Failure</span> no history appears, or the average is computed before the pull completes or with partial data.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> average.</div>
+      <div class="tbody">With the pulled history visible, compare the baseline number to the average computed by hand beforehand.</div>
+      <div class="verdict ok"><span>Success</span> the baseline on screen matches the hand-computed average.</div>
+      <div class="verdict bad"><span>Failure</span> the number disagrees with the hand check.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> thin-history.</div>
+      <div class="tbody">Feed an account with almost no tweet history.</div>
+      <div class="verdict ok"><span>Success</span> the view shows the low-history flag instead of a number.</div>
+      <div class="verdict bad"><span>Failure</span> the account gets a confident baseline number instead of the flag.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Compute the expected average before the run; checking afterwards invites rationalizing.</div>
     <div class="gotcha">A partial pull (rate limit) must wait, not score with half the data.</div>
@@ -403,14 +496,36 @@
     <ul class="vreach">
       <li>Indirect: verdicts appear in the gate log / candidate view.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Gate log visible; ProofShot recording; four test candidates with pinned values.</div>
-    <ul class="vreach">
-      <li><b>Under 1h pass.</b> Send 4x at 30 minutes. The log shows pass, band &quot;&lt;1h&quot;.</li>
-      <li><b>Mid band reject.</b> Send 4x at 3 hours. The log shows reject, band &quot;1–6h&quot;, reason &quot;below 10x&quot;.</li>
-      <li><b>24h+ pass.</b> Send 60x at 2 days. The log shows pass, band &quot;24h+&quot;.</li>
-      <li><b>Dead zone.</b> Send any multiplier at 12 hours. The log shows reject, reason &quot;outside all bands&quot;.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Age-band multiplier gate works end to end.</div>
+      <div class="tbody">Send four known candidates through the gate — 4x at 30 minutes, 4x at 3 hours, 60x at 2 days, any multiplier at 12 hours.</div>
+      <div class="verdict ok"><span>Success</span> the log shows pass, reject, pass, reject — each verdict correct with its band and reason visible in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> any candidate passes or rejects against the band rule, or a verdict appears with no reason attached.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> band-select.</div>
+      <div class="tbody">Send candidates at 30 minutes, 3 hours, and 2 days, plus one at 12 hours.</div>
+      <div class="verdict ok"><span>Success</span> the log shows each candidate assigned to the correct age band (&lt;1h, 1–6h, 24h+), and the 12h one flagged outside all bands.</div>
+      <div class="verdict bad"><span>Failure</span> a candidate is assigned to the wrong band.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> band-check.</div>
+      <div class="tbody">Send 4x at 30 minutes and 4x at 3 hours.</div>
+      <div class="verdict ok"><span>Success</span> the verdicts match each band's threshold — pass for ≥3x under 1h, reject for below 10x in 1–6h.</div>
+      <div class="verdict bad"><span>Failure</span> a candidate passes or rejects against its band's threshold rule.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> band-reject.</div>
+      <div class="tbody">Send 4x at 3 hours and any multiplier at 12 hours.</div>
+      <div class="verdict ok"><span>Success</span> the log records each rejection with its band and the specific reason.</div>
+      <div class="verdict bad"><span>Failure</span> a rejection appears with no reason, or no band recorded.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Boundary values follow the rule exactly (exactly 3x under 1h passes) — test one boundary, not just mid-range values.</div>
     <div class="gotcha">Every verdict needs its reason; a bare pass/reject is a logging failure.</div>
@@ -459,13 +574,36 @@
     <ul class="vreach">
       <li>Indirect: the analysis view shows the fields and scores per candidate.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Analysis view visible; ProofShot recording; a known test coin.</div>
-    <ul class="vreach">
-      <li><b>Known coin.</b> Feed the test coin. The analysis view shows all five fields filled.</li>
-      <li><b>Separate scores.</b> The same view shows veracity and virality as two distinct numbers, not one merged figure.</li>
-      <li><b>API down.</b> Kill the API and feed another candidate. It shows as blocked with the error — it does not advance.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Grok analysis works end to end.</div>
+      <div class="tbody">Feed a known test coin through the Grok call. The analysis view shows all five fields filled — narrative, thesis, sentiment, veracity score, virality score.</div>
+      <div class="verdict ok"><span>Success</span> all five fields and both separate scores are visible and correct in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> a field is empty, the two scores arrive merged, or an API failure lets the candidate through.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> extract.</div>
+      <div class="tbody">Feed the test coin and check the analysis view.</div>
+      <div class="verdict ok"><span>Success</span> all five fields — narrative, thesis, sentiment, veracity, virality — show filled from the pinned prompt.</div>
+      <div class="verdict bad"><span>Failure</span> any field is missing or blank.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> two-scores.</div>
+      <div class="tbody">Read the same view for the veracity and virality figures.</div>
+      <div class="verdict ok"><span>Success</span> veracity and virality show as two distinct numbers.</div>
+      <div class="verdict bad"><span>Failure</span> the two scores arrive merged into one figure.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> api-failure.</div>
+      <div class="tbody">Kill the API and feed another candidate.</div>
+      <div class="verdict ok"><span>Success</span> the candidate shows as blocked with the error, never advancing.</div>
+      <div class="verdict bad"><span>Failure</span> the candidate advances despite the API failure, or blocks silently with no error shown.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The two-score separation is the whole point (ruling #10); a single merged score is a failure even if the number looks sensible.</div>
     <div class="gotcha">A blocked candidate must show *why* — a silent stall is not a pass.</div>
@@ -513,14 +651,36 @@
     <ul class="vreach">
       <li>Indirect: verdicts appear in the gate log / candidate view.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Gate log visible; ProofShot recording; four candidates with pinned scores.</div>
-    <ul class="vreach">
-      <li><b>Tweet pass.</b> Score 6.5 with a tweet. Log shows pass at the ≥6 threshold.</li>
-      <li><b>Tweet reject.</b> Score 5 with a tweet. Log shows reject, branch &quot;tweet&quot;.</li>
-      <li><b>No-tweet pass.</b> Score 8.5 without a tweet. Log shows pass at the &gt;8 threshold.</li>
-      <li><b>No-tweet reject.</b> Score 7 without a tweet. Log shows reject, branch &quot;no-tweet&quot;.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Combined-score gate works end to end.</div>
+      <div class="tbody">Feed all four candidates — 6.5 with a tweet, 5 with a tweet, 8.5 without a tweet, 7 without a tweet — through the gate and read the log.</div>
+      <div class="verdict ok"><span>Success</span> All four verdicts match the dual rule with the applied threshold visible in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> Any verdict contradicts the rule, or the wrong branch was used for a candidate.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> branch.</div>
+      <div class="tbody">Feed a candidate with a tweet and one without a tweet through the gate.</div>
+      <div class="verdict ok"><span>Success</span> The log shows branch &quot;tweet&quot; for the first and branch &quot;no-tweet&quot; for the second, each compared against its own threshold.</div>
+      <div class="verdict bad"><span>Failure</span> A candidate is evaluated against the other branch's threshold, or no branch is shown.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> threshold.</div>
+      <div class="tbody">Feed the boundary scores: 6.5 and 5 with a tweet, 8.5 and 7 without a tweet.</div>
+      <div class="verdict ok"><span>Success</span> The log shows pass, reject, pass, reject — matching ≥6 with a tweet and &gt;8 without one.</div>
+      <div class="verdict bad"><span>Failure</span> Any score lands on the wrong side of its threshold.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> score-reject.</div>
+      <div class="tbody">Feed the two reject cases (5 with a tweet, 7 without a tweet) and read the reject log.</div>
+      <div class="verdict ok"><span>Success</span> Each reject entry shows the score, the branch, and the threshold that fired.</div>
+      <div class="verdict bad"><span>Failure</span> A reject entry is missing the score, branch, or threshold, or the reject isn't logged.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The branch comes from the tweet field only — a candidate with an empty-but-present tweet field is a trap; pin the test data precisely.</div>
     <div class="gotcha">8 exactly without a tweet fails (&gt;8, not ≥8) — include the boundary in a test.</div>
@@ -569,12 +729,36 @@
     <ul class="vreach">
       <li>Indirect: the bundler % appears on the candidate in the checker view.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Checker view visible; ProofShot recording; a test token with a known bundler setup; the provider's own dashboard open for comparison.</div>
-    <ul class="vreach">
-      <li><b>Known token.</b> Run the test token. The bundler % on screen matches the provider's dashboard for that token — both visible in the recording.</li>
-      <li><b>Provider down.</b> Block the provider and run another candidate. It visibly waits; it does not advance without a number.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Bundler share pull works end to end.</div>
+      <div class="tbody">Run the test token with the known bundler setup through the checker.</div>
+      <div class="verdict ok"><span>Success</span> the displayed % matches the provider's own dashboard for that token, both visible side by side in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> no % appears, or it disagrees with the provider's dashboard.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> pull.</div>
+      <div class="tbody">Run the test token and inspect the raw provider query in the checker view.</div>
+      <div class="verdict ok"><span>Success</span> the query returns the creation-block wallets from the pinned provider, visible in the checker view.</div>
+      <div class="verdict bad"><span>Failure</span> no wallets are returned, or the query silently fails without showing a result.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> exclude-curve.</div>
+      <div class="tbody">Compare the displayed % against the raw wallet list from the pull.</div>
+      <div class="verdict ok"><span>Success</span> the % excludes the program-owned bonding-curve account from the combined supply calculation.</div>
+      <div class="verdict bad"><span>Failure</span> the bonding curve account is counted into the %, inflating it.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> provider-down.</div>
+      <div class="tbody">Block the provider and run another candidate.</div>
+      <div class="verdict ok"><span>Success</span> the candidate visibly waits and never advances without a number.</div>
+      <div class="verdict bad"><span>Failure</span> the candidate advances anyway, or gets a zeroed or fake % instead of waiting.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The comparison is against the *same* counting method — a different tool's number is expected to disagree; use the pinned provider's own dashboard.</div>
     <div class="gotcha">A token whose creation block can't be read must flag, not report 0%.</div>
@@ -622,13 +806,36 @@
     <ul class="vreach">
       <li>Indirect: the trend label appears on the candidate in the checker view.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Checker view visible; ProofShot recording; three test tokens.</div>
-    <ul class="vreach">
-      <li><b>Decreasing.</b> Feed a token whose share visibly falls over the window. The label reads decreasing.</li>
-      <li><b>Increasing.</b> Feed a token whose share visibly rises. The label reads increasing.</li>
-      <li><b>Single snapshot.</b> Feed a token with one reading. The label reads unknown — not decreasing, not safe.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Bundler trend classification works end to end.</div>
+      <div class="tbody">Feed three test tokens — decreasing, increasing, single snapshot — through the checker.</div>
+      <div class="verdict ok"><span>Success</span> both trending tokens get the correct label, and the single-snapshot token shows unknown — all visible in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> a rising share is labelled decreasing, or a single snapshot passes as a real trend.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> history.</div>
+      <div class="tbody">Feed a token with multiple readings over the window and open the underlying readings alongside the label.</div>
+      <div class="verdict ok"><span>Success</span> the readings over the pinned window are visible and match what the label is based on.</div>
+      <div class="verdict bad"><span>Failure</span> the readings are missing, or only a single reading backs a trend label.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> label.</div>
+      <div class="tbody">Feed the token whose share visibly falls, and the one whose share visibly rises.</div>
+      <div class="verdict ok"><span>Success</span> the label reads decreasing for the falling token and increasing for the rising token.</div>
+      <div class="verdict bad"><span>Failure</span> either label is flipped, or reads stagnating when the data clearly moves.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> unknown.</div>
+      <div class="tbody">Feed the token with one reading.</div>
+      <div class="verdict ok"><span>Success</span> the label reads unknown, not decreasing, increasing, or stagnating.</div>
+      <div class="verdict bad"><span>Failure</span> the single-reading token gets a real trend label instead of unknown.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The label must match what the underlying readings visibly show; open the readings in the recording, not just the label.</div>
     <div class="gotcha">&quot;Unknown&quot; must not be treated as a pass by the gate downstream — check the hand-off.</div>
@@ -675,13 +882,36 @@
     <ul class="vreach">
       <li>Indirect: verdicts appear in the gate log / candidate view.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Gate log visible; ProofShot recording; three candidates with pinned % and trend.</div>
-    <ul class="vreach">
-      <li><b>Clean pass.</b> 5% decreasing. Log shows pass.</li>
-      <li><b>Over-limit reject.</b> 20% decreasing. Log shows reject, rule &quot;over 15%&quot;.</li>
-      <li><b>Rising reject.</b> 12% increasing. Log shows reject, rule &quot;increasing share&quot;.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Bundler gate works end to end.</div>
+      <div class="tbody">Feed three known candidates — 5% decreasing, 20% decreasing, 12% increasing — through the gate.</div>
+      <div class="verdict ok"><span>Success</span> all three verdicts are correct with full reasons visible in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> an over-limit or increasing candidate passes — the direction of the rule is broken.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> limit.</div>
+      <div class="tbody">Feed 5% decreasing and 20% decreasing.</div>
+      <div class="verdict ok"><span>Success</span> the log shows pass for 5% and reject with rule &quot;over 15%&quot; for 20%.</div>
+      <div class="verdict bad"><span>Failure</span> either verdict is flipped, or the ceiling isn't enforced at 15%.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> direction.</div>
+      <div class="tbody">Feed 12% increasing.</div>
+      <div class="verdict ok"><span>Success</span> the log shows reject with rule &quot;increasing share&quot; even though the % alone sits in the tolerated band.</div>
+      <div class="verdict bad"><span>Failure</span> the increasing candidate passes at any %.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> bundle-reject.</div>
+      <div class="tbody">Check each of the three verdicts just logged.</div>
+      <div class="verdict ok"><span>Success</span> every verdict entry logs %, trend, and the fired rule together.</div>
+      <div class="verdict bad"><span>Failure</span> any verdict is missing %, trend, or rule.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The direction check is the one that drifts (Bobby's example): an increasing share passing at any % is the critical failure — test it first.</div>
     <div class="gotcha">Verdicts need all three of %, trend, rule; a verdict missing one is a logging failure.</div>
@@ -730,12 +960,36 @@
     <ul class="vreach">
       <li>Indirect: a spotted divergence becomes the alert in the UI; the watch state is visible in the trigger view.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Trigger view visible; ProofShot recording; chart replay loaded.</div>
-    <ul class="vreach">
-      <li><b>Known divergence.</b> Replay a chart containing a known OBV divergence. The flag appears with the oscillator named and strength recorded.</li>
-      <li><b>Clean replay.</b> Replay a chart with no divergence. Nothing is flagged.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Divergence watcher works end to end.</div>
+      <div class="tbody">Replay a chart with a known OBV divergence, then a clean chart with no divergence.</div>
+      <div class="verdict ok"><span>Success</span> The known divergence is caught and named; the clean replay stays quiet — both visible in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> The known divergence is missed, or a flat chart produces a signal.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> anchor.</div>
+      <div class="tbody">Replay a chart from a known call-out price and time, and check where the watch starts.</div>
+      <div class="verdict ok"><span>Success</span> the watch's starting price and time match the call-out's price and time exactly.</div>
+      <div class="verdict bad"><span>Failure</span> the watch starts from a different price or time than the call-out.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> detect.</div>
+      <div class="tbody">Replay the chart with the known OBV divergence.</div>
+      <div class="verdict ok"><span>Success</span> the flag names the correct oscillator that diverged, with its strength recorded.</div>
+      <div class="verdict bad"><span>Failure</span> the wrong oscillator is named, or the strength is missing or wrong.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> handoff.</div>
+      <div class="tbody">After the known divergence is detected, check the front-end UI.</div>
+      <div class="verdict ok"><span>Success</span> the detected divergence produces a divergence alert in the UI.</div>
+      <div class="verdict bad"><span>Failure</span> the divergence is detected but no alert ever appears downstream.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The anchor is the call-out price — a divergence measured from the wrong anchor is a false pass; verify the anchor in the recording.</div>
     <div class="gotcha">Deterministic: the same replay must give the same result on a second run.</div>
@@ -784,13 +1038,36 @@
     <ul class="vreach">
       <li>Indirect: the watch state and stop reason appear in the trigger view / log.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Trigger view visible; ProofShot recording; chart replay loaded.</div>
-    <ul class="vreach">
-      <li><b>Distance.</b> Replay a chart running +31% with no divergence. The watch stops; reason &quot;distance&quot;.</li>
-      <li><b>Time.</b> Replay 16 flat candles. The watch stops; reason &quot;time&quot;.</li>
-      <li><b>No resume.</b> Drop the price back after the stop. The watch stays stopped.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Staleness guards works end to end.</div>
+      <div class="tbody">Replay a chart running +31% with no divergence, then replay 16 flat candles.</div>
+      <div class="verdict ok"><span>Success</span> Both replays end the watch with the correct reason, and stopped watches stay stopped — all in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> A watch runs past a guard, stops with the wrong reason, or quietly resumes.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> distance-guard.</div>
+      <div class="tbody">Replay a chart running +31% from the call-out with no divergence.</div>
+      <div class="verdict ok"><span>Success</span> The watch stops with reason &quot;distance&quot;.</div>
+      <div class="verdict bad"><span>Failure</span> The watch keeps running past +30%, or stops with a different reason.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> time-guard.</div>
+      <div class="tbody">Replay 16 flat one-minute candles with no divergence.</div>
+      <div class="verdict ok"><span>Success</span> The watch stops with reason &quot;time&quot; once the 16th candle passes.</div>
+      <div class="verdict bad"><span>Failure</span> The watch keeps running past 15 candles, or stops with a different reason.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> stop-reason.</div>
+      <div class="tbody">After a guard fires, drop the price back to the call-out level.</div>
+      <div class="verdict ok"><span>Success</span> The stop reason (distance or time) stays logged, and the watch stays stopped — it does not resume.</div>
+      <div class="verdict bad"><span>Failure</span> No reason is logged, or the watch resumes tracking after the price drops back.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Candle 15 exactly: the rule is *more than* 15 — pin which side the boundary falls on and test it.</div>
     <div class="gotcha">A stopped-then-resumed watch is the silent failure; always run the no-resume check.</div>
@@ -838,12 +1115,36 @@
     <ul class="vreach">
       <li>The alert card in the front-end UI.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">UI visible at phone width; ProofShot recording; a way to trigger a test divergence end-to-end.</div>
-    <ul class="vreach">
-      <li><b>Fire.</b> Trigger the test divergence. The alert arrives with every field filled, including the pre-filled size.</li>
-      <li><b>Re-fire.</b> Trigger the same divergence again. No second alert appears.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Divergence alert works end to end.</div>
+      <div class="tbody">Trigger the test divergence end-to-end and check the alert that arrives in the UI.</div>
+      <div class="verdict ok"><span>Success</span> One complete alert arrives — coin, oscillator, freshness, size — and never duplicates.</div>
+      <div class="verdict bad"><span>Failure</span> The alert is missing, has empty fields, arrives without a size, or fires twice.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> payload.</div>
+      <div class="tbody">Trigger the test divergence and read the alert card's fields.</div>
+      <div class="verdict ok"><span>Success</span> the alert shows the coin, gate scores, which oscillator diverged, and freshness, all filled in.</div>
+      <div class="verdict bad"><span>Failure</span> any of those fields is missing, blank, or wrong.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> prefill.</div>
+      <div class="tbody">Trigger the test divergence and check the size shown on the alert against the Position manager's fractional Kelly calculation.</div>
+      <div class="verdict ok"><span>Success</span> the size in the payload matches the Kelly size, present without needing a refresh.</div>
+      <div class="verdict bad"><span>Failure</span> the size is missing, wrong, or only shows up after a refresh.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> once.</div>
+      <div class="tbody">Trigger the same divergence a second time.</div>
+      <div class="verdict ok"><span>Success</span> no second alert appears for the same candidate.</div>
+      <div class="verdict bad"><span>Failure</span> a second alert appears for the same candidate.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The size must be present *in the payload* — a size that appears only after a refresh is a wiring failure.</div>
     <div class="gotcha">Freshness must be honest (the divergence's real age), not &quot;just now&quot; forever.</div>
@@ -891,13 +1192,36 @@
     <ul class="vreach">
       <li>The front-end UI's alert list, on the phone.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">UI at 390px width; ProofShot recording; a test alert waiting.</div>
-    <ul class="vreach">
-      <li><b>Read.</b> Open the UI. Every field is readable without zooming or sideways scrolling.</li>
-      <li><b>Stack.</b> Add a second alert. The newer one sits on top.</li>
-      <li><b>Resolve.</b> Resolve an alert. It leaves the active list and appears in the archive.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Alert display works end to end.</div>
+      <div class="tbody">Open the UI on the phone-width screen: the waiting alert card shows the coin, which oscillator diverged, freshness, gate scores, and the pre-filled size.</div>
+      <div class="verdict ok"><span>Success</span> the complete alert card is visible and correct in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> the card is missing, blank, or shows wrong or stale fields.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> glanceable.</div>
+      <div class="tbody">Read the card at 390px without zooming or sideways scrolling.</div>
+      <div class="verdict ok"><span>Success</span> every field fits and is readable at phone width.</div>
+      <div class="verdict bad"><span>Failure</span> any field is cut off, overlapping, or needs zoom or sideways scroll to read.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> stack.</div>
+      <div class="tbody">Add a second alert.</div>
+      <div class="verdict ok"><span>Success</span> the newer alert sits on top of the older one.</div>
+      <div class="verdict bad"><span>Failure</span> the order is wrong, or the list does not update.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> archive.</div>
+      <div class="tbody">Resolve an alert.</div>
+      <div class="verdict ok"><span>Success</span> it leaves the active list and appears in the archive.</div>
+      <div class="verdict bad"><span>Failure</span> it lingers in the active list, or vanishes without reaching the archive.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Phone width is the pass/fail surface — a desktop-pretty card that clips at 390px fails.</div>
     <div class="gotcha">A resolved alert lingering in the active list is a failure, not a cosmetic issue.</div>
@@ -947,14 +1271,43 @@
     <ul class="vreach">
       <li>The BUY button on the alert card, on the phone.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">UI at 390px; ProofShot recording; a test alert present and a Position manager test receiver watching.</div>
-    <ul class="vreach">
-      <li><b>States.</b> With no alert, the button is greyed out; with an alert, it is tappable.</li>
-      <li><b>Tap.</b> Tap once. The receiver gets exactly one buy click carrying the size shown on the card.</li>
-      <li><b>Double-tap.</b> Tap twice fast. Still exactly one buy click.</li>
-      <li><b>Ignore.</b> Dismiss the next alert. The log shows &quot;no trade&quot;.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> BUY button works end to end.</div>
+      <div class="tbody">With a test alert present, tap BUY once.</div>
+      <div class="verdict ok"><span>Success</span> one tap sends one buy click with the shown size to the receiver; ignoring logs cleanly; no double-fires — all recorded.</div>
+      <div class="verdict bad"><span>Failure</span> the button can't be tapped, fires twice, sends a different size than shown, or the click never arrives.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> enabled.</div>
+      <div class="tbody">With no alert present, check the button; then let an alert arrive and check again.</div>
+      <div class="verdict ok"><span>Success</span> the button is greyed out with no alert, and tappable once an alert is present.</div>
+      <div class="verdict bad"><span>Failure</span> the button is tappable with no alert, or stays greyed out once an alert arrives.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> single-fire.</div>
+      <div class="tbody">Tap the button twice fast.</div>
+      <div class="verdict ok"><span>Success</span> the receiver gets exactly one buy click despite the double-tap.</div>
+      <div class="verdict bad"><span>Failure</span> the receiver gets two buy clicks, or the button fires again while the first is in flight.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> exact-size.</div>
+      <div class="tbody">Compare the size shown on the card against the size the receiver got.</div>
+      <div class="verdict ok"><span>Success</span> the buy click carries exactly the size shown on the card.</div>
+      <div class="verdict bad"><span>Failure</span> the size sent differs from the size displayed.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> ignore.</div>
+      <div class="tbody">Dismiss the next alert instead of tapping BUY.</div>
+      <div class="verdict ok"><span>Success</span> the log shows &quot;no trade&quot; for the dismissed alert.</div>
+      <div class="verdict bad"><span>Failure</span> no log entry appears, or a buy click fires anyway.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The size sent must equal the size *displayed* — compare them in the recording, not from logs alone.</div>
     <div class="gotcha">Greyed-out must mean truly inert: a disabled button that still fires is the worst failure here.</div>
@@ -1003,13 +1356,43 @@
     <ul class="vreach">
       <li>The positions view in the front-end UI.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">UI visible; ProofShot recording; a devnet test position running.</div>
-    <ul class="vreach">
-      <li><b>Open position.</b> The view shows the position with its stop and ladder state.</li>
-      <li><b>To 2x.</b> Run it to 2x. The moon bag appears as a separate holding, marked manual-only.</li>
-      <li><b>Close out.</b> Close the rest. The position clears; the moon bag remains in its section.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Positions + moon bag view works end to end.</div>
+      <div class="tbody">Open the positions view with a devnet test position running, run it to 2x, then close the rest.</div>
+      <div class="verdict ok"><span>Success</span> the recording shows the live position, then the separate moon bag that outlives the automation.</div>
+      <div class="verdict bad"><span>Failure</span> the position doesn't appear, the moon bag vanishes after 2x, or something auto-sells the bag.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> live-view.</div>
+      <div class="tbody">Open the positions view with a devnet position running.</div>
+      <div class="verdict ok"><span>Success</span> the view shows the open position with its stop and ladder state.</div>
+      <div class="verdict bad"><span>Failure</span> the position is missing, or the stop/ladder state isn't shown.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> live-update.</div>
+      <div class="tbody">Sit and watch the view through a fill or ladder event without reloading.</div>
+      <div class="verdict ok"><span>Success</span> the view updates on its own as events happen, with no manual refresh.</div>
+      <div class="verdict bad"><span>Failure</span> the view only updates after a manual reload, or misses an event.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> bag-section.</div>
+      <div class="tbody">Run the position to 2x.</div>
+      <div class="verdict ok"><span>Success</span> the moon bag appears as a separate section, marked manual-only.</div>
+      <div class="verdict bad"><span>Failure</span> the bag doesn't appear separately, or isn't marked manual-only.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> flat-clear.</div>
+      <div class="tbody">Close out the rest of the position.</div>
+      <div class="verdict ok"><span>Success</span> the position clears from the view while the moon bag remains in its section.</div>
+      <div class="verdict bad"><span>Failure</span> the position lingers after closing, or the moon bag disappears along with it.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">&quot;Updates live&quot; means without a manual refresh — sit and watch; don't reload between events.</div>
     <div class="gotcha">Anything offering an automatic sell of the bag from this view is an instant failure.</div>
@@ -1058,13 +1441,43 @@
     <ul class="vreach">
       <li>Indirect: the venue shows on each fill in the fill feed.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Fill feed visible; ProofShot recording; test coins per venue plus one unroutable.</div>
-    <ul class="vreach">
-      <li><b>Solana coin.</b> Send a Solana-only test order. The fill report shows venue Solana.</li>
-      <li><b>Robinhood coin.</b> Send a Robinhood Chain test order. The fill report shows venue Robinhood Chain.</li>
-      <li><b>Unroutable.</b> Send a coin listed on neither. The order blocks with the reason shown.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Venue router works end to end.</div>
+      <div class="tbody">Send a Solana-only test order, a Robinhood Chain test order, and a test coin listed on neither.</div>
+      <div class="verdict ok"><span>Success</span> Each order lands on the right chain with the venue named; unroutable coins block visibly.</div>
+      <div class="verdict bad"><span>Failure</span> An order goes to the wrong chain, the venue isn't recorded, or an unroutable coin gets forced through.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> route.</div>
+      <div class="tbody">Send a Solana-only test order and a Robinhood Chain test order.</div>
+      <div class="verdict ok"><span>Success</span> Each order is handed to the chain adapter matching the coin's actual listing.</div>
+      <div class="verdict bad"><span>Failure</span> An order is routed to the wrong chain, or routed by something other than the listing.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> keys.</div>
+      <div class="tbody">Send a test order on each venue and inspect the recording.</div>
+      <div class="verdict ok"><span>Success</span> Each venue's order is signed with that venue's own wallet keys, referenced by secret name only — no raw key appears anywhere in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> The wrong venue's keys are used, or a raw key appears in the recording.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> venue-record.</div>
+      <div class="tbody">Send a Solana-only test order and a Robinhood Chain test order.</div>
+      <div class="verdict ok"><span>Success</span> The fill report for each order names the correct venue.</div>
+      <div class="verdict bad"><span>Failure</span> A fill report is missing the venue, or names the wrong one.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> unroutable.</div>
+      <div class="tbody">Send a coin listed on neither venue.</div>
+      <div class="verdict ok"><span>Success</span> The order blocks with the reason shown.</div>
+      <div class="verdict bad"><span>Failure</span> The order goes through on some venue, or blocks with no reason shown.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The venue must come from the listing, not config preference — force a mismatch in test data and watch it still route correctly.</div>
     <div class="gotcha">Keys must never appear in the recording; secret names only.</div>
@@ -1114,13 +1527,43 @@
     <ul class="vreach">
       <li>The BUY button (user action); the fill feed (proof).</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Devnet; disposable wallet; ProofShot recording; a test alert with a pre-filled size.</div>
-    <ul class="vreach">
-      <li><b>Click.</b> Tap BUY once. The fill feed shows one fill matching the pre-filled size, with price and venue.</li>
-      <li><b>Re-click.</b> Tap again on the same alert. No second entry appears.</li>
-      <li><b>No click.</b> Fire an alert and never tap. The wallet shows no spend.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Entry execution works end to end.</div>
+      <div class="tbody">Tap BUY once on a devnet test alert and check the fill feed.</div>
+      <div class="verdict ok"><span>Success</span> One click produces one on-chain fill matching the pre-filled size; re-clicks do nothing — all recorded.</div>
+      <div class="verdict bad"><span>Failure</span> The click produces no fill, a fill appears without any click, or one click enters twice.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> click-gated.</div>
+      <div class="tbody">Fire a test alert and never tap BUY.</div>
+      <div class="verdict ok"><span>Success</span> the wallet shows no spend and no fill appears while the alert sits untapped.</div>
+      <div class="verdict bad"><span>Failure</span> a fill or a spend appears without any click.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> onchain-fill.</div>
+      <div class="tbody">Tap BUY once and check the fill feed against the chain explorer.</div>
+      <div class="verdict ok"><span>Success</span> the fill is confirmed on-chain in the explorer, matching the pre-filled size, with a real price and venue.</div>
+      <div class="verdict bad"><span>Failure</span> the fill feed shows a fill that isn't confirmed on-chain, or is missing size, price, or venue.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> no-replay.</div>
+      <div class="tbody">Tap BUY again on the same alert.</div>
+      <div class="verdict ok"><span>Success</span> no second entry or fill appears after the re-click.</div>
+      <div class="verdict bad"><span>Failure</span> a second entry appears from the re-click.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> failure-visible.</div>
+      <div class="tbody">Force a transaction that will fail on-chain (for example, an unfunded wallet) and tap BUY.</div>
+      <div class="verdict ok"><span>Success</span> the failure surfaces with the chain's real error.</div>
+      <div class="verdict bad"><span>Failure</span> the failure is silent, or shows a generic message instead of the chain's real error.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">&quot;The alert alone never spends money&quot; is the load-bearing invariant — always run the no-click check, not just the happy path.</div>
     <div class="gotcha">The fill must be confirmed on-chain, not just optimistically reported; check the explorer in the recording.</div>
@@ -1170,13 +1613,43 @@
     <ul class="vreach">
       <li>The exchange's open-orders list (the user-visible system of record).</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Devnet; ProofShot recording; the exchange's open-orders view open.</div>
-    <ul class="vreach">
-      <li><b>Place.</b> Enter a position. The open-orders list shows the stop at entry −30%.</li>
-      <li><b>Cancel by hand.</b> Cancel it manually. It disappears from the exchange.</li>
-      <li><b>Self-cancel.</b> Run a fresh position to 2x. The recording shows the stop vanish with no manual action.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Immediate stop-loss works end to end.</div>
+      <div class="tbody">Enter a position on devnet and check the exchange's open-orders list, then cancel the stop manually on a second position, then run a fresh position to 2x.</div>
+      <div class="verdict ok"><span>Success</span> the stop is visible on the exchange, cancellable by hand, and self-cancels at 2x — every step recorded.</div>
+      <div class="verdict bad"><span>Failure</span> the entry fills but no stop exists on the exchange — no proof of protection beyond the bot's word.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> place.</div>
+      <div class="tbody">Enter a position on devnet.</div>
+      <div class="verdict ok"><span>Success</span> the open-orders list shows the stop placed at entry −30%.</div>
+      <div class="verdict bad"><span>Failure</span> no stop order appears on the exchange, or it's placed at the wrong price.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> inspect.</div>
+      <div class="tbody">Open the exchange's open-orders list after entry.</div>
+      <div class="verdict ok"><span>Success</span> the stop is listed there as a real, inspectable order.</div>
+      <div class="verdict bad"><span>Failure</span> the stop is not visible on the exchange's own list — only the bot's word for it.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> adjust.</div>
+      <div class="tbody">Cancel the stop manually while it's active.</div>
+      <div class="verdict ok"><span>Success</span> it disappears from the exchange the moment it's cancelled.</div>
+      <div class="verdict bad"><span>Failure</span> the cancel has no effect, or the exchange still shows the stop as live.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> self-cancel.</div>
+      <div class="tbody">Run a fresh position to 2x.</div>
+      <div class="verdict ok"><span>Success</span> the recording shows the stop vanish from the exchange with no manual action.</div>
+      <div class="verdict bad"><span>Failure</span> the stop remains active past 2x, or requires manual cancellation.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The bot saying &quot;stop set&quot; is not proof — only the exchange's own list counts (Bobby's rule).</div>
     <div class="gotcha">If placement fails, the position must surface as unprotected immediately — simulate a placement failure and check the alarm.</div>
@@ -1224,13 +1697,36 @@
     <ul class="vreach">
       <li>Indirect: the fill feed and the pending-exit state in the UI.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">ProofShot recording; chart replay driving the tape; an exit order ready.</div>
-    <ul class="vreach">
-      <li><b>Green window.</b> Replay a green-volume window. The exit fills.</li>
-      <li><b>Red window.</b> Replay a red window. No fill prints; the exit shows as pending with its waiting state.</li>
-      <li><b>Recovery.</b> Follow red with green. The pending exit fills.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Sell-into-volume filter works end to end.</div>
+      <div class="tbody">Replay a red window followed by a green window with the exit order ready.</div>
+      <div class="verdict ok"><span>Success</span> The exit fills in the green window and visibly holds through the red one — both in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> A sell prints on a red candle, or a waiting exit vanishes instead of pending.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> volume-check.</div>
+      <div class="tbody">Replay a red window and watch the exit order.</div>
+      <div class="verdict ok"><span>Success</span> The exit does not fill while the tape is red — the check holds it back.</div>
+      <div class="verdict bad"><span>Failure</span> The exit fills against a red or non-qualifying candle.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> green-only.</div>
+      <div class="tbody">Replay a green-volume window.</div>
+      <div class="verdict ok"><span>Success</span> The exit fills exactly on the qualifying green candle.</div>
+      <div class="verdict bad"><span>Failure</span> The exit fills on a non-qualifying candle, or fails to fill on the qualifying one.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> wait-visible.</div>
+      <div class="tbody">Replay a red window and check the pending exit's state.</div>
+      <div class="verdict ok"><span>Success</span> The pending exit visibly shows its waiting state for as long as the tape stays red.</div>
+      <div class="verdict bad"><span>Failure</span> The waiting exit shows no state, or silently cancels instead of showing pending.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">One red-candle fill fails the whole feature — the replay log and the fill's candle must both be visible in the recording.</div>
     <div class="gotcha">A waiting exit that silently cancels instead of pending is a failure.</div>
@@ -1278,13 +1774,36 @@
     <ul class="vreach">
       <li>Indirect: the journal feed and the ladder state in the UI.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Devnet; ProofShot recording; journal feed and ladder state visible.</div>
-    <ul class="vreach">
-      <li><b>Two fills.</b> Execute an entry plus one clip. The journal shows both, with sizes and prices matching the chain.</li>
-      <li><b>Ladder advances.</b> The ladder state reflects both fills.</li>
-      <li><b>No gaps.</b> Compare the chain's fill list against the journal — identical.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Fill reporting works end to end.</div>
+      <div class="tbody">Execute a devnet entry plus one clip and check the journal feed and ladder state.</div>
+      <div class="verdict ok"><span>Success</span> Every on-chain fill appears once in both places, exactly as executed — verifiable in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> A fill executed on-chain is missing from the journal or the ladder — a silent gap.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> one-event.</div>
+      <div class="tbody">Execute the entry plus one clip and count the events for each fill.</div>
+      <div class="verdict ok"><span>Success</span> exactly one event appears per fill — two fills, two events, no duplicates.</div>
+      <div class="verdict bad"><span>Failure</span> a fill produces zero events, or more than one, for the same fill.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> both-consumers.</div>
+      <div class="tbody">Execute the entry plus one clip and check both the journal feed and the Position manager's ladder state.</div>
+      <div class="verdict ok"><span>Success</span> both the journal feed and the ladder state reflect the same two fills.</div>
+      <div class="verdict bad"><span>Failure</span> one consumer shows a fill that the other is missing.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> ack-retry.</div>
+      <div class="tbody">Block one consumer temporarily during a fill, then restore it.</div>
+      <div class="verdict ok"><span>Success</span> the event keeps retrying until the consumer acknowledges, or raises a visible escalation if it never does.</div>
+      <div class="verdict bad"><span>Failure</span> the event is dropped with no retry and no escalation after the consumer is blocked.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">A missed fill corrupts the ladder silently — the chain-vs-journal comparison is the real check, not either view alone.</div>
     <div class="gotcha">Duplicate events are as bad as missing ones; count them.</div>
@@ -1334,13 +1853,43 @@
     <ul class="vreach">
       <li>The pre-filled size on the alert card in the UI.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">ProofShot recording; pinned test inputs (bankroll, win-rate, payoff, fraction); the expected number computed by hand beforehand.</div>
-    <ul class="vreach">
-      <li><b>Known inputs.</b> Fire a test alert. The pre-filled size matches the hand-computed fractional Kelly number.</li>
-      <li><b>Missing inputs.</b> Remove the inputs and fire again. The alert shows &quot;no size — inputs missing&quot;, not a guess.</li>
-      <li><b>Score independence.</b> Fire two alerts with identical inputs but different Grok scores. Identical sizes.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Fractional Kelly sizer works end to end.</div>
+      <div class="tbody">Fire a test alert with the pinned inputs.</div>
+      <div class="verdict ok"><span>Success</span> the alert's pre-filled size equals the hand-computed fractional Kelly number.</div>
+      <div class="verdict bad"><span>Failure</span> the size disagrees with the hand check, or the system invents a size when inputs are missing.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> compute.</div>
+      <div class="tbody">Fire a test alert with the pinned inputs.</div>
+      <div class="verdict ok"><span>Success</span> the fractional Kelly calculation runs at alert time and produces the hand-computed number.</div>
+      <div class="verdict bad"><span>Failure</span> no calculation runs, or the result doesn't match the hand check.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> prefill.</div>
+      <div class="tbody">Check the alert card after firing.</div>
+      <div class="verdict ok"><span>Success</span> the computed size is attached to the alert payload and shows pre-filled — nothing left for Bobby to type.</div>
+      <div class="verdict bad"><span>Failure</span> the alert arrives without a size, or asks Bobby to enter one.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> no-grok.</div>
+      <div class="tbody">Fire two alerts with identical Kelly inputs but different Grok scores.</div>
+      <div class="verdict ok"><span>Success</span> both alerts show identical sizes.</div>
+      <div class="verdict bad"><span>Failure</span> the sizes differ because the Grok score leaked into the calculation.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> missing-inputs.</div>
+      <div class="tbody">Remove the Kelly inputs and fire again.</div>
+      <div class="verdict ok"><span>Success</span> the alert shows &quot;no size — inputs missing&quot;.</div>
+      <div class="verdict bad"><span>Failure</span> the alert shows a guessed or default size instead of the honest empty state.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Compute the expected number before the run — never &quot;verify&quot; against whatever the system produced.</div>
     <div class="gotcha">The score-independence check is the one that proves the ruling; don't skip it because the happy path passed.</div>
@@ -1390,13 +1939,43 @@
     <ul class="vreach">
       <li>Indirect: the withdrawal fill in the fill feed; the stop gone from the exchange's open-orders list.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Devnet position with a known initial capital; ProofShot recording; the exchange's open-orders view open.</div>
-    <ul class="vreach">
-      <li><b>Reach 2x.</b> Run the position to 2x. A withdrawal fill appears equal to the initial capital.</li>
-      <li><b>Stop gone.</b> The open-orders list no longer shows the stop.</li>
-      <li><b>Once only.</b> Push price past 2x, back below, past again. No second withdrawal fires.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> 2x capital recovery works end to end.</div>
+      <div class="tbody">Run a devnet position to 2x and watch the fill feed and the exchange's open-orders list.</div>
+      <div class="verdict ok"><span>Success</span> At 2x the initial is visibly out and the stop is gone from the exchange — both in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> Price crosses 2x and the initial is still in, or the stop is still live on the exchange.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> watch-2x.</div>
+      <div class="tbody">Run the position up toward 2x, watching price the whole way.</div>
+      <div class="verdict ok"><span>Success</span> the withdrawal fires exactly when price crosses the 2x mark, not before or after.</div>
+      <div class="verdict bad"><span>Failure</span> the withdrawal fires early, late, or misses the 2x crossing entirely.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> withdraw.</div>
+      <div class="tbody">Run the position to 2x and check the withdrawal fill.</div>
+      <div class="verdict ok"><span>Success</span> the withdrawal fill equals the initial capital exactly, sold into a green candle with volume.</div>
+      <div class="verdict bad"><span>Failure</span> the withdrawal is more or less than the initial capital, or fills on a red or no-volume candle.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> cancel-stop.</div>
+      <div class="tbody">At the same 2x run, check the exchange's open-orders list.</div>
+      <div class="verdict ok"><span>Success</span> the stop disappears from the open-orders list at the same moment the withdrawal fills.</div>
+      <div class="verdict bad"><span>Failure</span> the stop stays listed after the withdrawal fills, or disappears before the withdrawal actually fills.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> once.</div>
+      <div class="tbody">Push price past 2x, back below, then past again.</div>
+      <div class="verdict ok"><span>Success</span> only one withdrawal fill ever appears, no matter how many times price re-crosses 2x.</div>
+      <div class="verdict bad"><span>Failure</span> a second withdrawal fires on the second crossing.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The withdrawal must equal the *initial*, not a round number near it — compare exactly.</div>
     <div class="gotcha">Until the withdrawal fills, the stop must stay live; cancelling first and failing to sell leaves the position naked.</div>
@@ -1445,13 +2024,43 @@
     <ul class="vreach">
       <li>The moon bag section of the positions view; its manual sell button.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Devnet position past 2x; ProofShot recording; the positions view open.</div>
-    <ul class="vreach">
-      <li><b>Flag.</b> After 2x, the bag appears in the UI, marked manual-only.</li>
-      <li><b>Survives ladder.</b> Run the ladder to completion. The bag is still there, untouched.</li>
-      <li><b>Manual sell.</b> Sell the bag from the UI. It closes, logged as a manual sell.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Moon bag rule works end to end.</div>
+      <div class="tbody">Run a devnet position past 2x with the positions view open, run the ladder to completion, then sell the bag manually from the UI.</div>
+      <div class="verdict ok"><span>Success</span> the bag survives every automatic exit and moves only on the manual sell — all recorded.</div>
+      <div class="verdict bad"><span>Failure</span> an automatic exit sells into the bag, or the bag can't be sold manually.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> flag.</div>
+      <div class="tbody">Run a devnet position past 2x.</div>
+      <div class="verdict ok"><span>Success</span> the bag appears in the UI, marked manual-only, sized at 20% of the remainder.</div>
+      <div class="verdict bad"><span>Failure</span> no bag appears at 2x, or it isn't marked manual-only.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> exclude.</div>
+      <div class="tbody">Run the ladder to completion after the bag is flagged.</div>
+      <div class="verdict ok"><span>Success</span> the bag stays untouched through every clip and stop in the ladder.</div>
+      <div class="verdict bad"><span>Failure</span> any automatic clip or stop sells into the bag.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> manual-home.</div>
+      <div class="tbody">Sell the bag from the UI.</div>
+      <div class="verdict ok"><span>Success</span> the bag is shown marked manual-only, and the manual sell closes it, logged as a manual sell.</div>
+      <div class="verdict bad"><span>Failure</span> the bag isn't shown as manual-only, or the manual sell fails to close it or isn't logged.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> fixed-size.</div>
+      <div class="tbody">Compare the bag's size at flag time against its size after the ladder runs.</div>
+      <div class="verdict ok"><span>Success</span> the bag's size stays exactly what it was at flag time.</div>
+      <div class="verdict bad"><span>Failure</span> the bag's size changes as the ladder runs.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Any automatic path touching the bag is an instant failure — test the full ladder, not just one clip.</div>
     <div class="gotcha">The bag's size is fixed at flag time; a bag that shrinks as the ladder runs is a math bug, not a feature.</div>
@@ -1501,14 +2110,43 @@
     <ul class="vreach">
       <li>Indirect: clip fills in the fill feed; the ladder state in the positions view.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Devnet position past entry with a flagged bag; ProofShot recording; replay of two bearish divergences.</div>
-    <ul class="vreach">
-      <li><b>Two clips.</b> Replay two divergences. Two clip fills appear, each 15–20% of the then-remaining position.</li>
-      <li><b>Green only.</b> Both clips fill on green candles with volume — the candle is visible in the recording.</li>
-      <li><b>Bag intact.</b> After both clips, the moon bag is exactly as flagged.</li>
-      <li><b>Ladder ends.</b> Clip until only the bag remains. No further clips fire.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Divergence clip ladder works end to end.</div>
+      <div class="tbody">Replay two bearish divergences on the position and watch the fill feed and positions view.</div>
+      <div class="verdict ok"><span>Success</span> Both clips fill at the right size into volume; the bag is intact — all in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> A divergence passes with no clip, a clip prints on red, or a clip eats the moon bag.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> clip-trigger.</div>
+      <div class="tbody">Replay a single bearish divergence.</div>
+      <div class="verdict ok"><span>Success</span> exactly one clip fill appears for that one divergence.</div>
+      <div class="verdict bad"><span>Failure</span> no clip fires, or more than one clip fires from a single divergence.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> clip-size.</div>
+      <div class="tbody">Replay two divergences and check each clip's size against the position remaining at that moment, bag excluded.</div>
+      <div class="verdict ok"><span>Success</span> each clip is 15–20% of the remaining position at that moment, with the bag excluded from the math.</div>
+      <div class="verdict bad"><span>Failure</span> a clip falls outside 15–20%, is sized off the original position instead of the remainder, or eats into the bag.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> into-volume.</div>
+      <div class="tbody">Replay a divergence during a red, no-volume window, then let a green candle with volume arrive.</div>
+      <div class="verdict ok"><span>Success</span> the clip only fills once a qualifying green candle with volume shows up, visible in the recording.</div>
+      <div class="verdict bad"><span>Failure</span> the clip fills on a red or no-volume candle.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> ladder-end.</div>
+      <div class="tbody">Clip the position down until only the moon bag remains, then replay another divergence.</div>
+      <div class="verdict ok"><span>Success</span> no further clip fires once only the bag is left.</div>
+      <div class="verdict bad"><span>Failure</span> a clip fires after only the bag remains, eating into it.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">Clip size is of the *remaining* position at that moment, not the original — check the second clip's math against the first clip's remainder.</div>
     <div class="gotcha">A repeated signal on the same divergence must not double-clip.</div>
@@ -1557,13 +2195,43 @@
     <ul class="vreach">
       <li>The journal view in the UI.</li>
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">Devnet; ProofShot recording; one full trade run end to end.</div>
-    <ul class="vreach">
-      <li><b>Full trade.</b> Run one complete trade. The journal shows every step in order: gates, alert, click, fills, ladder.</li>
-      <li><b>No gaps.</b> Cross-check two events against the exchange and the UI — they match.</li>
-      <li><b>Closed record.</b> At flat, the record is sealed and notes any surviving moon bag.</li>
-    </ul>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">1</span> Trade journal works end to end.</div>
+      <div class="tbody">Run one complete devnet trade end to end and read the journal.</div>
+      <div class="verdict ok"><span>Success</span> The complete trade replays from the journal alone, matching reality.</div>
+      <div class="verdict bad"><span>Failure</span> Any event that happened is missing from the record, or the journal disagrees with the exchange.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">2</span> record.</div>
+      <div class="tbody">Run a trade starting from the callout.</div>
+      <div class="verdict ok"><span>Success</span> The journal record opens at the callout and appends each event in the order it happened.</div>
+      <div class="verdict bad"><span>Failure</span> The record opens late, misses an early event, or events appear out of order.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">3</span> one-schema.</div>
+      <div class="tbody">Compare events from different departments in the journal, such as a gate verdict and a fill.</div>
+      <div class="verdict ok"><span>Success</span> Every event, regardless of which department produced it, uses the same event shape and fields.</div>
+      <div class="verdict bad"><span>Failure</span> An event from one department has a different shape than the rest, or is missing expected fields.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">4</span> replay.</div>
+      <div class="tbody">Read the completed trade's journal alone and cross-check two events against the exchange and the UI.</div>
+      <div class="verdict ok"><span>Success</span> The journal shows every step in order with no gaps, matching what the exchange and UI show.</div>
+      <div class="verdict bad"><span>Failure</span> There is a gap in the sequence, or an event in the journal disagrees with the exchange or UI.</div>
+    </div>
+    
+    <div class="tunit">
+      <div class="thead"><span class="tnum">5</span> close.</div>
+      <div class="tbody">Run the position to flat with a moon bag surviving.</div>
+      <div class="verdict ok"><span>Success</span> At flat, the record is sealed and notes the surviving moon bag.</div>
+      <div class="verdict bad"><span>Failure</span> The record isn't sealed at flat, or doesn't note the surviving moon bag.</div>
+    </div>
     <div class="flbl">Gotchas</div>
     <div class="gotcha">The journal is the audit trail of last resort — a single missing event fails the feature, even if everything &quot;worked&quot;.</div>
     <div class="gotcha">Append-only means append-only: no edited or deleted events anywhere in the record.</div>

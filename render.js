@@ -37,16 +37,29 @@ if (fs.existsSync(kitDir)) {
       return `<span class="sub"><b>${esc(m ? m[1] : "")}</b> ${rich(m ? m[2] : s)}</span>`;
     });
     const reach = li(sec(text, "How to get to it (user POV)"));
-    const drive = sec(text, "Driving it with the harness");
-    const afterPre = drive.split(/^Preconditions:\s*$/m)[1] || drive;
-    const firstStep = afterPre.search(/^- \*\*/m);
-    const preText = firstStep >= 0 ? afterPre.slice(0, firstStep) : afterPre;
-    const stepText = firstStep >= 0 ? afterPre.slice(firstStep) : afterPre;
+    const stream = sec(text, "Test stream");
+    const afterPre = stream.split(/^Preconditions:\s*$/m)[1] || stream;
+    const firstUnit = afterPre.search(/^\d+\.\s+\*\*/m);
+    const preText = firstUnit >= 0 ? afterPre.slice(0, firstUnit) : afterPre;
+    const unitText = firstUnit >= 0 ? afterPre.slice(firstUnit) : "";
+    const grab = (u, k) => {
+      const m = u.match(new RegExp(`^[ \\t]*${k}:[ \\t]*(.+)$`, "m"));
+      return m ? m[1].trim() : "";
+    };
+    const units = unitText.split(/^(?=\d+\.\s+\*\*)/m).filter((u) => u.trim()).map((u) => {
+      const head = u.match(/^\d+\.\s+\*\*(.+?)\*\*\.?[ \t]*(.*)/);
+      return {
+        title: head ? head[1].trim() : "",
+        body: head ? head[2].trim() : "",
+        ok: grab(u, "Success"),
+        bad: grab(u, "Failure"),
+      };
+    });
     kit.set(name, {
       subs,
       reach,
       pre: li(preText).map((s) => esc(s)).join(" · "),
-      steps: li(stepText),
+      units,
       gotchas: li(sec(text, "Gotchas")),
     });
   }
@@ -87,11 +100,15 @@ const features = chunks.map((chunk, idx) => {
     <ul class="vreach">
       ${k.reach.map((s) => `<li>${rich(s)}</li>`).join("\n      ")}
     </ul>
-    <div class="flbl">Driving it with the harness</div>
+    <div class="flbl">Test stream</div>
     <div class="pre">${k.pre}</div>
-    <ul class="vreach">
-      ${k.steps.map((s) => `<li>${rich(s)}</li>`).join("\n      ")}
-    </ul>
+    ${k.units.map((u, i) => `
+    <div class="tunit">
+      <div class="thead"><span class="tnum">${i + 1}</span> ${rich(u.title)}</div>
+      ${u.body ? `<div class="tbody">${rich(u.body)}</div>` : ""}
+      <div class="verdict ok"><span>Success</span> ${rich(u.ok)}</div>
+      <div class="verdict bad"><span>Failure</span> ${rich(u.bad)}</div>
+    </div>`).join("\n    ")}
     <div class="flbl">Gotchas</div>
     ${k.gotchas.map((s) => `<div class="gotcha">${rich(s)}</div>`).join("\n    ")}` : "";
   return `

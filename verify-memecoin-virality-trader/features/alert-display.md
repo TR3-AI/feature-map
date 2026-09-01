@@ -12,15 +12,24 @@ The alert card readable at a glance on the phone: coin, oscillator, freshness, s
 
 - The front-end UI's alert list, on the phone.
 
-## Driving it with the harness
+## Test stream
 
 Preconditions:
 
 - UI at 390px width; ProofShot recording; a test alert waiting.
 
-- **Read.** Open the UI. Every field is readable without zooming or sideways scrolling.
-- **Stack.** Add a second alert. The newer one sits on top.
-- **Resolve.** Resolve an alert. It leaves the active list and appears in the archive.
+1. **Alert display works end to end.** Open the UI on the phone-width screen: the waiting alert card shows the coin, which oscillator diverged, freshness, gate scores, and the pre-filled size.
+   Success: the complete alert card is visible and correct in the recording.
+   Failure: the card is missing, blank, or shows wrong or stale fields.
+2. **glanceable.** Read the card at 390px without zooming or sideways scrolling.
+   Success: every field fits and is readable at phone width.
+   Failure: any field is cut off, overlapping, or needs zoom or sideways scroll to read.
+3. **stack.** Add a second alert.
+   Success: the newer alert sits on top of the older one.
+   Failure: the order is wrong, or the list does not update.
+4. **archive.** Resolve an alert.
+   Success: it leaves the active list and appears in the archive.
+   Failure: it lingers in the active list, or vanishes without reaching the archive.
 
 ## Gotchas
 

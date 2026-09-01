@@ -12,15 +12,24 @@ Exits fill only into buy pressure — green candles with real volume, never into
 
 - Indirect: the fill feed and the pending-exit state in the UI.
 
-## Driving it with the harness
+## Test stream
 
 Preconditions:
 
 - ProofShot recording; chart replay driving the tape; an exit order ready.
 
-- **Green window.** Replay a green-volume window. The exit fills.
-- **Red window.** Replay a red window. No fill prints; the exit shows as pending with its waiting state.
-- **Recovery.** Follow red with green. The pending exit fills.
+1. **Sell-into-volume filter works end to end.** Replay a red window followed by a green window with the exit order ready.
+   Success: The exit fills in the green window and visibly holds through the red one — both in the recording.
+   Failure: A sell prints on a red candle, or a waiting exit vanishes instead of pending.
+2. **volume-check.** Replay a red window and watch the exit order.
+   Success: The exit does not fill while the tape is red — the check holds it back.
+   Failure: The exit fills against a red or non-qualifying candle.
+3. **green-only.** Replay a green-volume window.
+   Success: The exit fills exactly on the qualifying green candle.
+   Failure: The exit fills on a non-qualifying candle, or fails to fill on the qualifying one.
+4. **wait-visible.** Replay a red window and check the pending exit's state.
+   Success: The pending exit visibly shows its waiting state for as long as the tape stays red.
+   Failure: The waiting exit shows no state, or silently cancels instead of showing pending.
 
 ## Gotchas
 

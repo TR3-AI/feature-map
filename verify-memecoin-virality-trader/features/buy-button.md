@@ -13,16 +13,27 @@ The only way money moves. One tap sends the buy click to the Position manager ex
 
 - The BUY button on the alert card, on the phone.
 
-## Driving it with the harness
+## Test stream
 
 Preconditions:
 
 - UI at 390px; ProofShot recording; a test alert present and a Position manager test receiver watching.
 
-- **States.** With no alert, the button is greyed out; with an alert, it is tappable.
-- **Tap.** Tap once. The receiver gets exactly one buy click carrying the size shown on the card.
-- **Double-tap.** Tap twice fast. Still exactly one buy click.
-- **Ignore.** Dismiss the next alert. The log shows "no trade".
+1. **BUY button works end to end.** With a test alert present, tap BUY once.
+   Success: one tap sends one buy click with the shown size to the receiver; ignoring logs cleanly; no double-fires — all recorded.
+   Failure: the button can't be tapped, fires twice, sends a different size than shown, or the click never arrives.
+2. **enabled.** With no alert present, check the button; then let an alert arrive and check again.
+   Success: the button is greyed out with no alert, and tappable once an alert is present.
+   Failure: the button is tappable with no alert, or stays greyed out once an alert arrives.
+3. **single-fire.** Tap the button twice fast.
+   Success: the receiver gets exactly one buy click despite the double-tap.
+   Failure: the receiver gets two buy clicks, or the button fires again while the first is in flight.
+4. **exact-size.** Compare the size shown on the card against the size the receiver got.
+   Success: the buy click carries exactly the size shown on the card.
+   Failure: the size sent differs from the size displayed.
+5. **ignore.** Dismiss the next alert instead of tapping BUY.
+   Success: the log shows "no trade" for the dismissed alert.
+   Failure: no log entry appears, or a buy click fires anyway.
 
 ## Gotchas
 

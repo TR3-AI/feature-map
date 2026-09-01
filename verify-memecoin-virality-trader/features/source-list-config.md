@@ -14,16 +14,27 @@ The list of tracked traders/devs — only callouts from these sources produce ca
 - Open the config view in the front-end UI.
 - Edit the list file directly between runs (owner action).
 
-## Driving it with the harness
+## Test stream
 
 Preconditions:
 
 - UI up; ProofShot recording; a test stream with one listed and one unlisted source.
 
-- **View list.** Open the config view. The recording shows Bobby's source list rendered.
-- **Listed source.** Post a test callout from a listed source. A candidate appears in the intake view.
-- **Unlisted source.** Post a test callout from an unlisted source. No candidate appears.
-- **Empty list.** Point the watcher at an empty list and restart. The intake view shows zero candidates and no error storm — a safe stop.
+1. **Source list config works end to end.** Open the config view, then post a test callout from the listed source and one from the unlisted source.
+   Success: The visible list matches what Bobby supplied, and only the listed source's callout produces a candidate — all visible in the recording.
+   Failure: The list can't be displayed, or the unlisted source's callout produces a candidate too.
+2. **list-view.** Open the config view.
+   Success: The recording shows Bobby's source list rendered correctly.
+   Failure: The config view is blank, missing, or shows the wrong list.
+3. **list-filter.** Post a test callout from the listed source, then one from the unlisted source.
+   Success: The listed source's callout produces a candidate in the intake view; the unlisted source's callout produces nothing.
+   Failure: The unlisted source's callout slips a candidate through, or the listed source's callout is blocked.
+4. **list-edit.** Edit the source list to add a new source, post a callout from it without restarting, then restart and post again.
+   Success: The callout posted before the restart produces nothing; the same callout after the restart produces a candidate.
+   Failure: The edit applies before the restart, or still doesn't apply after it.
+5. **list-empty.** Point the watcher at an empty list and restart.
+   Success: The intake view shows zero candidates and no error storm — a safe stop.
+   Failure: The watcher errors out, crashes, or still produces candidates despite the empty list.
 
 ## Gotchas
 

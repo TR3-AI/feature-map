@@ -13,16 +13,27 @@ Each bearish divergence after entry sells a 15–20% clip of the remaining posit
 
 - Indirect: clip fills in the fill feed; the ladder state in the positions view.
 
-## Driving it with the harness
+## Test stream
 
 Preconditions:
 
 - Devnet position past entry with a flagged bag; ProofShot recording; replay of two bearish divergences.
 
-- **Two clips.** Replay two divergences. Two clip fills appear, each 15–20% of the then-remaining position.
-- **Green only.** Both clips fill on green candles with volume — the candle is visible in the recording.
-- **Bag intact.** After both clips, the moon bag is exactly as flagged.
-- **Ladder ends.** Clip until only the bag remains. No further clips fire.
+1. **Divergence clip ladder works end to end.** Replay two bearish divergences on the position and watch the fill feed and positions view.
+   Success: Both clips fill at the right size into volume; the bag is intact — all in the recording.
+   Failure: A divergence passes with no clip, a clip prints on red, or a clip eats the moon bag.
+2. **clip-trigger.** Replay a single bearish divergence.
+   Success: exactly one clip fill appears for that one divergence.
+   Failure: no clip fires, or more than one clip fires from a single divergence.
+3. **clip-size.** Replay two divergences and check each clip's size against the position remaining at that moment, bag excluded.
+   Success: each clip is 15–20% of the remaining position at that moment, with the bag excluded from the math.
+   Failure: a clip falls outside 15–20%, is sized off the original position instead of the remainder, or eats into the bag.
+4. **into-volume.** Replay a divergence during a red, no-volume window, then let a green candle with volume arrive.
+   Success: the clip only fills once a qualifying green candle with volume shows up, visible in the recording.
+   Failure: the clip fills on a red or no-volume candle.
+5. **ladder-end.** Clip the position down until only the moon bag remains, then replay another divergence.
+   Success: no further clip fires once only the bag is left.
+   Failure: a clip fires after only the bag remains, eating into it.
 
 ## Gotchas
 

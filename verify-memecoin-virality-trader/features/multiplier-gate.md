@@ -12,16 +12,24 @@ Gate 1: the coin's tweet must beat its baseline by the age-band multiplier — u
 
 - Indirect: verdicts appear in the gate log / candidate view.
 
-## Driving it with the harness
+## Test stream
 
 Preconditions:
 
 - Gate log visible; ProofShot recording; four test candidates with pinned values.
 
-- **Under 1h pass.** Send 4x at 30 minutes. The log shows pass, band "<1h".
-- **Mid band reject.** Send 4x at 3 hours. The log shows reject, band "1–6h", reason "below 10x".
-- **24h+ pass.** Send 60x at 2 days. The log shows pass, band "24h+".
-- **Dead zone.** Send any multiplier at 12 hours. The log shows reject, reason "outside all bands".
+1. **Age-band multiplier gate works end to end.** Send four known candidates through the gate — 4x at 30 minutes, 4x at 3 hours, 60x at 2 days, any multiplier at 12 hours.
+   Success: the log shows pass, reject, pass, reject — each verdict correct with its band and reason visible in the recording.
+   Failure: any candidate passes or rejects against the band rule, or a verdict appears with no reason attached.
+2. **band-select.** Send candidates at 30 minutes, 3 hours, and 2 days, plus one at 12 hours.
+   Success: the log shows each candidate assigned to the correct age band (<1h, 1–6h, 24h+), and the 12h one flagged outside all bands.
+   Failure: a candidate is assigned to the wrong band.
+3. **band-check.** Send 4x at 30 minutes and 4x at 3 hours.
+   Success: the verdicts match each band's threshold — pass for ≥3x under 1h, reject for below 10x in 1–6h.
+   Failure: a candidate passes or rejects against its band's threshold rule.
+4. **band-reject.** Send 4x at 3 hours and any multiplier at 12 hours.
+   Success: the log records each rejection with its band and the specific reason.
+   Failure: a rejection appears with no reason, or no band recorded.
 
 ## Gotchas
 

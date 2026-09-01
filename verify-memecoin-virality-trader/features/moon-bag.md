@@ -13,15 +13,27 @@ After 2x, 20% of the remaining position is flagged as the moon bag — manual-on
 
 - The moon bag section of the positions view; its manual sell button.
 
-## Driving it with the harness
+## Test stream
 
 Preconditions:
 
 - Devnet position past 2x; ProofShot recording; the positions view open.
 
-- **Flag.** After 2x, the bag appears in the UI, marked manual-only.
-- **Survives ladder.** Run the ladder to completion. The bag is still there, untouched.
-- **Manual sell.** Sell the bag from the UI. It closes, logged as a manual sell.
+1. **Moon bag rule works end to end.** Run a devnet position past 2x with the positions view open, run the ladder to completion, then sell the bag manually from the UI.
+   Success: the bag survives every automatic exit and moves only on the manual sell — all recorded.
+   Failure: an automatic exit sells into the bag, or the bag can't be sold manually.
+2. **flag.** Run a devnet position past 2x.
+   Success: the bag appears in the UI, marked manual-only, sized at 20% of the remainder.
+   Failure: no bag appears at 2x, or it isn't marked manual-only.
+3. **exclude.** Run the ladder to completion after the bag is flagged.
+   Success: the bag stays untouched through every clip and stop in the ladder.
+   Failure: any automatic clip or stop sells into the bag.
+4. **manual-home.** Sell the bag from the UI.
+   Success: the bag is shown marked manual-only, and the manual sell closes it, logged as a manual sell.
+   Failure: the bag isn't shown as manual-only, or the manual sell fails to close it or isn't logged.
+5. **fixed-size.** Compare the bag's size at flag time against its size after the ladder runs.
+   Success: the bag's size stays exactly what it was at flag time.
+   Failure: the bag's size changes as the ladder runs.
 
 ## Gotchas
 

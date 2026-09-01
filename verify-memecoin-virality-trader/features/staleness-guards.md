@@ -12,15 +12,24 @@ Two guards end a stale watch: price +30% from the call-out (distance), or more t
 
 - Indirect: the watch state and stop reason appear in the trigger view / log.
 
-## Driving it with the harness
+## Test stream
 
 Preconditions:
 
 - Trigger view visible; ProofShot recording; chart replay loaded.
 
-- **Distance.** Replay a chart running +31% with no divergence. The watch stops; reason "distance".
-- **Time.** Replay 16 flat candles. The watch stops; reason "time".
-- **No resume.** Drop the price back after the stop. The watch stays stopped.
+1. **Staleness guards works end to end.** Replay a chart running +31% with no divergence, then replay 16 flat candles.
+   Success: Both replays end the watch with the correct reason, and stopped watches stay stopped — all in the recording.
+   Failure: A watch runs past a guard, stops with the wrong reason, or quietly resumes.
+2. **distance-guard.** Replay a chart running +31% from the call-out with no divergence.
+   Success: The watch stops with reason "distance".
+   Failure: The watch keeps running past +30%, or stops with a different reason.
+3. **time-guard.** Replay 16 flat one-minute candles with no divergence.
+   Success: The watch stops with reason "time" once the 16th candle passes.
+   Failure: The watch keeps running past 15 candles, or stops with a different reason.
+4. **stop-reason.** After a guard fires, drop the price back to the call-out level.
+   Success: The stop reason (distance or time) stays logged, and the watch stays stopped — it does not resume.
+   Failure: No reason is logged, or the watch resumes tracking after the price drops back.
 
 ## Gotchas
 

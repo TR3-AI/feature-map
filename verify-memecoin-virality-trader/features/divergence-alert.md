@@ -12,14 +12,24 @@ The payload delivered to the UI when a divergence fires: coin, gate scores, whic
 
 - The alert card in the front-end UI.
 
-## Driving it with the harness
+## Test stream
 
 Preconditions:
 
 - UI visible at phone width; ProofShot recording; a way to trigger a test divergence end-to-end.
 
-- **Fire.** Trigger the test divergence. The alert arrives with every field filled, including the pre-filled size.
-- **Re-fire.** Trigger the same divergence again. No second alert appears.
+1. **Divergence alert works end to end.** Trigger the test divergence end-to-end and check the alert that arrives in the UI.
+   Success: One complete alert arrives — coin, oscillator, freshness, size — and never duplicates.
+   Failure: The alert is missing, has empty fields, arrives without a size, or fires twice.
+2. **payload.** Trigger the test divergence and read the alert card's fields.
+   Success: the alert shows the coin, gate scores, which oscillator diverged, and freshness, all filled in.
+   Failure: any of those fields is missing, blank, or wrong.
+3. **prefill.** Trigger the test divergence and check the size shown on the alert against the Position manager's fractional Kelly calculation.
+   Success: the size in the payload matches the Kelly size, present without needing a refresh.
+   Failure: the size is missing, wrong, or only shows up after a refresh.
+4. **once.** Trigger the same divergence a second time.
+   Success: no second alert appears for the same candidate.
+   Failure: a second alert appears for the same candidate.
 
 ## Gotchas
 
