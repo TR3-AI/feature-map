@@ -1,6 +1,6 @@
 # Trade Journal
 
-One append-only record per trade: every gate verdict, the alert, Bobby's click, every fill, every ladder step — the whole trade replayable from the journal alone.
+One append-only record per trade: every gate verdict, the alert, Bobby's click, every fill, and every ladder step. The whole trade replays from the journal alone.
 
 ## Sub-features
 
@@ -17,13 +17,13 @@ One append-only record per trade: every gate verdict, the alert, Bobby's click, 
 
 The mechanical chain the test stream walks:
 
-1. **Trigger:** any trade state change — gate verdict, click, fill, close.
-2. **Mechanism:** the journal appends an immutable event (monotonic per-trade sequence number, timestamp, type, payload) — event sourcing: current state (open? flat?) is derived by replaying events in order, never read from a mutable record.
+1. **Trigger:** any trade state change, such as a gate verdict, a click, a fill, or a close.
+2. **Mechanism:** the journal appends an immutable event (monotonic per-trade sequence number, timestamp, type, payload). This is event sourcing: current state, open or flat, is derived by replaying events in order, never read from a mutable record.
 3. **Surface:** the full trade reconstructable from the journal alone, matching what the exchange and UI show.
-4. **Breaks:** a dropped write (silent — nothing else fails loudly; only replay against the exchange catches it) · a gap or out-of-order delivery (the monotonic sequence exposes it; a plain timestamp can't under retries or clock skew) · a redelivered close applied twice (must be recognized by the already-sealed record and dropped).
+4. **Breaks:** a dropped write, silent since nothing else fails loudly (only replay against the exchange catches it) · a gap or out-of-order delivery (the monotonic sequence exposes it; a plain timestamp can't under retries or clock skew) · a redelivered close applied twice (must be recognized by the already-sealed record and dropped).
 
-Existence: exists in the requested format — append-only event logs with idempotent replay are a standard, well-documented pattern (event sourcing); nothing about the mechanic needs bot-simulation, only the specific seven-department schema is bespoke to this map.
-Deviations from standard: none — research reinforced the spec. Deduplicating a redelivered closing event by checking for an already-sealed record (rather than trusting "if it arrives, apply it") is exactly the idempotency practice standard event-sourced systems use, and matches this file's redelivery gotcha.
+Existence: exists in the requested format. Append-only event logs with idempotent replay are a standard, well-documented pattern, event sourcing. Nothing about the mechanic needs bot-simulation; only the specific seven-department schema is bespoke to this map.
+Deviations from standard: none. Research reinforced the spec, deduplicating a redelivered closing event by checking for an already-sealed record, rather than trusting "if it arrives, apply it," is exactly the idempotency practice standard event-sourced systems use, and it matches this file's redelivery gotcha.
 
 ## Test stream
 
@@ -38,10 +38,10 @@ Preconditions:
    Success: The journal record opens at the callout and appends each event in the order it happened.
    Failure: The record opens late, misses an early event, or events appear out of order.
 3. **one-schema.** Compare events from different departments in the journal, such as a gate verdict and a fill.
-   Success: Every event, regardless of which department produced it, uses the same event shape and fields — including a monotonic sequence number and a timestamp.
+   Success: Every event, regardless of which department produced it, uses the same event shape and fields, including a monotonic sequence number and a timestamp.
    Failure: An event from one department has a different shape than the rest, is missing expected fields, or its sequence number/timestamp is missing or out of step with its neighbors.
 4. **replay.** Read the completed trade's journal alone and cross-check two events against the exchange and the UI.
-   Success: The journal shows every step in order with no gaps — each event's sequence number follows the last with none skipped — matching what the exchange and UI show.
+   Success: The journal shows every step in order with no gaps. Each event's sequence number follows the last with none skipped, matching what the exchange and UI show.
    Failure: There is a gap or skip in the sequence, or an event in the journal disagrees with the exchange or UI.
 5. **close.** Run the position to flat with a moon bag surviving, then redeliver the same closing fill event a second time (simulating a retried delivery).
    Success: At flat, the record is sealed once and notes the surviving moon bag; the redelivered event does not reopen the record, re-seal it, or add a duplicate closing entry.
@@ -49,8 +49,8 @@ Preconditions:
 
 ## Gotchas
 
-- The journal is the audit trail of last resort — a single missing event fails the feature, even if everything "worked".
+- The journal is the audit trail of last resort. A single missing event fails the feature, even if everything "worked".
 - Append-only means append-only: no edited or deleted events anywhere in the record.
-- A redelivered event that silently produces a second closing entry breaks append-only in spirit even if no existing row was edited — the ledger's tail after redelivery must show exactly one seal, not two.
+- A redelivered event that silently produces a second closing entry breaks append-only in spirit even if no existing row was edited. The ledger's tail after redelivery must show exactly one seal, not two.
 </content>
 <parameter name="i">Write trade journal kit file

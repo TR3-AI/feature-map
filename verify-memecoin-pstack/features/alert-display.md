@@ -18,12 +18,12 @@ The mechanical chain the test stream walks:
 
 1. **Trigger:** an alert payload arrives from Divergence Signal.
 2. **Mechanism:** the UI renders a new card from the payload and pushes it to the top of the active list.
-3. **Surface:** the card is readable at phone width — coin, oscillator, freshness, gate scores, pre-filled size all present.
-4. **Aging:** the freshness label mechanically ticks older as time passes — a frozen "just now" means the data underneath has died (the "ghost quote").
+3. **Surface:** the card is readable at phone width, showing the coin, oscillator, freshness, gate scores, and pre-filled size all at once.
+4. **Aging:** the freshness label mechanically ticks older as time passes. A frozen "just now" means the data underneath has died, the "ghost quote" failure.
 5. **Breaks:** a field empty or clipped at 390px (render bug) · freshness frozen (dead feed behind a live-looking card) · a resolved card lingering in the active list (archive broken).
 
-Existence: a standard UI pattern — nothing to simulate; all units run against the real UI.
-Deviations from standard: none — research reinforced the spec (freshness honesty is already a spec behaviour).
+Existence: a standard UI pattern. Nothing to simulate; all units run against the real UI.
+Deviations from standard: none. Research reinforced the spec; freshness honesty is already a spec behaviour.
 
 ## Test stream
 
@@ -33,7 +33,7 @@ Preconditions:
 
 1. **Alert Display works end to end.** Open the UI on the phone-width screen: the waiting alert card shows the coin, which oscillator diverged, freshness, gate scores, and the pre-filled size. Let time pass (or use the pre-aged alert) and re-check the freshness readout.
    Success: the complete alert card is visible and correct in the recording, and the freshness readout visibly ages rather than staying frozen at "just now."
-   Failure: the card is missing, blank, shows wrong fields, or the freshness readout looks fresher than the alert actually is (stuck or frozen age) — a stale alert masquerading as live.
+   Failure: the card is missing, blank, shows wrong fields, or the freshness readout looks fresher than the alert actually is (stuck or frozen age), a stale alert masquerading as live.
 2. **glanceable.** Read the card at 390px without zooming or sideways scrolling, including whether the gate scores and oscillator signal are readable without relying on color alone.
    Success: every field fits, is readable at phone width, and score/signal meaning is legible from text or icon, not color alone.
    Failure: any field is cut off, overlapping, needs zoom or sideways scroll to read, or a score/signal is only distinguishable by color.
@@ -46,6 +46,6 @@ Preconditions:
 
 ## Gotchas
 
-- Phone width is the pass/fail surface — a desktop-pretty card that clips at 390px fails.
+- Phone width is the pass/fail surface. A desktop-pretty card that clips at 390px fails.
 - A resolved alert lingering in the active list is a failure, not a cosmetic issue.
-- A freshness readout that stops updating while the card still renders as if live is the classic "ghost quote" failure — check it by letting time actually pass, not just that a freshness field is present at open.
+- A freshness readout that stops updating while the card still renders as if live is the classic "ghost quote" failure. Check it by letting time actually pass; a freshness field merely being present at open is not enough.

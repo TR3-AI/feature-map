@@ -1,6 +1,6 @@
 # Divergence Alert
 
-The payload delivered to the Trader Console when a divergence fires: coin, gate scores, which oscillator diverged, freshness — and the fractional Kelly size pre-filled. Once per candidate, never twice.
+The payload delivered to the Trader Console when a divergence fires: coin, gate scores, which oscillator diverged, freshness, and the fractional Kelly size pre-filled. Once per candidate, never twice.
 
 ## Sub-features
 
@@ -16,13 +16,13 @@ The payload delivered to the Trader Console when a divergence fires: coin, gate 
 
 The mechanical chain the test stream walks:
 
-1. **Trigger:** a candidate passes the gates with a divergence event — one alert payload is assembled with everything pre-attached: coin, gate scores, which oscillator diverged, freshness, pre-filled size.
-2. **Mechanism:** the emitter fingerprints the alert on stable identity fields only — the candidate — and fires once; freshness and timestamp never enter the key.
-3. **Surface:** exactly one complete card per candidate in the alert list — nothing fills in lazily after the card renders.
-4. **Breaks:** a re-trigger differing only by freshness produces a duplicate card (a volatile field leaked into the fingerprint — the classic duplicate-storm cause that trains users to ignore the channel) · a card arriving incomplete and back-filling later.
+1. **Trigger:** a candidate passes the gates with a divergence event. One alert payload is assembled with everything pre-attached: coin, gate scores, which oscillator diverged, freshness, pre-filled size.
+2. **Mechanism:** the emitter fingerprints the alert on one stable identity field, the candidate, and fires once; freshness and timestamp never enter the key.
+3. **Surface:** exactly one complete card per candidate in the alert list. Nothing fills in lazily after the card renders.
+4. **Breaks:** a re-trigger differing only by freshness produces a duplicate card (a volatile field leaked into the fingerprint, the classic duplicate-storm cause that trains users to ignore the channel) · a card arriving incomplete and back-filling later.
 
-Existence: a standard event/payload-assembly pattern — no simulation needed; the part actually worth testing is the dedup key design, since "once per candidate" only holds if freshness/timestamp never enters the fingerprint.
-Deviations from standard: none — the map's rule that identity is the candidate alone, never freshness, matches standard alert-dedup practice and reinforces the file's existing gotcha on the same point.
+Existence: a standard event/payload-assembly pattern. No simulation needed; the part actually worth testing is the dedup key design, since "once per candidate" only holds if freshness/timestamp never enters the fingerprint.
+Deviations from standard: none. The map's rule that identity is the candidate alone, never freshness, matches standard alert-dedup practice and reinforces the file's existing gotcha on the same point.
 
 ## Test stream
 
@@ -31,7 +31,7 @@ Preconditions:
 - Trader Console visible at phone width; ProofShot recording; a way to trigger a test divergence end-to-end.
 
 1. **Divergence Alert works end to end.** Trigger the test divergence end-to-end and check the alert that arrives in the Trader Console.
-   Success: One complete alert arrives — coin, oscillator, freshness, size — and never duplicates.
+   Success: One complete alert arrives with coin, oscillator, freshness, and size, and it never duplicates.
    Failure: The alert is missing, has empty fields, arrives without a size, or fires twice.
 2. **payload.** Trigger the test divergence and read the alert card's fields.
    Success: the alert shows the coin, gate scores, which oscillator diverged, and freshness, all filled in.
@@ -45,7 +45,6 @@ Preconditions:
 
 ## Gotchas
 
-- The size must be present *in the payload* — a size that appears only after a refresh is a wiring failure.
+- The size must be present *in the payload*. A size that appears only after a refresh is a wiring failure.
 - Freshness must be honest (the divergence's real age), not "just now" forever.
-- Freshness/age must never be part of what makes an alert "new" — identity for dedup is the candidate alone; a payload whose only change is an updated freshness value is still the same alert, not a second one.
-- The pre-filled size now comes from the Fractional Kelly Sizer inside Position & Exit Ladder, not the old "Position manager" department — the alert mechanics themselves are unchanged, only the source department's name.
+- Freshness/age must never be part of what makes an alert "new". Identity for dedup is the candidate alone; a payload whose only change is an updated freshness value is still the same alert, not a second one.
