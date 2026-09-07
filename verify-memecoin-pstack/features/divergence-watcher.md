@@ -22,7 +22,7 @@ The mechanical chain the test stream walks:
 4. **Breaks:** repainting, a flag that appears mid-formation then shifts or vanishes once the candle closes · hidden divergence (a continuation signal during a pullback) mistaken for the regular case, the opposite-meaning signal.
 
 Existence: bot-simulated. Divergence detection isn't a vendor-provided chart-feed feature; it's computed candle by candle from the pinned chart provider's OHLC + OBV/RSI, which is exactly why the confirmed-vs-repainting distinction has to be built and verified deliberately rather than trusted from an off-the-shelf indicator.
-Deviations from standard: none. The map's "regular divergence only, confirmed on closed candles" spec matches standard TA practice and reinforces the file's existing repainting and regular-vs-hidden gotchas.
+Deviations from standard: the detection mechanics match standard TA practice. Regular divergence only, confirmed on closed candles, reinforcing the repainting and regular-vs-hidden gotchas below. The entry use deviates. The map fires on a single-oscillator divergence as the sole raw entry trigger on 1-minute candles, with chart patterns parked, whereas standard TA treats raw standalone divergence as low-reliability and pairs it with a confirmation trigger and higher (1-hour or longer) timeframes. This is a deliberate MVP choice, since the idea parks descending-triangle and pennant confirmation as a future upgrade, so the stream tests the raw entry as specified, never a filtered one.
 
 ## Test stream
 
@@ -49,3 +49,4 @@ Preconditions:
 - Deterministic: the same replay must give the same result on a second run.
 - Divergence built on an unconfirmed (still-forming) pivot candle can repaint. The flag appears, then silently vanishes or changes once the candle closes; that's a distinct failure mode from run-to-run drift, and the replay-twice check alone doesn't catch it.
 - This is "regular" divergence (price extreme not confirmed by the oscillator) in standard TA terms, not "hidden" divergence (a continuation signal that reads the opposite way). Confirm test fixtures use the regular case the spec calls for.
+- Research note: standard TA treats raw, standalone divergence, especially on sub-hour timeframes, as a low-reliability reversal signal and pairs it with confirmation and higher timeframes. The map deliberately uses a single-oscillator divergence as the sole entry on 1-minute candles, with chart patterns parked. Tester action: test the raw single-oscillator entry exactly as specified. Do not add a confirmation filter or a higher-timeframe requirement, and never grade a real raw-divergence entry as a miss for lacking them.
