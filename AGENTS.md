@@ -1,6 +1,6 @@
 # AGENTS.md — binding rules for any agent working in this repo
 
-This repo runs **feature map**: stage 2 of Idea Slicer. `maps/<slug>.md` files are the source of truth; the HTML pages are rendered from them by an agent (no robot here). Site: https://tr3-ai.github.io/feature-map/. Everything below is mandatory.
+This repo runs **feature map** — its own skill that works together with Idea Slicer (one of its input formats, alongside pasted PRDs, plans, SDDs, and repository links). It is not a stage or part of Idea Slicer; they are two different skills that connect. `maps/<slug>.md` files are the source of truth; the HTML pages are rendered from them by an agent (no robot here). Site: https://tr3-ai.github.io/feature-map/. Everything below is mandatory.
 
 ## Layout
 
@@ -21,8 +21,8 @@ A feature map born from an Idea Slicer map tracks it (`maps/<slug>.md` in `TR3-A
 1. **Smallest useful feature.** Break features down as small as possible without reducing them so much they stop being features. A portion is still a feature when it does one observable thing for a user or another feature. If splitting removes anything observable, stop.
 2. **Anti-over-split.** If two candidate portions can never be triggered, failed, or verified independently, they are one feature.
 3. **Three aspects per feature, always.** The feature (what it is + smallest build steps) · the behaviour (states, what can happen to it, variants) · the lifecycle (every trigger point → progression → every end state).
-4. **Verification from the user's endpoint, performed by the tester agent.** Checkpoints start at the user surface ("can the button be clicked?") and end at visible proof on a system the user can see (the exchange's open-orders list). The **tester agent** performs every step — never Bobby — inside a **ProofShot** recording session, so the evidence is video/screenshots Bobby can witness. Never backend tests, never a reported "done".
-5. **Success and failure parameters, always.** Success = visible proof it works. Failure = the observable gap that proves it does not (click registers, nothing reaches the exchange).
+4. **Verification from the user's endpoint, performed by the tester agent.** Checkpoints start at the user surface ("can the button be clicked?") and end at visible proof on a system the user can see (the real target system's own visible state — e.g. an exchange's open-orders list, a shop's order history, a dashboard's live number). The **tester agent** performs every step — never Bobby — inside a **ProofShot** recording session, so the evidence is video/screenshots Bobby can witness. Never backend tests, never a reported "done".
+5. **Success and failure parameters, always.** Success = visible proof it works. Failure = the observable gap that proves it does not (the click registers, but nothing reaches the target system).
 6. **No user-visible checkpoint? Flag it, don't skip it.** Name the surface where proof would appear and mark it as needing a user-endpoint view.
 7. **Mobile is the primary screen.** No visual change is done until verified at ~390px as well as desktop.
 8. **Contradictions stop the line.** If the source idea map conflicts (thresholds, directions), quote both sides and ask Bobby — never map over a conflict.
@@ -33,15 +33,9 @@ A feature map born from an Idea Slicer map tracks it (`maps/<slug>.md` in `TR3-A
 
 12. **Rules for rules (the meta-rule).** A new rule is not a rule until it is enforceable by any agent on any model. In the same turn it is decided: (1) written into EVERY synced copy — the skill's SKILL.md, the profile copies (5, him, moon — checksums must match), this AGENTS.md, and rulebook.html; (2) written as an enforceable instruction — imperative, specific, observable outcome — never a bare principle; (3) given a mechanical check where one can exist (a format the renderer parses, a grep-able page element); (4) verified active before the turn ends — profiles synced, repo pushed, live page greps pass. Models inherit rules only through these files; a rule in only some copies, or one no agent can check, does not exist.
 
-13. **P-stack below governs every map — and it is enforceable.** A Feature Map output is only done when it was generated under these principles and skills; an output that ignores them fails the run. Copied like-for-like from pstack v0.14.8 (`github.com/cursor/plugins/tree/main/pstack`) — full content, no excerpts. Do NOT run `/poteto-mode Feature` while writing the map: one feature file = behaviors + proof — execution comes later. Feature Map is not "part two" of Idea Slicer — they are two different skills that work together: Feature Map takes PRDs and SDDs as input, and another input format it accepts is an Idea Slicer link.
+13. **P-stack below governs every map — and it is enforceable.** A Feature Map output is only done when it was generated under these principles and skills; an output that ignores them fails the run. Copied character-for-character from pstack v0.14.8 (`github.com/cursor/plugins/tree/main/pstack`) — the full bodies, frontmatter omitted. Do NOT run `/poteto-mode Feature` while writing the map: one feature file = behaviors + proof — execution comes later. Feature Map is not "part two" of Idea Slicer — they are two different skills that work together: Feature Map takes PRDs and SDDs as input, and another input format it accepts is an Idea Slicer link.
 
 ## P-stack principles (governing every map)
-
----
-name: principle-experience-first
-description: "Apply when product, UX, or feature-scope tradeoffs come up. Choose user delight over implementation convenience; ship fewer polished features over more rough ones."
-disable-model-invocation: true
----
 
 # Experience First
 
@@ -57,12 +51,6 @@ The user is whoever consumes the work. For a UI that is the end user. For a libr
 
 Foundations should serve the experience, not the other way around. Foundational thinking governs the *sequence* of work; this principle governs the *target*.
 
----
-
----
-name: principle-prove-it-works
-description: "Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.'"
-disable-model-invocation: true
 ---
 
 # Prove It Works
@@ -95,12 +83,6 @@ Keep the artifact visible for the human. Commit it only for large or complex wor
 
 ---
 
----
-name: principle-model-the-domain
-description: "Apply when writing stateful logic, or when code branches a lot or repeats a shape assumption across files. Encode the domain in a structure instead of scattered conditionals."
-disable-model-invocation: true
----
-
 # Model the Domain
 
 Encode the real domain in a data structure instead of scattering it across conditionals.
@@ -124,12 +106,6 @@ The tell that you skipped this is a new feature that grows an existing if/else c
 
 ---
 
----
-name: principle-minimize-reader-load
-description: "Apply when reviewing or shaping code that's hard to trace. Count layers between question and answer, and hidden state in the reader's head; collapse one-caller wrappers and shrink mutable scope."
-disable-model-invocation: true
----
-
 # Minimize Reader Load
 
 Maintainability is the work a reader must do to understand code. Track two axes:
@@ -150,11 +126,6 @@ Maintainability is the work a reader must do to understand code. Track two axes:
 
 ---
 
----
-name: principle-build-the-lever
-description: "Apply to any non-trivial work, not just bulk work: edits, migrations, analyses, checks. Build the tool that does it or proves it (codemod, script, generator, or a skill your subagents follow) instead of working by hand. The tool is the artifact a reviewer can rerun."
-disable-model-invocation: true
----
 # Build the Lever
 
 When the work isn't trivial, build the tool that does it instead of doing it by hand.
@@ -176,12 +147,6 @@ Distinct from [Encode Lessons in Structure](../principle-encode-lessons-in-struc
 
 ---
 
----
-name: principle-make-operations-idempotent
-description: "Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs."
-disable-model-invocation: true
----
-
 # Make Operations Idempotent
 
 Design operations so they converge to the correct state regardless of how many times they run or where they start from. Every state-mutating operation should answer: "What happens if this runs twice? What happens if the previous run crashed halfway?"
@@ -201,12 +166,6 @@ Design operations so they converge to the correct state regardless of how many t
 
 If any answer is "it depends on what state was left behind," the operation needs a reconciliation step.
 
----
-
----
-name: principle-boundary-discipline
-description: "Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions."
-disable-model-invocation: true
 ---
 
 # Boundary Discipline
@@ -240,12 +199,6 @@ Code organization:
 
 ---
 
----
-name: principle-laziness-protocol
-description: "Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem."
-disable-model-invocation: true
----
-
 # Laziness Protocol
 
 Writing code is cheap for you, which makes over-engineering easy. Counter it by borrowing a human maintainer's fatigue. Aim for the most result with the least code and complexity.
@@ -262,12 +215,6 @@ Writing code is cheap for you, which makes over-engineering easy. Counter it by 
 ---
 
 ## P-stack skills (governing every map)
-
----
-name: technical-writing
-description: "Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages."
-disable-model-invocation: true
----
 
 # Technical writing
 
@@ -396,12 +343,6 @@ Apply to any prose this skill covers. Item 1 applies only to document sets:
 
 ---
 
----
-name: unslop
-description: Cut AI tells from any writing. Must always apply.
-disable-model-invocation: true
----
-
 # Unslop
 
 Edit text to remove AI patterns and add human voice.
@@ -480,12 +421,6 @@ Removing patterns is half the job. Sterile, voiceless writing is just as obvious
 
 ---
 
----
-name: create-verification-skill
-description: "Generate a project-local verification skill that drives your app the way a user does — any language, framework, or platform. Use for /create-verification-skill, \"make a control skill for this repo\", or when a project has no scripted way to prove UI/CLI/service behavior."
-disable-model-invocation: true
----
-
 # Create a verification skill
 
 Every serious project needs a scripted way to drive the real app and prove behavior: launch it, exercise a feature the way a user would, and capture evidence. This skill generates that as a project-local skill (`.cursor/skills/verify-<app>/`) tailored to the repo. You write the generator's output for the next agent, not for a human: it will be read cold, mid-task, by an agent that has never seen the app.
@@ -527,12 +462,6 @@ Point the user at `/maintain-verification-skill` for keeping the map honest as t
 
 ---
 
----
-name: maintain-verification-skill
-description: "Periodic pass that keeps a project's verification skill and feature map honest: parallel source readers per feature, one live session driving every feature, at most one PR of proven corrections. Use for /maintain-verification-skill or \"audit the verify skill\"."
-disable-model-invocation: true
----
-
 # Maintain a verification skill
 
 A feature map rots the moment the app changes. This skill is the upkeep loop for a skill generated by `/create-verification-skill` (or any project-local verification skill with a feature map). The unit of rigor is the feature, not every sentence: cover every feature file from source and exercise every feature live, without terminalising every bullet.
@@ -567,12 +496,6 @@ Only edit the verification skill's own directory (its SKILL.md, features/, and a
 
 Keep concise run notes (features covered, unreachable prerequisites, confirmed drift, outcome) in a scratch location; don't commit them.
 
----
-
----
-name: how
-description: "Use for \"how does X work\", code walkthroughs before changing something, and placement / ownership / layering questions (\"where should this live\", \"which package owns this\", \"is this the right layer\"). Explains subsystem architecture, runtime flow, onboarding mental models. Can critique architecture. Use why for motivation."
-disable-model-invocation: true
 ---
 
 # How
