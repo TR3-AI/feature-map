@@ -1626,16 +1626,16 @@
     <div class="fhead"><span class="fnum">F15</span><h3>Immediate Stop-Loss</h3><span class="fdept">Trade Execution</span></div>
     <div class="fsec"><div class="flbl">The feature</div>
       <ol class="fsteps">
-        <li>Placement of the 30% stop-loss order on the exchange at the exact moment of entry. The automation starts here.</li>
-        <li>The stop lives on the exchange as a real, inspectable order, not just a note in the bot.</li>
+        <li>A 30% stop-loss armed at the exact moment of entry. The automation starts here.</li>
+        <li>The stop is enforceable, not just a note in the bot. On a venue with native stop orders (the Robinhood Chain perps venue, Lighter, has reduce-only SL/TP) it rests on the venue's own engine, inspectable and firing independent of the bot; on a Solana memecoin spot venue (pump.fun / PumpSwap) it is a bot-armed trigger that fires a market sell on breach.</li>
         <li>While active it can be cancelled or adjusted (front end or back end).</li>
         <li>It cancels itself automatically when the 2x rule fires.</li>
       </ol>
     </div>
     <div class="fsec"><div class="flbl">Sub-features</div>
       <div class="subs">
-        <span class="sub"><b>place</b> puts the stop on the exchange at entry −30% at entry time.</span>
-        <span class="sub"><b>inspect</b> shows it on the exchange's open-orders list.</span>
+        <span class="sub"><b>place</b> arms the stop at entry −30% at entry time (a native venue order, or a bot-held trigger).</span>
+        <span class="sub"><b>inspect</b> shows it on the venue's own surface: the open-orders list on a native-stop venue, or the armed trigger plus the on-chain sell that fires on a Solana spot venue.</span>
         <span class="sub"><b>adjust</b> supports manual cancel / price change while active.</span>
         <span class="sub"><b>self-cancel</b> removes it automatically when 2x fires.</span>
       </div>
@@ -1644,14 +1644,14 @@
       <ul class="fbeh">
         <li>If the stop placement fails, the position is treated as unprotected and the failure is surfaced immediately.</li>
         <li>The stop's price is always entry −30%; adjustments are deliberate actions, logged.</li>
-        <li>Market vs limit behaviour is pinned in the executor contract (a limit stop needs a trigger price).</li>
+        <li>The stop mechanism is pinned per venue in the executor contract: a native venue stop order (market or limit, where a limit stop needs a trigger price) where the venue offers one, otherwise a bot-armed market sell. The source pins only Solana and Robinhood Chain adapters, so the exact order type and the user-proof surface are PRE-BUILD.</li>
       </ul>
     </div>
     <div class="fsec"><div class="flbl">Lifecycle</div>
       <div class="fvflow">
       <div class="fvstep trig"><span class="tag">trigger</span> The entry fill confirms (bot path), or a manual placement happens via the UI/API (manual path): two trigger points.</div>
-      <div class="fvstep"><span class="tag">step 2</span> The stop order is placed on the exchange at entry −30%.</div>
-      <div class="fvstep"><span class="tag">step 3</span> It sits live: cancellable, adjustable, inspectable.</div>
+      <div class="fvstep"><span class="tag">step 2</span> The stop is armed at entry −30% on the routed venue (a native venue order, or a bot-armed trigger).</div>
+      <div class="fvstep"><span class="tag">step 3</span> It stays armed: cancellable, adjustable, and provable on the routed venue's own surface.</div>
       <div class="fvstep end"><span class="tag">end</span> Hit (position sold), cancelled at 2x, or placement failed (alerted): three end states.</div>
       </div>
     </div>
@@ -1662,46 +1662,46 @@
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
-      <li>The exchange's open-orders list (the user-visible system of record).</li>
+      <li>The venue's own system of record: an open-orders list where the venue has native stops (Robinhood Chain perps, Lighter); on a Solana spot venue, the bot's armed-trigger view plus the on-chain sell that fires.</li>
     </ul>
     <div class="flbl">How it works in practice (external research)</div>
     <ul class="vreach">
-      <li><b>Trigger:</b> an entry fills. The bot places a real stop order on the exchange's own engine at entry −30%.</li>
-      <li><b>Mechanism:</b> price touches the trigger → the exchange converts it (stop-market: fill guaranteed, price not; stop-limit: price guaranteed, fill not, so it can partial-fill or miss in thin markets), firing independent of any bot's uptime.</li>
-      <li><b>Surface:</b> the stop sitting inspectably in the exchange's open-orders list, then the fill/closed position on the exchange's record.</li>
-      <li><b>Breaks:</b> slippage on the triggered fill in a fast or thin market (the gap from trigger price is the accepted cost of a guaranteed exit, not a bug) · an edit losing the cancel-and-replace race when the trigger fires mid-conversion · a bot-simulated stop silently unarmed during an outage: the exact reason the spec is exchange-native.</li>
-      <li>Existence: real, exchange-native stop orders sit on the exchange's own matching engine and fire independent of any bot's uptime; bot-simulated (&quot;virtual&quot;) stops are just a price the bot watches locally and convert to a market order only if the bot is alive and connected when the price crosses. An outage or dropped connection leaves the position silently unprotected even though the bot's own state says a stop is active.</li>
-      <li>Deviations from standard: none. Research reinforced the spec: placing the stop as a real, inspectable exchange order, rather than a bot-side watcher, is exactly what real trading-bot practice favors for reliability, since it survives bot downtime that would otherwise leave a bot-simulated stop unarmed.</li>
+      <li><b>Trigger:</b> an entry fills. The bot arms the 30% stop at entry −30% on the routed venue: a native stop order on the venue's own engine where one exists, otherwise a bot-held trigger.</li>
+      <li><b>Mechanism:</b> on a native-stop venue (Lighter perps on Robinhood Chain supports reduce-only SL/TP), price touches the trigger and the venue's engine converts it (stop-market: fill guaranteed, price not; stop-limit: price guaranteed, fill not, so it can partial-fill or miss in thin markets), firing independent of any bot's uptime. On a Solana memecoin spot venue there is no bot-placeable resting stop: pump.fun's native stop-loss is an app feature with no public API, and AMM spot (PumpSwap) has no resting-order engine, so the bot watches price and submits a market sell/swap on breach, which depends on the bot being alive and connected.</li>
+      <li><b>Surface:</b> on a native-stop venue, the stop sitting inspectably in the open-orders list, then the fill and closed position on the venue's record; on a Solana spot venue, the bot's armed trigger and then the on-chain market-sell that closes the position.</li>
+      <li><b>Breaks:</b> slippage on the triggered fill in a fast or thin market (the gap from trigger price is the accepted cost of a guaranteed exit, not a bug) · an edit losing the cancel-and-replace race when the trigger fires mid-conversion · a bot-armed stop silently unarmed during an outage, which is exactly why a native venue stop is preferred wherever the venue offers one, and why the Solana spot fallback needs a liveness guard.</li>
+      <li>Existence: venue-dependent, and the source pins only Solana and Robinhood Chain adapters, no order venue. Exchange-native resting stops that fire independent of the bot and sit inspectably on an open-orders list are real on order-book / perps venues: Lighter on Robinhood Chain offers native SL/TP, automatically reduce-only, with an open-orders and positions view. They are NOT established on the Solana memecoin spot path the idea centers on: pump.fun added an app-level stop-loss but exposes no official public data/trading API, and AMM spot (PumpSwap, post-graduation) has no resting-order engine, so a bot there falls back to a locally-watched trigger that fires a market swap and is only as reliable as the bot's uptime.</li>
+      <li>Deviations from standard: the spec (and this file's original wording) asserted a universal exchange-native resting stop inspectable on an open-orders list, firing independent of the bot. That holds on the Robinhood Chain perps venue (Lighter) but NOT on the Solana memecoin spot venue the idea centers on, where the stop is a bot-armed trigger plus a market sell with no on-chain open-orders list. The exact per-venue stop protocol and the user-proof surface are PRE-BUILD until the executor venue is pinned.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">Devnet; ProofShot recording; the exchange's open-orders view open.</div>
+    <div class="pre">Devnet; ProofShot recording; the routed venue's own proof surface open (the open-orders list on a native-stop venue, or the bot's armed-trigger view plus the on-chain sell feed on a Solana spot venue).</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Immediate Stop-Loss works end to end.</div>
-      <div class="tbody">Enter a position on devnet and check the exchange's open-orders list, then cancel the stop manually on a second position, then run a third position down through the stop's trigger price to confirm it actually fills and closes the position, then run a fourth position to 2x.</div>
-      <div class="verdict ok"><span>Success</span> the stop is visible on the exchange, cancellable by hand, actually fills and closes the position when the trigger price is hit (fill price and any slippage from the trigger visible in the recording), and self-cancels at 2x, every step recorded.</div>
-      <div class="verdict bad"><span>Failure</span> the entry fills but no stop exists on the exchange, the stop triggers but leaves the position open (no fill or only a partial fill) with no alert, or the 2x self-cancel never fires.</div>
+      <div class="tbody">Enter a position on devnet and check the routed venue's own proof surface, then cancel the stop manually on a second position, then run a third position down through the trigger price to confirm it actually fills and closes the position, then run a fourth position to 2x.</div>
+      <div class="verdict ok"><span>Success</span> the stop is provable on the venue's own surface (a native resting order on the open-orders list, or the bot's armed trigger), cancellable by hand, actually fills and closes the position when the trigger price is hit (fill price and any slippage from the trigger visible in the recording), and self-cancels at 2x, every step recorded.</div>
+      <div class="verdict bad"><span>Failure</span> the entry fills but no enforceable stop exists (no native resting order and no armed trigger), the stop triggers but leaves the position open (no fill or only a partial fill) with no alert, or the 2x self-cancel never fires.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> place.</div>
       <div class="tbody">Enter a position on devnet.</div>
-      <div class="verdict ok"><span>Success</span> the open-orders list shows the stop placed at entry −30%.</div>
-      <div class="verdict bad"><span>Failure</span> no stop order appears on the exchange, or it's placed at the wrong price.</div>
+      <div class="verdict ok"><span>Success</span> the venue's own surface shows the stop armed at entry −30% (a native resting order, or the bot's armed trigger).</div>
+      <div class="verdict bad"><span>Failure</span> no stop appears armed on the venue's surface, or it's armed at the wrong price.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> inspect.</div>
-      <div class="tbody">Open the exchange's open-orders list after entry.</div>
-      <div class="verdict ok"><span>Success</span> the stop is listed there as a real, inspectable order.</div>
-      <div class="verdict bad"><span>Failure</span> the stop is not visible on the exchange's own list, only the bot's word for it.</div>
+      <div class="tbody">Open the routed venue's own proof surface after entry.</div>
+      <div class="verdict ok"><span>Success</span> on a native-stop venue the stop is listed on the open-orders list as a real, inspectable order; on a Solana spot venue the bot's armed trigger is shown, with the on-chain sell as the proof that fires on breach.</div>
+      <div class="verdict bad"><span>Failure</span> neither a native resting order nor an armed trigger is provable on the venue's surface, only the bot's word for it.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> adjust.</div>
       <div class="tbody">Cancel the stop manually while it's active, then on another live stop change its price instead of cancelling.</div>
-      <div class="verdict ok"><span>Success</span> the cancel makes it disappear from the exchange immediately; the price change shows as the old order gone and a new order live at the new price (real cancel-and-replace mechanics), not the same order silently mutated in place.</div>
-      <div class="verdict bad"><span>Failure</span> the cancel has no effect, the exchange still shows the stop as live, or the price-changed order can't be found on the exchange's list under its new price.</div>
+      <div class="verdict ok"><span>Success</span> the cancel removes it from the venue's surface immediately (a native order gone from the open-orders list, or the trigger disarmed); the price change shows as the old stop gone and a new one live at the new price (real cancel-and-replace mechanics), not the same one silently mutated in place.</div>
+      <div class="verdict bad"><span>Failure</span> the cancel has no effect, the venue's surface still shows the stop as live, or the re-priced stop can't be found on the venue's surface under its new price.</div>
     </div>
     
     <div class="tunit">
@@ -1711,12 +1711,13 @@
       <div class="verdict bad"><span>Failure</span> the stop remains active past 2x, or requires manual cancellation.</div>
     </div>
     <div class="flbl">Gotchas</div>
-    <div class="gotcha">The bot saying &quot;stop set&quot; is not proof. Only the exchange's own list counts (Bobby's rule).</div>
+    <div class="gotcha">The bot saying &quot;stop set&quot; is not proof (Bobby's rule). Proof is the venue's real surface: a native venue's open-orders list, or on a Solana spot venue the on-chain sell that actually fires on breach.</div>
     <div class="gotcha">If placement fails, the position must surface as unprotected immediately. Simulate a placement failure and check the alarm.</div>
     <div class="gotcha">A triggered stop is an immediate-or-cancel order: thin liquidity can partial-fill it and cancel the remainder, leaving part of the position exposed with no stop live anymore. The &quot;hit&quot; check must confirm the position is fully closed, not just that some sell happened.</div>
     <div class="gotcha">Order edits are cancel-and-replace under the hood, not an in-place mutation. If the trigger fires mid-adjust, the edit can lose the race and fail silently because the order already converted to a market/limit order in flight; check for that failure, not just the happy-path edit.</div>
-    <div class="verdict ok"><span>Success</span> The stop is visible on the exchange, cancellable by hand, and self-cancels at 2x. Every step is recorded.</div>
-    <div class="verdict bad"><span>Failure</span> The entry fills but no stop exists on the exchange: no proof of protection beyond the bot's word.</div>
+    <div class="gotcha">Research note: the map assumed one universal exchange-native stop with an open-orders list. In reality it is venue-split: Lighter on Robinhood Chain has native reduce-only SL/TP with an open-orders view, but the Solana memecoin spot path (pump.fun / PumpSwap) has no bot-placeable resting stop (pump.fun's native stop-loss is app-only with no public API; AMM spot has no resting-order engine), so there the stop is a bot-armed trigger plus a market sell. <span class="tact"><b>Tester action</b> pin the stop protocol for the actual routed venue before grading; only assert an open-orders list where the venue truly has native stops, and on a Solana spot venue prove the stop by the armed trigger plus the on-chain sell that fires, never by an open-orders list that does not exist there.</span></div>
+    <div class="verdict ok"><span>Success</span> The stop is provably armed on the routed venue's own surface, cancellable by hand, and self-cancels at 2x. Every step is recorded.</div>
+    <div class="verdict bad"><span>Failure</span> The entry fills but no enforceable stop exists (no native resting order and no armed trigger): no proof of protection beyond the bot's word.</div>
   </section>
 
   <section class="fbox">
@@ -2494,13 +2495,14 @@
   </section>
 
   <section class="rnotes">
-    <div class="rnhead">⚠️ 10 research disagreements — broadcast, not buried</div>
+    <div class="rnhead">⚠️ 11 research disagreements — broadcast, not buried</div>
     <div class="rnsub">These elements specify behaviour that differs from the standard implementation found in external research. The tester tests the map's version knowingly — never by habit. Keep or drop each element is Bobby's call.</div>
     <div class="rnote"><b>Bundler Gate</b> — public bundler-detection tools commonly treat 25–40% combined bundler/sniper holdings as only a caution zone versus this gate's 10–15% ceiling. <span class="tact"><b>Tester action</b> pin the boundary at the gate's own numbers. 15% exactly passes, anything over rejects. Never test against the industry 25–40% band.</span></div>
     <div class="rnote"><b>Buy Button</b> — crypto UX guidance often calls for an explicit confirmation step before an irreversible transaction, against the map's one-tap-only design (no typing, no sizing, one click executes). The map stands. <span class="tact"><b>Tester action</b> assert no confirm dialog exists. One tap executes immediately; a confirmation step appearing is a failure here, not a safety feature.</span></div>
     <div class="rnote"><b>Candidate Record</b> — production case-management systems typically expose a human caseworker who can manually intervene mid-pipeline; this record has no such override. <span class="tact"><b>Tester action</b> verify a hung gate call surfaces as a distinguishable stuck/in-flight state on the candidate view. Never assume &quot;no manual override needed&quot; also means &quot;no stuck-state handling needed.&quot;</span></div>
     <div class="rnote"><b>Divergence Clip Ladder</b> — real DEX exits often cap a single sell's price impact against pool depth (splitting the order if it would move the pool too far) vs the map's fixed 15–20% clip with no price-impact cap. The map stands. <span class="tact"><b>Tester action</b> assert each clip is exactly the map's fixed 15–20% of the live remainder, fired as one sell, never split across pools for impact; the sell-into-volume filter is the only impact control.</span></div>
     <div class="rnote"><b>Divergence Watcher</b> — standard TA treats raw, standalone divergence, especially on sub-hour timeframes, as a low-reliability reversal signal and pairs it with confirmation and higher timeframes. The map deliberately uses a single-oscillator divergence as the sole entry on 1-minute candles, with chart patterns parked. <span class="tact"><b>Tester action</b> test the raw single-oscillator entry exactly as specified. Do not add a confirmation filter or a higher-timeframe requirement, and never grade a real raw-divergence entry as a miss for lacking them.</span></div>
+    <div class="rnote"><b>Immediate Stop-Loss</b> — the map assumed one universal exchange-native stop with an open-orders list. In reality it is venue-split: Lighter on Robinhood Chain has native reduce-only SL/TP with an open-orders view, but the Solana memecoin spot path (pump.fun / PumpSwap) has no bot-placeable resting stop (pump.fun's native stop-loss is app-only with no public API; AMM spot has no resting-order engine), so there the stop is a bot-armed trigger plus a market sell. <span class="tact"><b>Tester action</b> pin the stop protocol for the actual routed venue before grading; only assert an open-orders list where the venue truly has native stops, and on a Solana spot venue prove the stop by the armed trigger plus the on-chain sell that fires, never by an open-orders list that does not exist there.</span></div>
     <div class="rnote"><b>Moon Bag Rule</b> — common moon-bag practice sizes the runner much larger than 20% (often half the position, or tiered exits at 5x/10x) vs the map's fixed 20% carved out once at 2x. The map stands. <span class="tact"><b>Tester action</b> pin the carve at exactly 20% of the post-2x remainder, done once, never a half-position runner or tiered 5x/10x exits; those are the common-practice sizes the map deliberately doesn't adopt.</span></div>
     <div class="rnote"><b>Position Record</b> — the double-counting race here isn't hypothetical. A real production trading engine has shipped this exact bug class (two paths crediting the same fill against one position). <span class="tact"><b>Tester action</b> run the <code>serialize</code> check with genuinely concurrent triggers, not two triggers spaced far enough apart that ordering was never actually in question.</span></div>
     <div class="rnote"><b>Source List Config</b> — production config-management practice favors hot-reloading isolated whitelist config live (file watcher, validated before swap) without a restart. The map instead requires source-list edits to apply only via restart or reload between runs, and the map stands. <span class="tact"><b>Tester action</b> edit the list, restart the watcher, and assert the edit takes effect only after the restart. A live hot-reload is the standard behavior the map deliberately skips.</span></div>

@@ -334,25 +334,25 @@ Failure: The click produces no fill, a fill appears without any click, or one cl
 ## Immediate Stop-Loss
 From: Trade Execution
 Feature:
-1. Placement of the 30% stop-loss order on the exchange at the exact moment of entry. The automation starts here.
-2. The stop lives on the exchange as a real, inspectable order, not just a note in the bot.
+1. A 30% stop-loss armed at the exact moment of entry. The automation starts here.
+2. The stop is enforceable, not just a note in the bot. On a venue with native stop orders (the Robinhood Chain perps venue, Lighter, has reduce-only SL/TP) it rests on the venue's own engine, inspectable and firing independent of the bot; on a Solana memecoin spot venue (pump.fun / PumpSwap) it is a bot-armed trigger that fires a market sell on breach.
 3. While active it can be cancelled or adjusted (front end or back end).
 4. It cancels itself automatically when the 2x rule fires.
 Behaviour:
 - If the stop placement fails, the position is treated as unprotected and the failure is surfaced immediately.
 - The stop's price is always entry −30%; adjustments are deliberate actions, logged.
-- Market vs limit behaviour is pinned in the executor contract (a limit stop needs a trigger price).
+- The stop mechanism is pinned per venue in the executor contract: a native venue stop order (market or limit, where a limit stop needs a trigger price) where the venue offers one, otherwise a bot-armed market sell. The source pins only Solana and Robinhood Chain adapters, so the exact order type and the user-proof surface are PRE-BUILD.
 Lifecycle:
 1. TRIGGER: The entry fill confirms (bot path), or a manual placement happens via the UI/API (manual path): two trigger points.
-2. The stop order is placed on the exchange at entry −30%.
-3. It sits live: cancellable, adjustable, inspectable.
+2. The stop is armed at entry −30% on the routed venue (a native venue order, or a bot-armed trigger).
+3. It stays armed: cancellable, adjustable, and provable on the routed venue's own surface.
 4. END: Hit (position sold), cancelled at 2x, or placement failed (alerted): three end states.
 Verification:
-1. The tester agent enters on devnet, then opens the exchange's open-orders list (ProofShot recording): the stop shows at entry −30%.
-2. It cancels the stop manually: it disappears from the exchange.
+1. The tester agent enters on devnet, then opens the routed venue's own proof surface (ProofShot recording): on a native-stop venue (Robinhood Chain perps, Lighter) the open-orders list shows the stop at entry −30%; on a Solana spot venue the bot's armed trigger is shown, and on breach the market-sell swap that closes the position.
+2. It cancels the stop manually: the native order or armed trigger is gone from that surface.
 3. It runs a position to 2x: the stop cancels itself. The recording shows it vanish with no manual action.
-Success: The stop is visible on the exchange, cancellable by hand, and self-cancels at 2x. Every step is recorded.
-Failure: The entry fills but no stop exists on the exchange: no proof of protection beyond the bot's word.
+Success: The stop is provably armed on the routed venue's own surface, cancellable by hand, and self-cancels at 2x. Every step is recorded.
+Failure: The entry fills but no enforceable stop exists (no native resting order and no armed trigger): no proof of protection beyond the bot's word.
 
 ## Sell-Into-Volume Filter
 From: Trade Execution
