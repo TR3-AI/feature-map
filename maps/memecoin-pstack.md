@@ -31,24 +31,26 @@ Failure: The list can't be displayed, or an unlisted source slips a candidate th
 From: Callout Intake
 Feature:
 1. A stream connection to pump.fun / FOMO watching for callouts from tracked sources.
-2. A parser that extracts the four required fields from each callout: **coin address, attached tweet, timestamp, source**.
-3. A validator that rejects malformed callouts (missing address, no timestamp) at intake.
+2. A parser that captures three required fields from each callout, **coin address, timestamp, source**, plus an **optional attached tweet** that is null when the source calls a coin with no tweet.
+3. A validator that rejects a callout only when a required field is missing (no coin address, no timestamp, or no source). A missing tweet is never a rejection; it is a valid no-tweet candidate.
 4. An emitter that hands each valid, normalized candidate to Candidate Qualification, opening a new Candidate Record.
 Behaviour:
 - Runs continuously; a dropped stream reconnects and resumes without duplicating candidates.
-- Malformed callouts are rejected with the reason logged. They are never passed downstream half-filled.
+- Malformed callouts are rejected with the reason logged. Half-filled means missing a required field; a null tweet is complete, not half-filled.
+- A callout with no tweet normalizes cleanly with the tweet set to null and flows downstream, matching the no-tweet path the Candidate Record and Virality Gate expect.
 - Each callout produces exactly one candidate (deduplicated by address + timestamp).
 Lifecycle:
 1. TRIGGER: A callout arrives on a tracked stream.
-2. The four fields are extracted and validated.
+2. The required fields are extracted and validated; the tweet is captured when present and set to null when not.
 3. The normalized candidate is emitted to Candidate Qualification, which opens its Candidate Record.
 4. END: The listener is done with this callout and waits for the next one; rejected callouts end in the reject log.
 Verification:
-1. The tester agent posts a test callout from a tracked source on the test stream (ProofShot recording).
-2. In the intake view: the candidate appears with all four fields filled.
-3. It posts a malformed test callout (no address): the reject log shows it with the reason.
-Success: The good callout shows as a complete candidate within seconds; the bad one is visibly rejected with a reason.
-Failure: The callout is posted but no candidate appears, a field is blank, or the malformed callout flows downstream.
+1. The tester agent posts a test callout with a tweet from a tracked source on the test stream (ProofShot recording).
+2. In the intake view: the candidate appears with the three required fields filled and the tweet present.
+3. It posts a no-tweet callout from a tracked source: a candidate appears with the tweet shown as null (none) and flows to qualification, not rejected.
+4. It posts a malformed callout missing a required field (no address, or no timestamp, or no source): the reject log shows it with the reason.
+Success: The tweet and no-tweet callouts both become complete candidates within seconds (the no-tweet one with a null tweet), and the malformed one is visibly rejected with a reason.
+Failure: A valid callout produces no candidate, a no-tweet callout is wrongly rejected, a required field is blank on a candidate, or a callout missing a required field flows downstream.
 
 ## Candidate Record
 From: Candidate Qualification
