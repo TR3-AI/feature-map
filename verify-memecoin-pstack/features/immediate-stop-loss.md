@@ -17,13 +17,13 @@ The 30% stop-loss placed on the exchange the moment the entry fills: a real, ins
 
 The mechanical chain the test stream walks:
 
-1. **Trigger:** an entry fills. The bot places a real stop order on the exchange's own engine at entry −30%.
-2. **Mechanism:** price touches the trigger → the exchange converts it (stop-market: fill guaranteed, price not; stop-limit: price guaranteed, fill not, so it can partial-fill or miss in thin markets), firing independent of any bot's uptime.
-3. **Surface:** the stop sitting inspectably in the exchange's open-orders list, then the fill/closed position on the exchange's record.
+1. **Trigger:** an entry fills. The bot places a venue-native stop (a trigger order) at entry −30% through the venue that offers one. On Solana that is a Jupiter trigger order or pump.fun's in-app take-profit/stop-loss.
+2. **Mechanism:** the venue's keeper watches the price. When it crosses the trigger, the keeper fires a swap that exits the position. The order is stored off-chain and monitored by the venue, not resting on an on-chain order book, but it fires independent of the bot's uptime. Thin liquidity still means slippage or a partial fill on the exit.
+3. **Surface:** the stop sitting inspectably in the venue's own trigger-order (open-orders) list, then the fill and closed position on the venue's record.
 4. **Breaks:** slippage on the triggered fill in a fast or thin market (the gap from trigger price is the accepted cost of a guaranteed exit, not a bug) · an edit losing the cancel-and-replace race when the trigger fires mid-conversion · a bot-simulated stop silently unarmed during an outage: the exact reason the spec is exchange-native.
 
-Existence: real, exchange-native stop orders sit on the exchange's own matching engine and fire independent of any bot's uptime; bot-simulated ("virtual") stops are just a price the bot watches locally and convert to a market order only if the bot is alive and connected when the price crosses. An outage or dropped connection leaves the position silently unprotected even though the bot's own state says a stop is active.
-Deviations from standard: none. Research reinforced the spec: placing the stop as a real, inspectable exchange order, rather than a bot-side watcher, is exactly what real trading-bot practice favors for reliability, since it survives bot downtime that would otherwise leave a bot-simulated stop unarmed.
+Existence: venue-native stops are real on Solana. Jupiter trigger orders (with stop-loss, since late 2025) and pump.fun's in-app take-profit/stop-loss are stored off-chain and fired by the venue's keeper independent of any bot's uptime. A bot-simulated ("virtual") stop is only a price the bot watches locally, converted to a market sell if and only if the bot is alive and connected when price crosses. An outage leaves the position silently unprotected even though the bot's own state says a stop is active. A Raydium-only flow with no keeper still forces that bot-simulated path.
+Deviations from standard: the venue stop is a keeper-fired off-chain trigger order, not a resting order on an on-chain matching engine, but it still meets the spec's intent, a real, inspectable, venue-held stop that survives bot downtime. Placing it venue-side rather than watching it bot-side is what real trading-bot practice favors for reliability.
 
 ## Test stream
 
@@ -53,3 +53,4 @@ Preconditions:
 - If placement fails, the position must surface as unprotected immediately. Simulate a placement failure and check the alarm.
 - A triggered stop is an immediate-or-cancel order: thin liquidity can partial-fill it and cancel the remainder, leaving part of the position exposed with no stop live anymore. The "hit" check must confirm the position is fully closed, not just that some sell happened.
 - Order edits are cancel-and-replace under the hood, not an in-place mutation. If the trigger fires mid-adjust, the edit can lose the race and fail silently because the order already converted to a market/limit order in flight; check for that failure, not just the happy-path edit.
+- The venue stop is a Jupiter or pump.fun trigger order, not an on-chain order-book entry. Inspect it on the venue's own trigger-order list, and confirm the keeper fires the exit with the bot process stopped. Surviving bot downtime is the whole point of venue-native over bot-simulated.

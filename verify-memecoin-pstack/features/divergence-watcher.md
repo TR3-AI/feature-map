@@ -21,8 +21,8 @@ The mechanical chain the test stream walks:
 3. **Surface:** a confirmed divergence flag handed downstream to the Divergence Alert; provisional mid-candle reads never leave the watcher.
 4. **Breaks:** repainting, a flag that appears mid-formation then shifts or vanishes once the candle closes · hidden divergence (a continuation signal during a pullback) mistaken for the regular case, the opposite-meaning signal.
 
-Existence: bot-simulated. Divergence detection isn't a vendor-provided chart-feed feature; it's computed candle by candle from the pinned chart provider's OHLC + OBV/RSI, which is exactly why the confirmed-vs-repainting distinction has to be built and verified deliberately rather than trusted from an off-the-shelf indicator.
-Deviations from standard: none. The map's "regular divergence only, confirmed on closed candles" spec matches standard TA practice and reinforces the file's existing repainting and regular-vs-hidden gotchas.
+Existence: bot-simulated, and more so than the map implies. No named Solana chart API (Dexscreener, Birdeye, GeckoTerminal, Helius) returns OBV or RSI. They return OHLCV candles only. So the bot computes OBV and RSI itself from the candles, then detects divergence candle by candle. That is exactly why the confirmed-versus-repainting distinction has to be built and verified deliberately, never trusted from an off-the-shelf indicator.
+Deviations from standard: the map's "regular divergence only, confirmed on closed candles" logic matches standard TA practice. The one clarification is the feed. The pinned provider supplies OHLCV candles, not OBV/RSI, so both oscillators are the bot's own computation. See the research note below.
 
 ## Test stream
 
@@ -49,3 +49,4 @@ Preconditions:
 - Deterministic: the same replay must give the same result on a second run.
 - Divergence built on an unconfirmed (still-forming) pivot candle can repaint. The flag appears, then silently vanishes or changes once the candle closes; that's a distinct failure mode from run-to-run drift, and the replay-twice check alone doesn't catch it.
 - This is "regular" divergence (price extreme not confirmed by the oscillator) in standard TA terms, not "hidden" divergence (a continuation signal that reads the opposite way). Confirm test fixtures use the regular case the spec calls for.
+- Research note: the map lists the chart feed as supplying "OHLC + OBV + RSI," but primary API docs show Dexscreener, Birdeye, GeckoTerminal, and Helius return OHLCV candles only, with no OBV or RSI. Tester action: verify the bot's own OBV and RSI math against a known reference series first (a fixed candle set with hand-checked oscillator values), then test divergence on top. Do not assume the provider's numbers, because the provider does not send any.

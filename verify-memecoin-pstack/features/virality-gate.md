@@ -57,4 +57,5 @@ Preconditions:
 - Engagement counts keep climbing after the callout. Pin the tweet's likes/retweets at the moment you compute the hand-check, or a real but later count will make a correct verdict look wrong.
 - A partial X API pull must wait and resume, never score off a partial page.
 - The no-tweet bypass must still leave a stamp. A "skip" with no gate-history entry breaks the candidate record's invariant that a Clean candidate always shows exactly three stamps.
+- The 30-day baseline comes from the X API user-timeline endpoint (`GET /2/users/:id/tweets` with `public_metrics`), not recent search, which is capped at 7 days on every tier. A builder who reaches for search silently gets a 7-day window. Confirm the pull actually spans 30 days.
 - Research note: production baselines commonly use trimmed-mean/rolling-median averaging, and generic virality frameworks flag by degree alone regardless of age. This gate deliberately does neither. Tester action: don't "fix" the plain-mean outlier handling or expect degree-only flagging. Both are deliberate deviations, so pin the map's own numbers and bands.
