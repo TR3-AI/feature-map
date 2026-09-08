@@ -35,6 +35,8 @@ A feature map born from an Idea Slicer map tracks it (`maps/<slug>.md` in `TR3-A
 
 13. **P-stack below governs every map — and it is enforceable.** A Feature Map output is only done when it was generated under these principles and skills; an output that ignores them fails the run. Copied character-for-character from pstack v0.14.8 (`github.com/cursor/plugins/tree/main/pstack`) — the full bodies, each headed by its frontmatter as a table. Do NOT run `/poteto-mode Feature` while writing the map: one feature file = behaviors + proof — execution comes later. Feature Map is not "part two" of Idea Slicer — they are two different skills that work together: Feature Map takes PRDs and SDDs as input, and another input format it accepts is an Idea Slicer link.
 
+14. **Use your own tools on every run.** Generating a map is never a cold read of the input: the agent MUST work with (a) these rules, (b) the P-stack principles below as the decision criteria for every cut and every verdict, and (c) the P-stack skills below as working tools — `/how` to understand an existing project before mapping it, `/technical-writing` and `/unslop` for all page and kit prose, `/create-verification-skill` and `/maintain-verification-skill` to shape and maintain the tester kit. A run that produces output without applying them fails the run.
+
 ## P-stack principles (governing every map)
 
 # Experience First
