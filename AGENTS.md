@@ -33,38 +33,44 @@ A feature map born from an Idea Slicer map tracks it (`maps/<slug>.md` in `TR3-A
 
 12. **Rules for rules (the meta-rule).** A new rule is not a rule until it is enforceable by any agent on any model. In the same turn it is decided: (1) written into EVERY synced copy — the skill's SKILL.md, the profile copies (5, him, moon — checksums must match), this AGENTS.md, and rulebook.html; (2) written as an enforceable instruction — imperative, specific, observable outcome — never a bare principle; (3) given a mechanical check where one can exist (a format the renderer parses, a grep-able page element); (4) verified active before the turn ends — profiles synced, repo pushed, live page greps pass. Models inherit rules only through these files; a rule in only some copies, or one no agent can check, does not exist.
 
-13. **P-stack below governs every map — and it is enforceable.** A Feature Map output is only done when it was generated under these principles and skills; an output that ignores them fails the run. Copied character-for-character from pstack v0.14.8 (`github.com/cursor/plugins/tree/main/pstack`) — the full bodies, frontmatter omitted. Do NOT run `/poteto-mode Feature` while writing the map: one feature file = behaviors + proof — execution comes later. Feature Map is not "part two" of Idea Slicer — they are two different skills that work together: Feature Map takes PRDs and SDDs as input, and another input format it accepts is an Idea Slicer link.
+13. **P-stack below governs every map — and it is enforceable.** A Feature Map output is only done when it was generated under these principles and skills; an output that ignores them fails the run. Copied character-for-character from pstack v0.14.8 (`github.com/cursor/plugins/tree/main/pstack`) — the full bodies, each headed by its frontmatter as a table and linked from the P-stack index above. Do NOT run `/poteto-mode Feature` while writing the map: one feature file = behaviors + proof — execution comes later. Feature Map is not "part two" of Idea Slicer — they are two different skills that work together: Feature Map takes PRDs and SDDs as input, and another input format it accepts is an Idea Slicer link.
 
 ## P-stack index — vendored frontmatter (from pstack v0.14.8)
 
-pstack ships each principle and skill as its own `SKILL.md` with YAML frontmatter; rule 13 vendors the bodies below with that frontmatter omitted. It is gathered here instead of left scattered — copied verbatim from pstack v0.14.8 (`cursor/plugins@7314f723a4`), one table each, the way pstack's own README lists them (the `group` column is pstack's README grouping). The `name` column is pstack's own; each body heading below is the same item, title-cased. Every entry also sets `disable-model-invocation: true`.
+pstack ships each principle and skill as its own `SKILL.md` with YAML frontmatter; rule 13 vendors the full bodies below, each headed by its own frontmatter table and linked from this index. It is gathered here instead of left scattered — copied verbatim from pstack v0.14.8 (`cursor/plugins@7314f723a4`), one table each, the way pstack's own README lists them (the `group` column is pstack's README grouping). The `name` column is pstack's own; each body heading below is the same item, title-cased. Every entry also sets `disable-model-invocation: true`.
 
 **Principles**
 
 | Principle (`name`) | Group | Description (frontmatter) |
 |---|---|---|
-| `principle-experience-first` | core | Apply when product, UX, or feature-scope tradeoffs come up. Choose user delight over implementation convenience; ship fewer polished features over more rough ones. |
-| `principle-prove-it-works` | verification | Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.' |
-| `principle-model-the-domain` | architecture | Apply when writing stateful logic, or when code branches a lot or repeats a shape assumption across files. Encode the domain in a structure instead of scattered conditionals. |
-| `principle-minimize-reader-load` | core | Apply when reviewing or shaping code that's hard to trace. Count layers between question and answer, and hidden state in the reader's head; collapse one-caller wrappers and shrink mutable scope. |
-| `principle-build-the-lever` | core | Apply to any non-trivial work, not just bulk work: edits, migrations, analyses, checks. Build the tool that does it or proves it (codemod, script, generator, or a skill your subagents follow) instead of working by hand. The tool is the artifact a reviewer can rerun. |
-| `principle-make-operations-idempotent` | architecture | Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs. |
-| `principle-boundary-discipline` | architecture | Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions. |
-| `principle-laziness-protocol` | core | Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem. |
+| [`principle-experience-first`](#experience-first) | core | Apply when product, UX, or feature-scope tradeoffs come up. Choose user delight over implementation convenience; ship fewer polished features over more rough ones. |
+| [`principle-prove-it-works`](#prove-it-works) | verification | Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.' |
+| [`principle-model-the-domain`](#model-the-domain) | architecture | Apply when writing stateful logic, or when code branches a lot or repeats a shape assumption across files. Encode the domain in a structure instead of scattered conditionals. |
+| [`principle-minimize-reader-load`](#minimize-reader-load) | core | Apply when reviewing or shaping code that's hard to trace. Count layers between question and answer, and hidden state in the reader's head; collapse one-caller wrappers and shrink mutable scope. |
+| [`principle-build-the-lever`](#build-the-lever) | core | Apply to any non-trivial work, not just bulk work: edits, migrations, analyses, checks. Build the tool that does it or proves it (codemod, script, generator, or a skill your subagents follow) instead of working by hand. The tool is the artifact a reviewer can rerun. |
+| [`principle-make-operations-idempotent`](#make-operations-idempotent) | architecture | Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs. |
+| [`principle-boundary-discipline`](#boundary-discipline) | architecture | Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions. |
+| [`principle-laziness-protocol`](#laziness-protocol) | core | Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem. |
 
 **Skills**
 
 | Skill (`name`) | Description (frontmatter) |
 |---|---|
-| `technical-writing` | Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages. |
-| `unslop` | Cut AI tells from any writing. Must always apply. |
-| `create-verification-skill` | Generate a project-local verification skill that drives your app the way a user does — any language, framework, or platform. Use for /create-verification-skill, "make a control skill for this repo", or when a project has no scripted way to prove UI/CLI/service behavior. |
-| `maintain-verification-skill` | Periodic pass that keeps a project's verification skill and feature map honest: parallel source readers per feature, one live session driving every feature, at most one PR of proven corrections. Use for /maintain-verification-skill or "audit the verify skill". |
-| `how` | Use for "how does X work", code walkthroughs before changing something, and placement / ownership / layering questions ("where should this live", "which package owns this", "is this the right layer"). Explains subsystem architecture, runtime flow, onboarding mental models. Can critique architecture. Use why for motivation. |
+| [`technical-writing`](#technical-writing) | Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages. |
+| [`unslop`](#unslop) | Cut AI tells from any writing. Must always apply. |
+| [`create-verification-skill`](#create-a-verification-skill) | Generate a project-local verification skill that drives your app the way a user does — any language, framework, or platform. Use for /create-verification-skill, "make a control skill for this repo", or when a project has no scripted way to prove UI/CLI/service behavior. |
+| [`maintain-verification-skill`](#maintain-a-verification-skill) | Periodic pass that keeps a project's verification skill and feature map honest: parallel source readers per feature, one live session driving every feature, at most one PR of proven corrections. Use for /maintain-verification-skill or "audit the verify skill". |
+| [`how`](#how) | Use for "how does X work", code walkthroughs before changing something, and placement / ownership / layering questions ("where should this live", "which package owns this", "is this the right layer"). Explains subsystem architecture, runtime flow, onboarding mental models. Can critique architecture. Use why for motivation. |
 
 ## P-stack principles (governing every map)
 
 # Experience First
+
+| | |
+|:--|:--|
+| **name** | `principle-experience-first` |
+| **description** | Apply when product, UX, or feature-scope tradeoffs come up. Choose user delight over implementation convenience; ship fewer polished features over more rough ones. |
+| **disable-model-invocation** | `true` |
 
 The product is the experience. Every technical decision either helps or hurts it. When implementation convenience conflicts with user delight, choose delight.
 
@@ -81,6 +87,12 @@ Foundations should serve the experience, not the other way around. Foundational 
 ---
 
 # Prove It Works
+
+| | |
+|:--|:--|
+| **name** | `principle-prove-it-works` |
+| **description** | Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.' |
+| **disable-model-invocation** | `true` |
 
 Verify every task output by checking the real thing directly. Do not infer from proxies, self-reports, or "it compiles."
 
@@ -112,6 +124,12 @@ Keep the artifact visible for the human. Commit it only for large or complex wor
 
 # Model the Domain
 
+| | |
+|:--|:--|
+| **name** | `principle-model-the-domain` |
+| **description** | Apply when writing stateful logic, or when code branches a lot or repeats a shape assumption across files. Encode the domain in a structure instead of scattered conditionals. |
+| **disable-model-invocation** | `true` |
+
 Encode the real domain in a data structure instead of scattering it across conditionals.
 
 **Why:** Scattered booleans, repeated shape assumptions, and branching spread across files are accidental complexity. A structure that matches the domain makes invalid states unrepresentable and deletes branches. Choosing it at write time is cheap; recovering it later reads as a refactor and gets deferred.
@@ -135,6 +153,12 @@ The tell that you skipped this is a new feature that grows an existing if/else c
 
 # Minimize Reader Load
 
+| | |
+|:--|:--|
+| **name** | `principle-minimize-reader-load` |
+| **description** | Apply when reviewing or shaping code that's hard to trace. Count layers between question and answer, and hidden state in the reader's head; collapse one-caller wrappers and shrink mutable scope. |
+| **disable-model-invocation** | `true` |
+
 Maintainability is the work a reader must do to understand code. Track two axes:
 1. **Layers to trace.** How many indirections sit between the question and the answer.
 2. **State to hold.** How much hidden or mutable context the reader must keep in their head.
@@ -154,6 +178,12 @@ Maintainability is the work a reader must do to understand code. Track two axes:
 ---
 
 # Build the Lever
+
+| | |
+|:--|:--|
+| **name** | `principle-build-the-lever` |
+| **description** | Apply to any non-trivial work, not just bulk work: edits, migrations, analyses, checks. Build the tool that does it or proves it (codemod, script, generator, or a skill your subagents follow) instead of working by hand. The tool is the artifact a reviewer can rerun. |
+| **disable-model-invocation** | `true` |
 
 When the work isn't trivial, build the tool that does it instead of doing it by hand.
 
@@ -176,6 +206,12 @@ Distinct from [Encode Lessons in Structure](../principle-encode-lessons-in-struc
 
 # Make Operations Idempotent
 
+| | |
+|:--|:--|
+| **name** | `principle-make-operations-idempotent` |
+| **description** | Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs. |
+| **disable-model-invocation** | `true` |
+
 Design operations so they converge to the correct state regardless of how many times they run or where they start from. Every state-mutating operation should answer: "What happens if this runs twice? What happens if the previous run crashed halfway?"
 
 **Why:** Commands, lifecycle operations, and processing loops run where crashes, restarts, and retries are normal. If partial state changes the next run's outcome, every restart becomes a debugging session.
@@ -196,6 +232,12 @@ If any answer is "it depends on what state was left behind," the operation needs
 ---
 
 # Boundary Discipline
+
+| | |
+|:--|:--|
+| **name** | `principle-boundary-discipline` |
+| **description** | Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions. |
+| **disable-model-invocation** | `true` |
 
 Place validation, type narrowing, and error handling at system boundaries. Trust internal code unconditionally. Business logic lives in pure functions; the shell is thin and mechanical.
 
@@ -228,6 +270,12 @@ Code organization:
 
 # Laziness Protocol
 
+| | |
+|:--|:--|
+| **name** | `principle-laziness-protocol` |
+| **description** | Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem. |
+| **disable-model-invocation** | `true` |
+
 Writing code is cheap for you, which makes over-engineering easy. Counter it by borrowing a human maintainer's fatigue. Aim for the most result with the least code and complexity.
 
 - **Prefer deletion.** When asked to refactor or improve, look for removals before additions.
@@ -244,6 +292,12 @@ Writing code is cheap for you, which makes over-engineering easy. Counter it by 
 ## P-stack skills (governing every map)
 
 # Technical writing
+
+| | |
+|:--|:--|
+| **name** | `technical-writing` |
+| **description** | Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages. |
+| **disable-model-invocation** | `true` |
 
 The goal is writing a tired engineer understands on the first read. Four layers get you there, one question each: what kind of document is this, how do sentences address the reader, how much does each sentence carry, and can any sentence be read two ways. Apply all four.
 
@@ -372,6 +426,12 @@ Apply to any prose this skill covers. Item 1 applies only to document sets:
 
 # Unslop
 
+| | |
+|:--|:--|
+| **name** | `unslop` |
+| **description** | Cut AI tells from any writing. Must always apply. |
+| **disable-model-invocation** | `true` |
+
 Edit text to remove AI patterns and add human voice.
 
 ## Process
@@ -450,6 +510,12 @@ Removing patterns is half the job. Sterile, voiceless writing is just as obvious
 
 # Create a verification skill
 
+| | |
+|:--|:--|
+| **name** | `create-verification-skill` |
+| **description** | Generate a project-local verification skill that drives your app the way a user does — any language, framework, or platform. Use for /create-verification-skill, "make a control skill for this repo", or when a project has no scripted way to prove UI/CLI/service behavior. |
+| **disable-model-invocation** | `true` |
+
 Every serious project needs a scripted way to drive the real app and prove behavior: launch it, exercise a feature the way a user would, and capture evidence. This skill generates that as a project-local skill (`.cursor/skills/verify-<app>/`) tailored to the repo. You write the generator's output for the next agent, not for a human: it will be read cold, mid-task, by an agent that has never seen the app.
 
 ## 1. Interview the repo, not the user
@@ -491,6 +557,12 @@ Point the user at `/maintain-verification-skill` for keeping the map honest as t
 
 # Maintain a verification skill
 
+| | |
+|:--|:--|
+| **name** | `maintain-verification-skill` |
+| **description** | Periodic pass that keeps a project's verification skill and feature map honest: parallel source readers per feature, one live session driving every feature, at most one PR of proven corrections. Use for /maintain-verification-skill or "audit the verify skill". |
+| **disable-model-invocation** | `true` |
+
 A feature map rots the moment the app changes. This skill is the upkeep loop for a skill generated by `/create-verification-skill` (or any project-local verification skill with a feature map). The unit of rigor is the feature, not every sentence: cover every feature file from source and exercise every feature live, without terminalising every bullet.
 
 ## Outcomes
@@ -526,6 +598,12 @@ Keep concise run notes (features covered, unreachable prerequisites, confirmed d
 ---
 
 # How
+
+| | |
+|:--|:--|
+| **name** | `how` |
+| **description** | Use for "how does X work", code walkthroughs before changing something, and placement / ownership / layering questions ("where should this live", "which package owns this", "is this the right layer"). Explains subsystem architecture, runtime flow, onboarding mental models. Can critique architecture. Use why for motivation. |
+| **disable-model-invocation** | `true` |
 
 Explore the codebase to answer "how does X work?" questions. Produce clear architectural explanations at the level of a senior engineer onboarding onto a subsystem. Enough to build a working mental model, not annotated source code.
 
