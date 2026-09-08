@@ -1,6 +1,6 @@
 # Memecoin virality trader — P-stack pass — feature map
 Source: maps/memecoin-pstack.md · issue #13 (TR3-AI/idea-slicer)
-Updated: 2026-09-06
+Updated: 2026-09-08
 Features: 23
 
 
@@ -154,7 +154,7 @@ Failure: Any of the three known verdicts is wrong, the 15% boundary rejects as i
 ## Divergence Watcher
 From: Divergence Signal
 Feature:
-1. A chart feed (pinned provider) supplying OHLC + OBV + RSI from the call-out moment.
+1. A chart feed (pinned provider) supplying OHLC + volume from the call-out moment; the watcher computes OBV and RSI from it (providers serve candles, not indicators).
 2. Divergence detection: price makes new lows while OBV or RSI does not. Either oscillator works; both together is stronger.
 3. Chart patterns (descending triangle, pennant) are parked; divergence only.
 4. On detection, the watcher hands off to the Divergence Alert.
@@ -335,13 +335,13 @@ Failure: The click produces no fill, a fill appears without any click, or one cl
 From: Trade Execution
 Feature:
 1. Placement of the 30% stop-loss order on the exchange at the exact moment of entry. The automation starts here.
-2. The stop lives on the exchange as a real, inspectable order, not just a note in the bot.
+2. The stop is a real, inspectable order that fires independent of the trading bot — a Jupiter Trigger stop-loss (keeper-executed) on Solana, or a resting stop on an order-book venue — not just a note in the bot.
 3. While active it can be cancelled or adjusted (front end or back end).
 4. It cancels itself automatically when the 2x rule fires.
 Behaviour:
 - If the stop placement fails, the position is treated as unprotected and the failure is surfaced immediately.
 - The stop's price is always entry −30%; adjustments are deliberate actions, logged.
-- Market vs limit behaviour is pinned in the executor contract (a limit stop needs a trigger price).
+- The stop mechanism is pinned in the executor contract and grounded at build: a Jupiter Trigger stop-loss order on Solana (keeper-executed), or a native stop on an order-book venue (a limit stop needs a trigger price).
 Lifecycle:
 1. TRIGGER: The entry fill confirms (bot path), or a manual placement happens via the UI/API (manual path): two trigger points.
 2. The stop order is placed on the exchange at entry −30%.

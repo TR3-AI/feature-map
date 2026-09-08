@@ -3,6 +3,22 @@
     "file": "memecoin-pstack.html",
     "title": "Memecoin virality trader — P-stack pass — feature map",
     "desc": "23 features at their smallest useful size — feature, behaviour, lifecycle, sub-features — each with user-side driving recipes and success/failure parameters. Tracks idea-slicer issue #13.",
+    "date": "2026-09-08",
+    "emoji": "🛠️",
+    "status": "open"
+  },
+  {
+    "file": "memecoin-pstack-v2.html",
+    "title": "Memecoin virality trader — P-stack pass — feature map (v2, regenerated)",
+    "desc": "Regenerated with fresh named-platform research (Jupiter Trigger stop, OBV/RSI fix), kept for the tutorial video comparison.",
+    "date": "2026-09-08",
+    "emoji": "🛠️",
+    "status": "open"
+  },
+  {
+    "file": "memecoin-pstack-v1.html",
+    "title": "Memecoin virality trader — P-stack pass — feature map (v1, old snapshot)",
+    "desc": "Archived earlier version, kept for the tutorial video comparison.",
     "date": "2026-09-06",
     "emoji": "🛠️",
     "status": "open"
