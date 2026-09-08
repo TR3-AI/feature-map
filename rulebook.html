@@ -46,6 +46,18 @@
   .back { display: block; text-align: center; margin-top: 28px; color: var(--blue); font-weight: 700; text-decoration: none; }
   footer { text-align: center; color: var(--soft); font-size: 13px; margin-top: 40px; }
   footer a { color: var(--blue); font-weight: 700; text-decoration: none; }
+  table.pstack { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 13.5px; }
+  table.pstack th {
+    text-align: left; font-family: ui-monospace, Menlo, monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 1px; color: var(--soft);
+    border-bottom: 1px solid var(--line); padding: 6px 8px;
+  }
+  table.pstack td {
+    padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--soft);
+  }
+  table.pstack td code { font-family: ui-monospace, Menlo, monospace; }
+  table.pstack td a { font-family: ui-monospace, Menlo, monospace; color: var(--blue); font-weight: 700; text-decoration: none; }
+  table.pstack caption { text-align: left; font-family: ui-monospace, Menlo, monospace; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--teal); margin: 14px 0 4px; }
 </style>
 </head>
 <body>
@@ -54,7 +66,7 @@
   <header>
     <h1>📖 Feature-map rulebook</h1>
     <div class="sub">Stage 2 of the pipeline: sliced idea → smallest features + user-side verification. The binding rules, in plain English.</div>
-    <div class="stamp">updated 2026-08-31 · mirrors AGENTS.md in the repo</div>
+    <div class="stamp">updated 2026-09-08 · mirrors AGENTS.md in the repo</div>
   </header>
 
   <h2>The flow — every idea, every time</h2>
@@ -82,6 +94,31 @@
   <div class="item"><b>10. The verification unit: feature + sub-features, tested on build completion.</b><span class="why">Never a feature ticket — a ticket can be very large. The unit is a built feature plus every sub-feature, checked whenever an agent finishes building it. A sub-feature is one part of the feature's life cycle: how it works, what it does, every variation it handles. A feature is "working" only when it and all its sub-features are proven on the front end. The mechanism is the <b>test stream</b>: numbered units in each recipe — unit 1 proves the feature end to end, then exactly one unit per sub-feature — each stating how to test it plus its own success and failure lines. The tester agent never has to guess.</span></div>
   <div class="item"><b>11. Ground every test stream in real-world research.</b><span class="why">We can't know how to test something from the idea alone — the idea names WHAT exists; external know-how says how it WORKS. First research how this kind of feature normally works (its states, its failure modes). Unique composites have no write-up as a whole, but their parts do: decompose and research the parts, then recompose. Research anchors to the specific sources the idea NAMES, not the generic category — the named source is what to study, not the category it falls under; generic research writes know-how for a feature nobody asked for. The research output is written down: each recipe carries a <b>"How it works in practice"</b> section (before the test stream, on the page) that writes the feature's <b>mechanical chain</b> — not what the feature IS, but how it FUNCTIONS hop by hop: trigger (the real-world event) · mechanism (what the platform mechanically does) · delivery (how the result reaches us) · surface (where the outcome appears for the user) · breaks (what breaks at each hop). The stream's steps are: cause the trigger, watch each hop, prove every break visible. It closes with Existence (native vs bot-simulated) and Deviations from standard. Then compare the spec against the know-how element by element: align → test normally; misalign → flag a <b>mechanics disagreement</b> on that element. The flag doesn't disprove the feature — it makes the test correct: the stream tests the spec's version knowingly, so the agent never tests standard behavior by habit and fails a correct implementation. <b>Broadcast, never silent:</b> flagged elements sit in a strip after the last feature on the page, stay as "Research note" gotchas on the feature, and every note ends with a <b>Tester action</b> line (its own distinct chip) — the exact thing to pin or check — then come to you with a keep-or-drop suggestion per element.</span></div>
   <div class="item"><b>12. Rules for rules (the meta-rule).</b><span class="why">A new rule is not a rule until any agent on any model can enforce it. In the same turn it's decided: (1) it's written into EVERY synced copy — the skill file, all profile copies (checksums must match), AGENTS.md, and this rulebook; (2) it's written as an enforceable instruction — imperative, specific, observable outcome — never a bare principle; (3) it gets a mechanical check where one can exist (a format the renderer parses, a grep-able page element); (4) it's verified active before the turn ends — profiles synced, repo pushed, live page greps pass. Models inherit rules only through these files; a rule in only some copies, or one no agent can check, does not exist.</span></div>
+  <div class="item"><b>13. P-stack governs every map.</b><span class="why">A map is only done if generated under the 8 principles and 5 skills below — vendored character-for-character from pstack v0.14.8. Each one carries its frontmatter as a small table and links to its full text.</span></div>
+
+  <h2>P-stack — governing every map</h2>
+  <div class="item teal"><b>Vendored, not paraphrased.</b><span class="why">The 8 principles and 5 skills below are copied character-for-character from pstack v0.14.8. A map is only done if generated under them. Click any name for its full text in AGENTS.md.</span></div>
+  <table class="pstack">
+    <caption>Principles</caption>
+    <tr><th>Principle</th><th>Group</th><th>Description</th></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#experience-first"><code>principle-experience-first</code></a></td><td>core</td><td>Apply when product, UX, or feature-scope tradeoffs come up. Choose user delight over implementation convenience; ship fewer polished features over more rough ones.</td></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#prove-it-works"><code>principle-prove-it-works</code></a></td><td>verification</td><td>Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.'</td></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#model-the-domain"><code>principle-model-the-domain</code></a></td><td>architecture</td><td>Apply when writing stateful logic, or when code branches a lot or repeats a shape assumption across files. Encode the domain in a structure instead of scattered conditionals.</td></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#minimize-reader-load"><code>principle-minimize-reader-load</code></a></td><td>core</td><td>Apply when reviewing or shaping code that's hard to trace. Count layers between question and answer, and hidden state in the reader's head; collapse one-caller wrappers and shrink mutable scope.</td></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#build-the-lever"><code>principle-build-the-lever</code></a></td><td>core</td><td>Apply to any non-trivial work, not just bulk work: edits, migrations, analyses, checks. Build the tool that does it or proves it (codemod, script, generator, or a skill your subagents follow) instead of working by hand. The tool is the artifact a reviewer can rerun.</td></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#make-operations-idempotent"><code>principle-make-operations-idempotent</code></a></td><td>architecture</td><td>Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs.</td></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#boundary-discipline"><code>principle-boundary-discipline</code></a></td><td>architecture</td><td>Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions.</td></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#laziness-protocol"><code>principle-laziness-protocol</code></a></td><td>core</td><td>Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem.</td></tr>
+  </table>
+  <table class="pstack">
+    <caption>Skills</caption>
+    <tr><th>Skill</th><th>Description</th></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#technical-writing"><code>technical-writing</code></a></td><td>Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages.</td></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#unslop"><code>unslop</code></a></td><td>Cut AI tells from any writing. Must always apply.</td></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#create-a-verification-skill"><code>create-verification-skill</code></a></td><td>Generate a project-local verification skill that drives your app the way a user does — any language, framework, or platform. Use for /create-verification-skill, "make a control skill for this repo", or when a project has no scripted way to prove UI/CLI/service behavior.</td></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#maintain-a-verification-skill"><code>maintain-verification-skill</code></a></td><td>Periodic pass that keeps a project's verification skill and feature map honest: parallel source readers per feature, one live session driving every feature, at most one PR of proven corrections. Use for /maintain-verification-skill or "audit the verify skill".</td></tr>
+    <tr><td><a href="https://github.com/TR3-AI/feature-map/blob/main/AGENTS.md#how"><code>how</code></a></td><td>Use for "how does X work", code walkthroughs before changing something, and placement / ownership / layering questions ("where should this live", "which package owns this", "is this the right layer"). Explains subsystem architecture, runtime flow, onboarding mental models. Can critique architecture. Use why for motivation.</td></tr>
+  </table>
 
   <h2>Publish rhythm</h2>
   <div class="item teal"><b>Straight to main.</b><span class="why">Bobby's standing instruction (same as Idea Slicer and ELI5links). The site updates ~1 min after push — verify with a curl grep on the live URL, never just a clean commit.</span></div>
