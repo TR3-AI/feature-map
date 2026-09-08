@@ -21,7 +21,7 @@ The mechanical chain the test stream walks:
 3. **Surface:** a confirmed divergence flag handed downstream to the Divergence Alert; provisional mid-candle reads never leave the watcher.
 4. **Breaks:** repainting, a flag that appears mid-formation then shifts or vanishes once the candle closes · hidden divergence (a continuation signal during a pullback) mistaken for the regular case, the opposite-meaning signal.
 
-Existence: bot-simulated. Divergence detection isn't a vendor-provided chart-feed feature; it's computed candle by candle from the pinned chart provider's OHLC + OBV/RSI, which is exactly why the confirmed-vs-repainting distinction has to be built and verified deliberately rather than trusted from an off-the-shelf indicator.
+Existence: bot-simulated. Divergence detection isn't a vendor-provided chart-feed feature, and neither are OBV and RSI — providers (Birdeye, Dexscreener) serve OHLCV candles only, so the bot computes both oscillators from that price/volume data and then detects divergence candle by candle, which is exactly why the confirmed-vs-repainting distinction has to be built and verified deliberately rather than trusted from an off-the-shelf indicator.
 Deviations from standard: none. The map's "regular divergence only, confirmed on closed candles" spec matches standard TA practice and reinforces the file's existing repainting and regular-vs-hidden gotchas.
 
 ## Test stream

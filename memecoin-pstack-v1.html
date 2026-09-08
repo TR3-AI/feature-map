@@ -215,7 +215,7 @@
   <header class="page">
     <h1>Memecoin virality trader — P-stack pass</h1>
     <div class="sub">feature map · tracks <a href="https://tr3-ai.github.io/idea-slicer/memecoin-pstack.html">idea-slicer · issue #13</a></div>
-    <div class="stamp">23 features · updated 2026-09-08</div>
+    <div class="stamp">23 features · updated 2026-09-06</div>
   </header>
 
   <div class="stats">
@@ -888,7 +888,7 @@
     <div class="fhead"><span class="fnum">F7</span><h3>Divergence Watcher</h3><span class="fdept">Divergence Signal</span></div>
     <div class="fsec"><div class="flbl">The feature</div>
       <ol class="fsteps">
-        <li>A chart feed (pinned provider) supplying OHLC + volume from the call-out moment; the watcher computes OBV and RSI from it (providers serve candles, not indicators).</li>
+        <li>A chart feed (pinned provider) supplying OHLC + OBV + RSI from the call-out moment.</li>
         <li>Divergence detection: price makes new lows while OBV or RSI does not. Either oscillator works; both together is stronger.</li>
         <li>Chart patterns (descending triangle, pennant) are parked; divergence only.</li>
         <li>On detection, the watcher hands off to the Divergence Alert.</li>
@@ -931,7 +931,7 @@
       <li><b>Mechanism:</b> the watcher compares price structure against the oscillator for regular divergence only: price sets a new extreme the OBV/RSI fails to confirm. The comparison runs strictly on closed candles, because a pivot can't be confirmed until bars form after it.</li>
       <li><b>Surface:</b> a confirmed divergence flag handed downstream to the Divergence Alert; provisional mid-candle reads never leave the watcher.</li>
       <li><b>Breaks:</b> repainting, a flag that appears mid-formation then shifts or vanishes once the candle closes · hidden divergence (a continuation signal during a pullback) mistaken for the regular case, the opposite-meaning signal.</li>
-      <li>Existence: bot-simulated. Divergence detection isn't a vendor-provided chart-feed feature, and neither are OBV and RSI — providers (Birdeye, Dexscreener) serve OHLCV candles only, so the bot computes both oscillators from that price/volume data and then detects divergence candle by candle, which is exactly why the confirmed-vs-repainting distinction has to be built and verified deliberately rather than trusted from an off-the-shelf indicator.</li>
+      <li>Existence: bot-simulated. Divergence detection isn't a vendor-provided chart-feed feature; it's computed candle by candle from the pinned chart provider's OHLC + OBV/RSI, which is exactly why the confirmed-vs-repainting distinction has to be built and verified deliberately rather than trusted from an off-the-shelf indicator.</li>
       <li>Deviations from standard: none. The map's &quot;regular divergence only, confirmed on closed candles&quot; spec matches standard TA practice and reinforces the file's existing repainting and regular-vs-hidden gotchas.</li>
     </ul>
     <div class="flbl">Test stream</div>
@@ -1624,15 +1624,15 @@
     <div class="fsec"><div class="flbl">The feature</div>
       <ol class="fsteps">
         <li>Placement of the 30% stop-loss order on the exchange at the exact moment of entry. The automation starts here.</li>
-        <li>The stop is a real, inspectable order that fires independent of the trading bot — a Jupiter Trigger stop-loss (keeper-executed) on Solana, or a resting stop on an order-book venue — not just a note in the bot.</li>
+        <li>The stop lives on the exchange as a real, inspectable order, not just a note in the bot.</li>
         <li>While active it can be cancelled or adjusted (front end or back end).</li>
         <li>It cancels itself automatically when the 2x rule fires.</li>
       </ol>
     </div>
     <div class="fsec"><div class="flbl">Sub-features</div>
       <div class="subs">
-        <span class="sub"><b>place</b> places the stop at entry −30% at entry time: on Solana a Jupiter Trigger stop-loss order, on an order-book venue a resting stop on the venue's engine.</span>
-        <span class="sub"><b>inspect</b> shows it as a live order — Jupiter's active trigger-orders list on Solana, the venue's open-orders list on an order-book venue — not just the bot's word.</span>
+        <span class="sub"><b>place</b> puts the stop on the exchange at entry −30% at entry time.</span>
+        <span class="sub"><b>inspect</b> shows it on the exchange's open-orders list.</span>
         <span class="sub"><b>adjust</b> supports manual cancel / price change while active.</span>
         <span class="sub"><b>self-cancel</b> removes it automatically when 2x fires.</span>
       </div>
@@ -1641,7 +1641,7 @@
       <ul class="fbeh">
         <li>If the stop placement fails, the position is treated as unprotected and the failure is surfaced immediately.</li>
         <li>The stop's price is always entry −30%; adjustments are deliberate actions, logged.</li>
-        <li>The stop mechanism is pinned in the executor contract and grounded at build: a Jupiter Trigger stop-loss order on Solana (keeper-executed), or a native stop on an order-book venue (a limit stop needs a trigger price).</li>
+        <li>Market vs limit behaviour is pinned in the executor contract (a limit stop needs a trigger price).</li>
       </ul>
     </div>
     <div class="fsec"><div class="flbl">Lifecycle</div>
@@ -1659,60 +1659,59 @@
     <div class="vactor">run by the tester agent · recorded with ProofShot · Bobby witnesses</div>
     <div class="flbl">How to get to it (user POV)</div>
     <ul class="vreach">
-      <li>The venue's live order list (Jupiter's active trigger orders on Solana; the venue's open-orders list on an order-book venue) — the user-visible system of record.</li>
+      <li>The exchange's open-orders list (the user-visible system of record).</li>
     </ul>
     <div class="flbl">How it works in practice (external research)</div>
     <ul class="vreach">
-      <li><b>Trigger:</b> an entry fills. The bot places the stop at entry −30% — a Jupiter Trigger stop-loss order on Solana, a resting stop on an order-book venue.</li>
-      <li><b>Mechanism:</b> Solana → Jupiter's Trigger Order API holds the order (state off-chain, private) and a Jupiter keeper monitors the on-chain price, filling it through Jupiter routing when −30% is crossed, independent of the trading bot's uptime; it can partial-fill or wait if liquidity is thin. Order-book venue → the venue's own engine converts the stop (stop-market: fill guaranteed, price not; stop-limit: the reverse) when price touches the trigger.</li>
-      <li><b>Surface:</b> the stop sitting inspectably in the venue's live order list (Jupiter's active trigger orders, or the venue's open-orders list), then the fill/closed position on the chain's or venue's record.</li>
-      <li><b>Breaks:</b> slippage on the triggered fill in a fast or thin market (the gap from trigger price is the cost of a guaranteed exit, not a bug) · a fresh pre-graduation bonding-curve token not yet routable by Jupiter, so a Trigger stop can't be placed until the token is routable · keeper price-update latency that fills a step late · an edit racing a fill mid-adjust (Jupiter updates the price in place on the same order id and guards cancels with a two-step ready_to_cancel state; an order-book venue does cancel-and-replace, which can lose the race).</li>
-      <li>Existence: native stop-loss orders exist on Solana today via Jupiter's Trigger Order API (USD-price stop-loss via slPriceUsd, OCO take-profit/stop-loss, OTOCO, and a trailing stop of 0.5–90%), keeper-executed through Jupiter Ultra and independent of the trading bot's uptime; order-book venues provide the same on their own matching engine. A bot-simulated (&quot;virtual&quot;) stop — a price the bot watches locally and converts to a market swap only while it is alive — is a fallback, not the only option.</li>
-      <li>Deviations from standard: none in principle — the 30% stop is achievable as a real, keeper- or engine-fired order. PRE-BUILD: the exact venue and order type (Jupiter Trigger stop-loss vs an order-book venue's stop vs a bot-simulated fallback for tokens not yet routable by Jupiter) is a build-time choice to ground against the real repo, and the Jupiter path depends on the token being routable with enough liquidity for the keeper to fill.</li>
+      <li><b>Trigger:</b> an entry fills. The bot places a real stop order on the exchange's own engine at entry −30%.</li>
+      <li><b>Mechanism:</b> price touches the trigger → the exchange converts it (stop-market: fill guaranteed, price not; stop-limit: price guaranteed, fill not, so it can partial-fill or miss in thin markets), firing independent of any bot's uptime.</li>
+      <li><b>Surface:</b> the stop sitting inspectably in the exchange's open-orders list, then the fill/closed position on the exchange's record.</li>
+      <li><b>Breaks:</b> slippage on the triggered fill in a fast or thin market (the gap from trigger price is the accepted cost of a guaranteed exit, not a bug) · an edit losing the cancel-and-replace race when the trigger fires mid-conversion · a bot-simulated stop silently unarmed during an outage: the exact reason the spec is exchange-native.</li>
+      <li>Existence: real, exchange-native stop orders sit on the exchange's own matching engine and fire independent of any bot's uptime; bot-simulated (&quot;virtual&quot;) stops are just a price the bot watches locally and convert to a market order only if the bot is alive and connected when the price crosses. An outage or dropped connection leaves the position silently unprotected even though the bot's own state says a stop is active.</li>
+      <li>Deviations from standard: none. Research reinforced the spec: placing the stop as a real, inspectable exchange order, rather than a bot-side watcher, is exactly what real trading-bot practice favors for reliability, since it survives bot downtime that would otherwise leave a bot-simulated stop unarmed.</li>
     </ul>
     <div class="flbl">Test stream</div>
-    <div class="pre">Devnet; ProofShot recording; the venue's live order list open (Jupiter's active trigger orders on Solana, or the order-book venue's open-orders view).</div>
+    <div class="pre">Devnet; ProofShot recording; the exchange's open-orders view open.</div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">1</span> Immediate Stop-Loss works end to end.</div>
-      <div class="tbody">Enter on devnet and check the venue's live order list for the stop, cancel it manually on a second position, run a third position down through −30% to confirm it actually fills and closes the position, then run a fourth position to 2x.</div>
-      <div class="verdict ok"><span>Success</span> the stop is visible in the venue's order list, cancellable by hand, actually fills and closes the position when −30% is hit (fill price and any slippage from the trigger visible in the recording), and self-cancels at 2x, every step recorded.</div>
-      <div class="verdict bad"><span>Failure</span> the entry fills but no stop is placed, the stop triggers but leaves the position open (no fill or only a partial fill) with no alert, or the 2x self-cancel never fires.</div>
+      <div class="tbody">Enter a position on devnet and check the exchange's open-orders list, then cancel the stop manually on a second position, then run a third position down through the stop's trigger price to confirm it actually fills and closes the position, then run a fourth position to 2x.</div>
+      <div class="verdict ok"><span>Success</span> the stop is visible on the exchange, cancellable by hand, actually fills and closes the position when the trigger price is hit (fill price and any slippage from the trigger visible in the recording), and self-cancels at 2x, every step recorded.</div>
+      <div class="verdict bad"><span>Failure</span> the entry fills but no stop exists on the exchange, the stop triggers but leaves the position open (no fill or only a partial fill) with no alert, or the 2x self-cancel never fires.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">2</span> place.</div>
       <div class="tbody">Enter a position on devnet.</div>
-      <div class="verdict ok"><span>Success</span> the venue's order list shows the stop placed at entry −30% (a Jupiter Trigger stop-loss on Solana).</div>
-      <div class="verdict bad"><span>Failure</span> no stop order appears, or it's placed at the wrong price.</div>
+      <div class="verdict ok"><span>Success</span> the open-orders list shows the stop placed at entry −30%.</div>
+      <div class="verdict bad"><span>Failure</span> no stop order appears on the exchange, or it's placed at the wrong price.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">3</span> inspect.</div>
-      <div class="tbody">Open the venue's live order list after entry.</div>
-      <div class="verdict ok"><span>Success</span> the stop is listed there as a real, inspectable order (Jupiter's active trigger orders on Solana, the open-orders list on an order-book venue).</div>
-      <div class="verdict bad"><span>Failure</span> the stop is not visible on the venue's own list, only the bot's word for it.</div>
+      <div class="tbody">Open the exchange's open-orders list after entry.</div>
+      <div class="verdict ok"><span>Success</span> the stop is listed there as a real, inspectable order.</div>
+      <div class="verdict bad"><span>Failure</span> the stop is not visible on the exchange's own list, only the bot's word for it.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">4</span> adjust.</div>
-      <div class="tbody">Change the stop's price on a live stop, then cancel a second live stop, and check the behaviour against the chosen mechanism.</div>
-      <div class="verdict ok"><span>Success</span> Jupiter → the price update is in place (a PATCH on the same order id, which stays the same order in the trigger-orders list at the new price), and a cancel moves it open → ready_to_cancel → gone once the withdrawal confirms. Order-book venue → the price change is cancel-and-replace (old order gone, new order live at the new price) and the cancel removes it immediately.</div>
-      <div class="verdict bad"><span>Failure</span> the update or cancel has no effect, the stop stays live at the old price, or the mechanism's documented behaviour isn't followed (a Jupiter update spawning a new order id instead of editing in place, or a venue cancel silently leaving the order live).</div>
+      <div class="tbody">Cancel the stop manually while it's active, then on another live stop change its price instead of cancelling.</div>
+      <div class="verdict ok"><span>Success</span> the cancel makes it disappear from the exchange immediately; the price change shows as the old order gone and a new order live at the new price (real cancel-and-replace mechanics), not the same order silently mutated in place.</div>
+      <div class="verdict bad"><span>Failure</span> the cancel has no effect, the exchange still shows the stop as live, or the price-changed order can't be found on the exchange's list under its new price.</div>
     </div>
     
     <div class="tunit">
       <div class="thead"><span class="tnum">5</span> self-cancel.</div>
       <div class="tbody">Run a fresh position to 2x.</div>
-      <div class="verdict ok"><span>Success</span> the recording shows the stop vanish from the venue's order list with no manual action.</div>
+      <div class="verdict ok"><span>Success</span> the recording shows the stop vanish from the exchange with no manual action.</div>
       <div class="verdict bad"><span>Failure</span> the stop remains active past 2x, or requires manual cancellation.</div>
     </div>
     <div class="flbl">Gotchas</div>
-    <div class="gotcha">The bot saying &quot;stop set&quot; is not proof. Only the venue's own order list counts — Jupiter's active trigger orders on Solana, or the order-book venue's open-orders list (Bobby's rule).</div>
+    <div class="gotcha">The bot saying &quot;stop set&quot; is not proof. Only the exchange's own list counts (Bobby's rule).</div>
     <div class="gotcha">If placement fails, the position must surface as unprotected immediately. Simulate a placement failure and check the alarm.</div>
     <div class="gotcha">A triggered stop is an immediate-or-cancel order: thin liquidity can partial-fill it and cancel the remainder, leaving part of the position exposed with no stop live anymore. The &quot;hit&quot; check must confirm the position is fully closed, not just that some sell happened.</div>
-    <div class="gotcha">Editing behaviour depends on the mechanism: Jupiter updates the trigger price/slippage in place via PATCH on the same order id (a new order id would be a bug), and cancels through a two-step ready_to_cancel withdrawal that closes the fill-during-cancel race; an order-book venue does cancel-and-replace, which can lose the race if the trigger fires mid-adjust. Test the path the chosen mechanism actually uses, not a blanket cancel-and-replace assumption.</div>
-    <div class="gotcha">PRE-BUILD: pin the exact stop mechanism against the real repo — a Jupiter Trigger stop-loss order (slPriceUsd / OCO), an order-book venue's native stop, or a bot-simulated fallback. On Solana the Jupiter keeper fills only if the token is routable with enough liquidity, so a fresh pre-graduation bonding-curve token may not accept a Trigger stop yet; test the not-yet-routable case, not just the happy path.</div>
+    <div class="gotcha">Order edits are cancel-and-replace under the hood, not an in-place mutation. If the trigger fires mid-adjust, the edit can lose the race and fail silently because the order already converted to a market/limit order in flight; check for that failure, not just the happy-path edit.</div>
     <div class="verdict ok"><span>Success</span> The stop is visible on the exchange, cancellable by hand, and self-cancels at 2x. Every step is recorded.</div>
     <div class="verdict bad"><span>Failure</span> The entry fills but no stop exists on the exchange: no proof of protection beyond the bot's word.</div>
   </section>
@@ -2505,7 +2504,7 @@
     <div class="rnote"><b>Virality Gate</b> — production baselines commonly use trimmed-mean/rolling-median averaging, and generic virality frameworks flag by degree alone regardless of age. This gate deliberately does neither. <span class="tact"><b>Tester action</b> don't &quot;fix&quot; the plain-mean outlier handling or expect degree-only flagging. Both are deliberate deviations, so pin the map's own numbers and bands.</span></div>
   </section>
 
-  <footer>Source of truth: <a href="https://tr3-ai.github.io/idea-slicer/memecoin-pstack.html">the idea-slicer map</a> · <a href="https://github.com/TR3-AI/feature-map/tree/main/verify-memecoin-pstack">raw tester kit</a> · <a href="index.html">all feature maps</a></footer>
+  <footer>Source of truth: <a href="https://tr3-ai.github.io/idea-slicer/memecoin-pstack.html">the idea-slicer map</a> · <a href="https://github.com/TR3-AI/feature-map/tree/dad58c3/verify-memecoin-pstack">raw tester kit</a> · <a href="index.html">all feature maps</a></footer>
 
 </div>
 <script src="nav.js" defer></script>
